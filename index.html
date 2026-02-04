@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cápsula 2026">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>1ª Cápsula Inverno 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --accent: #e94560;
+            --accent-light: #ff6b6b;
+            --success: #00d9a5;
+            --warning: #ffc107;
+            --danger: #ff4757;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border: #2a2a4a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+            padding: 20px 16px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .header .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .header .date {
+            font-size: 11px;
+            color: var(--accent);
+            margin-top: 2px;
+        }
+
+        /* Navigation */
+        .nav {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-primary);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-btn {
+            flex-shrink: 0;
+            padding: 10px 16px;
+            border-radius: 20px;
+            border: none;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Content */
+        .content {
+            padding: 16px;
+            padding-bottom: 100px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .card-value.small {
+            font-size: 22px;
+        }
+
+        .card-change {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .card-change.positive { color: var(--success); }
+        .card-change.negative { color: var(--danger); }
+
+        /* Grid */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        /* Progress */
+        .progress-container {
+            margin-top: 12px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-fill.green { background: linear-gradient(90deg, var(--success), #00f5a0); }
+        .progress-fill.yellow { background: linear-gradient(90deg, var(--warning), #ffda44); }
+        .progress-fill.red { background: linear-gradient(90deg, var(--danger), #ff6b6b); }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Metric Row */
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .metric-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Product List */
+        .product-item {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .product-ref {
+            font-size: 11px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .product-name {
+            font-size: 13px;
+            color: var(--text-primary);
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+
+        .product-price {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .product-stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .product-stat {
+            font-size: 11px;
+        }
+
+        .product-stat-label {
+            color: var(--text-secondary);
+        }
+
+        .product-stat-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-excelente { background: rgba(0, 217, 165, 0.2); color: var(--success); }
+        .status-bom { background: rgba(255, 193, 7, 0.2); color: var(--warning); }
+        .status-regular { background: rgba(255, 107, 107, 0.2); color: var(--danger); }
+        .status-critico { background: rgba(255, 71, 87, 0.3); color: #ff4757; }
+
+        /* Section Title */
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 20px 0 12px;
+            color: var(--text-primary);
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        /* Ranking */
+        .rank-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
+        .rank-2 { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: #000; }
+        .rank-3 { background: linear-gradient(135deg, #CD7F32, #8B4513); color: #fff; }
+        .rank-default { background: var(--bg-secondary); color: var(--text-secondary); }
+
+        /* Upload Section */
+        .upload-section {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .upload-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+
+        .upload-btn:active {
+            transform: scale(0.98);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 16px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Search */
+        .search-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-icon {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        /* Scrollable Table */
+        .table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 0 -16px;
+            padding: 0 16px;
+        }
+
+        /* Quick Stats */
+        .quick-stats {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
+
+        .quick-stat {
+            flex-shrink: 0;
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 12px 16px;
+            min-width: 100px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .quick-stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .quick-stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Info Banner */
+        .info-banner {
+            background: linear-gradient(135deg, var(--accent), #ff6b6b);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+        }
+
+        .info-banner-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .info-banner-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            margin-top: 4px;
+        }
+
+        /* Filter Pills */
+        .filter-pills {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .filter-pill {
+            flex-shrink: 0;
+            padding: 8px 14px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .filter-pill.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        /* Summary Cards */
+        .summary-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .summary-card {
+            flex: 1;
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .summary-card-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .summary-card-value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .summary-card-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Install Banner */
+        .install-banner {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            z-index: 200;
+        }
+
+        .install-banner.show {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .install-banner-text {
+            font-size: 13px;
+        }
+
+        .install-banner-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .install-banner-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>1ª Cápsula Inverno 2026</h1>
+        <div class="subtitle">Análise de Vendas</div>
+        <div class="date" id="current-date"></div>
+    </div>
+
+    <nav class="nav">
+        <button class="nav-btn active" data-screen="dashboard">📊 Resumo</button>
+        <button class="nav-btn" data-screen="vendas">💰 Vendas</button>
+        <button class="nav-btn" data-screen="meta">🎯 Meta 80%</button>
+        <button class="nav-btn" data-screen="ranking">🏆 Ranking</button>
+        <button class="nav-btn" data-screen="campanha">🔥 Campanha</button>
+    </nav>
+
+    <main class="content">
+        <!-- Dashboard Screen -->
+        <section id="dashboard" class="screen active">
+            <div class="info-banner">
+                <div class="info-banner-title">⏱ META ATIVA</div>
+                <div class="info-banner-value" id="meta-banner">Coleção (80%) — R$ 1.750.538,00 | até 31/05/2026</div>
+            </div>
+
+            <div class="section-title">📊 Resumo do Dia</div>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">🛒 Peças Vendidas</div>
+                    <div class="card-value" id="pecas-hoje">200</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">💰 Valor Vendido</div>
+                    <div class="card-value small" id="valor-hoje">R$ 66.792</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🎯 Ticket Médio Hoje</div>
+                <div class="card-value" id="ticket-hoje">R$ 333,96</div>
+            </div>
+
+            <div class="section-title">🏆 Top Vendas do Dia</div>
+            <div id="top-vendas-dia"></div>
+        </section>
+
+        <!-- Vendas Screen -->
+        <section id="vendas" class="screen">
+            <div class="section-title">💰 Controle de Vendas</div>
+
+            <div class="summary-row">
+                <div class="summary-card">
+                    <div class="summary-card-icon">🎯</div>
+                    <div class="summary-card-value" id="meta-valor">R$ 1.05M</div>
+                    <div class="summary-card-label">Meta Lançamento</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-icon">✅</div>
+                    <div class="summary-card-value" id="realizado-valor">R$ 970K</div>
+                    <div class="summary-card-label">Realizado</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-icon">📦</div>
+                    <div class="summary-card-value" id="pecas-vendidas">2.744</div>
+                    <div class="summary-card-label">Peças</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📈 Progresso da Meta</div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill green" id="progress-vendas" style="width: 92.4%"></div>
+                    </div>
+                    <div class="progress-labels">
+                        <span id="progress-percent">92,4% atingido</span>
+                        <span id="falta-vender">Falta: R$ 79.771</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="metric-row">
+                    <span class="metric-label">Ticket Médio</span>
+                    <span class="metric-value" id="ticket-medio">R$ 383,89</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Saldo em Estoque (peças)</span>
+                    <span class="metric-value" id="estoque-pecas">2.956</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Estoque em Valor</span>
+                    <span class="metric-value" id="estoque-valor">R$ 1.206.934</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Meta 80% Screen -->
+        <section id="meta" class="screen">
+            <div class="section-title">🎯 Meta 80% da Coleção</div>
+
+            <div class="card">
+                <div class="card-title">Progresso Geral</div>
+                <div class="card-value" id="meta80-percent">58,2%</div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill yellow" id="progress-meta80" style="width: 58.2%"></div>
+                    </div>
+                    <div class="progress-labels">
+                        <span>R$ 1.019.907 realizados</span>
+                        <span>Meta: R$ 1.751.676</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">📦 Peças Vendidas</div>
+                    <div class="card-value small" id="meta80-pecas">2.913</div>
+                    <div class="card-change" id="meta80-pecas-pct">63,8% do necessário</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">⏳ Dias Restantes</div>
+                    <div class="card-value small" id="meta80-dias">83</div>
+                    <div class="card-change">12 dias decorridos</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="metric-row">
+                    <span class="metric-label">Faturamento Faltante</span>
+                    <span class="metric-value" id="meta80-falta-fat">R$ 731.768</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Peças Faltantes</span>
+                    <span class="metric-value" id="meta80-falta-pecas">1.650</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Ticket Restante</span>
+                    <span class="metric-value" id="meta80-ticket-rest">R$ 443,50</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ranking Screen -->
+        <section id="ranking" class="screen">
+            <div class="section-title">🏆 Aceitação e Rejeição</div>
+
+            <div class="summary-row">
+                <div class="summary-card">
+                    <div class="summary-card-value" id="rank-enviadas">5.704</div>
+                    <div class="summary-card-label">Peças Enviadas</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-value" id="rank-vendidas">2.913</div>
+                    <div class="summary-card-label">Vendas Líquidas</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-value" id="rank-giro">51,1%</div>
+                    <div class="summary-card-label">Giro Médio</div>
+                </div>
+            </div>
+
+            <div class="section-title">🥇 Top 5 Mais Aceitas</div>
+            <div id="top-aceitas"></div>
+
+            <div class="section-title">⚠️ Top 5 Mais Rejeitadas</div>
+            <div id="top-rejeitadas"></div>
+        </section>
+
+        <!-- Campanha Screen -->
+        <section id="campanha" class="screen">
+            <div class="section-title">🔥 Priorizar Vendas</div>
+
+            <div class="filter-pills">
+                <button class="filter-pill active" data-filter="all">Todos</button>
+                <button class="filter-pill" data-filter="excelente">Excelente</button>
+                <button class="filter-pill" data-filter="bom">Bom</button>
+                <button class="filter-pill" data-filter="regular">Regular</button>
+            </div>
+
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-campanha" placeholder="Buscar produto...">
+            </div>
+
+            <div id="lista-campanha"></div>
+        </section>
+    </main>
+
+    <div class="install-banner" id="install-banner">
+        <span class="install-banner-text">📱 Instalar app</span>
+        <button class="install-banner-btn" id="install-btn">Instalar</button>
+        <button class="install-banner-close" id="close-banner">✕</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // Data Storage
+        let appData = {
+            resumoDia: [],
+            ticketMedio: [],
+            controleVendas: [],
+            meta80: [],
+            aceitacao: [],
+            campanha: []
+        };
+
+        // Format Currency
+        function formatCurrency(value) {
+            if (typeof value !== 'number' || isNaN(value)) return 'R$ 0';
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        function formatCurrencyFull(value) {
+            if (typeof value !== 'number' || isNaN(value)) return 'R$ 0,00';
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+
+        function formatPercent(value) {
+            if (typeof value !== 'number' || isNaN(value)) return '0%';
+            return (value * 100).toFixed(1) + '%';
+        }
+
+        function formatNumber(value) {
+            if (typeof value !== 'number' || isNaN(value)) return '0';
+            return new Intl.NumberFormat('pt-BR').format(value);
+        }
+
+        // Navigation
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(btn.dataset.screen).classList.add('active');
+            });
+        });
+
+        // Filter Pills
+        document.querySelectorAll('.filter-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                renderCampanha(pill.dataset.filter);
+            });
+        });
+
+        // Search
+        document.getElementById('search-campanha')?.addEventListener('input', (e) => {
+            const filter = document.querySelector('.filter-pill.active')?.dataset.filter || 'all';
+            renderCampanha(filter, e.target.value);
+        });
+
+        // Render Functions
+        function renderTopVendasDia() {
+            const container = document.getElementById('top-vendas-dia');
+            if (!container) return;
+            
+            const topItems = appData.resumoDia.slice(0, 5);
+            
+            container.innerHTML = topItems.map((item, index) => `
+                <div class="product-item">
+                    <div class="product-header">
+                        <div>
+                            <div class="product-ref">${item.referencia || ''}</div>
+                            <div class="product-name">${item.descricao || ''}</div>
+                        </div>
+                        <div class="rank-number ${index < 3 ? 'rank-' + (index + 1) : 'rank-default'}">${index + 1}</div>
+                    </div>
+                    <div class="product-stats">
+                        <div class="product-stat">
+                            <span class="product-stat-label">Peças: </span>
+                            <span class="product-stat-value">${item.pecas || 0}</span>
+                        </div>
+                        <div class="product-stat">
+                            <span class="product-stat-label">Valor: </span>
+                            <span class="product-stat-value">${formatCurrency(item.valor)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTopAceitas() {
+            const container = document.getElementById('top-aceitas');
+            if (!container) return;
+            
+            const topItems = appData.aceitacao
+                .filter(item => item.aceitacao > 0)
+                .sort((a, b) => b.aceitacao - a.aceitacao)
+                .slice(0, 5);
+            
+            container.innerHTML = topItems.map((item, index) => `
+                <div class="product-item">
+                    <div class="product-header">
+                        <div>
+                            <div class="product-ref">${item.referencia}</div>
+                            <div class="product-name">${item.descricao}</div>
+                        </div>
+                        <div class="rank-number ${index < 3 ? 'rank-' + (index + 1) : 'rank-default'}">${index + 1}</div>
+                    </div>
+                    <div class="product-stats">
+                        <div class="product-stat">
+                            <span class="product-stat-label">Aceitação: </span>
+                            <span class="product-stat-value" style="color: var(--success)">${formatPercent(item.aceitacao)}</span>
+                        </div>
+                        <div class="product-stat">
+                            <span class="product-stat-label">Vendas: </span>
+                            <span class="product-stat-value">${item.vendasLiquidas}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTopRejeitadas() {
+            const container = document.getElementById('top-rejeitadas');
+            if (!container) return;
+            
+            const topItems = appData.aceitacao
+                .filter(item => item.rejeicao > 0)
+                .sort((a, b) => b.rejeicao - a.rejeicao)
+                .slice(0, 5);
+            
+            if (topItems.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div>Sem devoluções significativas</div></div>';
+                return;
+            }
+            
+            container.innerHTML = topItems.map((item, index) => `
+                <div class="product-item">
+                    <div class="product-header">
+                        <div>
+                            <div class="product-ref">${item.referencia}</div>
+                            <div class="product-name">${item.descricao}</div>
+                        </div>
+                        <span class="status-badge status-critico">${formatPercent(item.rejeicao)}</span>
+                    </div>
+                    <div class="product-stats">
+                        <div class="product-stat">
+                            <span class="product-stat-label">Devoluções: </span>
+                            <span class="product-stat-value">${item.devolucoes}</span>
+                        </div>
+                        <div class="product-stat">
+                            <span class="product-stat-label">Vendas: </span>
+                            <span class="product-stat-value">${item.vendidoBruto}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCampanha(filter = 'all', search = '') {
+            const container = document.getElementById('lista-campanha');
+            if (!container) return;
+            
+            let items = appData.campanha;
+            
+            if (filter !== 'all') {
+                items = items.filter(item => item.status?.toLowerCase() === filter);
+            }
+            
+            if (search) {
+                const searchLower = search.toLowerCase();
+                items = items.filter(item => 
+                    item.referencia?.toLowerCase().includes(searchLower) ||
+                    item.descricao?.toLowerCase().includes(searchLower)
+                );
+            }
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📦</div><div>Nenhum produto encontrado</div></div>';
+                return;
+            }
+            
+            container.innerHTML = items.map((item, index) => {
+                const statusClass = item.status?.toLowerCase() === 'excelente' ? 'status-excelente' :
+                                   item.status?.toLowerCase() === 'bom' ? 'status-bom' : 'status-regular';
+                return `
+                    <div class="product-item">
+                        <div class="product-header">
+                            <div>
+                                <div class="product-ref">${item.referencia}</div>
+                                <div class="product-name">${item.descricao}</div>
+                            </div>
+                            <div class="product-price">${formatCurrencyFull(item.preco)}</div>
+                        </div>
+                        <div class="product-stats">
+                            <div class="product-stat">
+                                <span class="product-stat-label">Estoque: </span>
+                                <span class="product-stat-value">${item.estoqueAtual}/${item.estoqueEnviado}</span>
+                            </div>
+                            <div class="product-stat">
+                                <span class="product-stat-label">Giro: </span>
+                                <span class="product-stat-value">${formatPercent(item.giro)}</span>
+                            </div>
+                            <div class="product-stat">
+                                <span class="product-stat-label">Hoje: </span>
+                                <span class="product-stat-value">${item.vendasHoje || 0}</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 8px">
+                            <span class="status-badge ${statusClass}">${item.status}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Load Embedded Data
+        function loadEmbeddedData() {
+            // Resumo do Dia data
+            appData.resumoDia = [
+                { referencia: 'CLI26005', descricao: 'CALCA ALFAIATARIA NERVURA', pecas: 35, valor: 9500.77 },
+                { referencia: 'BDI26005', descricao: 'BODY BASIC ISA PAES', pecas: 19, valor: 4501.11 },
+                { referencia: 'SAI26003', descricao: 'SAIA MIDI PEPLUM', pecas: 15, valor: 4290.72 },
+                { referencia: 'BZI26003', descricao: 'BLAZER ALFAIATARIA BASIC ISA PAES', pecas: 11, valor: 5108.09 },
+                { referencia: 'BDI26004', descricao: 'BODY BASIC TULE MANGA', pecas: 10, valor: 1672.35 },
+                { referencia: 'CLI26001', descricao: 'CALCA ALFAIATARIA BARRA ITALIANA', pecas: 9, valor: 2590.46 },
+                { referencia: 'SHI26002', descricao: 'SHORT CURTO ALFAIATARIA BASIC', pecas: 9, valor: 1968.43 },
+                { referencia: 'BLI26006', descricao: 'BLUSA TOP PEPLUM DETALHE DECOTE', pecas: 8, valor: 2443.18 },
+                { referencia: 'BLI26013', descricao: 'BLUSA BASIC REGATA ISA PAES', pecas: 8, valor: 787.50 },
+                { referencia: 'BLI26029', descricao: 'BLUSA BASIC MANGA RENDA', pecas: 5, valor: 737.26 }
+            ];
+
+            // Aceitação data
+            appData.aceitacao = [
+                { referencia: 'BDI26003', descricao: 'BODY BASIC RENDA', preco: 239.9, enviado: 65, estoqueAtual: 1, vendidoBruto: 63, devolucoes: 0, vendasLiquidas: 64, aceitacao: 0.984615, rejeicao: 0 },
+                { referencia: 'BLI26010', descricao: 'BLUSA BASIC MANGA RENDA', preco: 149.9, enviado: 80, estoqueAtual: 3, vendidoBruto: 77, devolucoes: 0, vendasLiquidas: 77, aceitacao: 0.9625, rejeicao: 0 },
+                { referencia: 'CLI26003', descricao: 'CALCA ALFAIATARIA VIES', preco: 399.9, enviado: 109, estoqueAtual: 4, vendidoBruto: 104, devolucoes: 2, vendasLiquidas: 105, aceitacao: 0.963303, rejeicao: 0.019231 },
+                { referencia: 'BLI26029', descricao: 'BLUSA BASIC MANGA RENDA', preco: 149.9, enviado: 51, estoqueAtual: 0, vendidoBruto: 47, devolucoes: 0, vendasLiquidas: 52, aceitacao: 1.019608, rejeicao: 0 },
+                { referencia: 'BLI26013', descricao: 'BLUSA BASIC REGATA ISA PAES', preco: 99.9, enviado: 259, estoqueAtual: 13, vendidoBruto: 238, devolucoes: 0, vendasLiquidas: 246, aceitacao: 0.949807, rejeicao: 0 },
+                { referencia: 'BDI26011', descricao: 'BODY TRICOT DECOTE V', preco: 219.9, enviado: 63, estoqueAtual: 46, vendidoBruto: 17, devolucoes: 1, vendasLiquidas: 17, aceitacao: 0.269841, rejeicao: 0.058824 }
+            ];
+
+            // Campanha data
+            appData.campanha = [
+                { referencia: 'CLI26008', descricao: 'CALCA JEANS PAETE', preco: 599.9, estoqueEnviado: 66, estoqueAtual: 13, vendasLiquidas: 53, giro: 0.80303, ranking: 9, status: 'Excelente', vendasHoje: 1 },
+                { referencia: 'BZI26002', descricao: 'BLAZER ALFAIATARIA VIES', preco: 579.9, estoqueEnviado: 148, estoqueAtual: 32, vendasLiquidas: 116, giro: 0.783784, ranking: 10, status: 'Excelente', vendasHoje: 3 },
+                { referencia: 'CLI26006', descricao: 'CALCA STREET ALFAIATARIA MESCLA', preco: 469.9, estoqueEnviado: 91, estoqueAtual: 18, vendasLiquidas: 73, giro: 0.802198, ranking: 8, status: 'Excelente', vendasHoje: 1 },
+                { referencia: 'CLI26003', descricao: 'CALCA ALFAIATARIA VIES', preco: 399.9, estoqueEnviado: 109, estoqueAtual: 4, vendasLiquidas: 105, giro: 0.963303, ranking: 3, status: 'Excelente', vendasHoje: 3 },
+                { referencia: 'CAI26006', descricao: 'CAMISA ALFAIATARIA ESTAMPADA', preco: 299.9, estoqueEnviado: 80, estoqueAtual: 9, vendasLiquidas: 71, giro: 0.8875, ranking: 7, status: 'Excelente', vendasHoje: 5 },
+                { referencia: 'BDI26003', descricao: 'BODY BASIC RENDA', preco: 239.9, estoqueEnviado: 65, estoqueAtual: 1, vendasLiquidas: 64, giro: 0.984615, ranking: 1, status: 'Excelente', vendasHoje: 1 },
+                { referencia: 'BLI26010', descricao: 'BLUSA BASIC MANGA RENDA', preco: 149.9, estoqueEnviado: 80, estoqueAtual: 3, vendasLiquidas: 77, giro: 0.9625, ranking: 2, status: 'Excelente', vendasHoje: 0 },
+                { referencia: 'BLI26019', descricao: 'BLUSA BASIC MANGA RENDA', preco: 149.9, estoqueEnviado: 55, estoqueAtual: 8, vendasLiquidas: 47, giro: 0.854545, ranking: 6, status: 'Excelente', vendasHoje: 0 },
+                { referencia: 'BLI26029', descricao: 'BLUSA BASIC MANGA RENDA', preco: 149.9, estoqueEnviado: 51, estoqueAtual: 0, vendasLiquidas: 52, giro: 1.019608, ranking: 4, status: 'Excelente', vendasHoje: 5 },
+                { referencia: 'BLI26013', descricao: 'BLUSA BASIC REGATA ISA PAES', preco: 99.9, estoqueEnviado: 259, estoqueAtual: 13, vendasLiquidas: 246, giro: 0.949807, ranking: 5, status: 'Excelente', vendasHoje: 8 },
+                { referencia: 'BZI26001', descricao: 'BLAZER ALFAIATARIA TELA BORDADA', preco: 659.9, estoqueEnviado: 69, estoqueAtual: 27, vendasLiquidas: 42, giro: 0.608696, ranking: 16, status: 'Bom', vendasHoje: 2 },
+                { referencia: 'CJI26013', descricao: 'CONJUNTO ALFAIATARIA BLUSA CAPA', preco: 649.9, estoqueEnviado: 87, estoqueAtual: 37, vendasLiquidas: 50, giro: 0.574713, ranking: 18, status: 'Bom', vendasHoje: 2 },
+                { referencia: 'VEI26025', descricao: 'VESTIDO LONGO ESTAMPADO PALA LASTEX', preco: 639.9, estoqueEnviado: 100, estoqueAtual: 46, vendasLiquidas: 54, giro: 0.54, ranking: 19, status: 'Bom', vendasHoje: 3 },
+                { referencia: 'JAI26002', descricao: 'JAQUETA ALFAIATARIA MESCLA', preco: 639.9, estoqueEnviado: 116, estoqueAtual: 38, vendasLiquidas: 78, giro: 0.672414, ranking: 13, status: 'Bom', vendasHoje: 3 },
+                { referencia: 'BLI26011', descricao: 'BLUSA TOP PEPLUM JEANS PAETE', preco: 369.9, estoqueEnviado: 64, estoqueAtual: 26, vendasLiquidas: 38, giro: 0.59375, ranking: 17, status: 'Bom', vendasHoje: 1 }
+            ];
+
+            // Update UI
+            updateUI();
+        }
+
+        function updateUI() {
+            // Update date
+            const dateEl = document.getElementById('current-date');
+            if (dateEl) {
+                dateEl.textContent = new Date().toLocaleDateString('pt-BR', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            }
+
+            // Dashboard
+            document.getElementById('pecas-hoje').textContent = '200';
+            document.getElementById('valor-hoje').textContent = 'R$ 66.792';
+            document.getElementById('ticket-hoje').textContent = 'R$ 333,96';
+
+            // Vendas
+            document.getElementById('meta-valor').textContent = 'R$ 1,05M';
+            document.getElementById('realizado-valor').textContent = 'R$ 970K';
+            document.getElementById('pecas-vendidas').textContent = '2.744';
+            document.getElementById('ticket-medio').textContent = 'R$ 383,89';
+            document.getElementById('estoque-pecas').textContent = '2.956';
+            document.getElementById('estoque-valor').textContent = 'R$ 1.206.934';
+            document.getElementById('progress-vendas').style.width = '92.4%';
+            document.getElementById('progress-percent').textContent = '92,4% atingido';
+            document.getElementById('falta-vender').textContent = 'Falta: R$ 79.771';
+
+            // Meta 80%
+            document.getElementById('meta80-percent').textContent = '58,2%';
+            document.getElementById('meta80-pecas').textContent = '2.913';
+            document.getElementById('meta80-pecas-pct').textContent = '63,8% do necessário';
+            document.getElementById('meta80-dias').textContent = '83';
+            document.getElementById('meta80-falta-fat').textContent = 'R$ 731.768';
+            document.getElementById('meta80-falta-pecas').textContent = '1.650';
+            document.getElementById('meta80-ticket-rest').textContent = 'R$ 443,50';
+            document.getElementById('progress-meta80').style.width = '58.2%';
+
+            // Ranking
+            document.getElementById('rank-enviadas').textContent = '5.704';
+            document.getElementById('rank-vendidas').textContent = '2.913';
+            document.getElementById('rank-giro').textContent = '51,1%';
+
+            // Render lists
+            renderTopVendasDia();
+            renderTopAceitas();
+            renderTopRejeitadas();
+            renderCampanha();
+        }
+
+        // PWA Install
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-banner').classList.add('show');
+        });
+
+        document.getElementById('install-btn')?.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                document.getElementById('install-banner').classList.remove('show');
+            }
+        });
+
+        document.getElementById('close-banner')?.addEventListener('click', () => {
+            document.getElementById('install-banner').classList.remove('show');
+        });
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEmbeddedData();
+        });
+    </script>
+</body>
+</html>
