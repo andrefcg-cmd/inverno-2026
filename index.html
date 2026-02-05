@@ -174,15 +174,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-toggle.active .geo-toggle-knob{transform:translateX(18px)}
 .geo-input-section{display:flex;flex-direction:column;gap:10px}
 .geo-input-wrap{position:relative}
-.geo-address-input{width:100%;padding:12px 50px 12px 14px;background:var(--card2);border:1px solid var(--brd);border-radius:12px;color:var(--txt);font-size:14px}
+.geo-address-input{width:100%;padding:12px 14px;background:var(--card2);border:1px solid var(--brd);border-radius:12px;color:var(--txt);font-size:14px}
 .geo-address-input::placeholder{color:var(--txt2)}
 .geo-address-input:focus{outline:none;border-color:var(--accent)}
-.geo-add-btn{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:34px;height:34px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.geo-add-btn:active{transform:translateY(-50%) scale(0.95)}
-.geo-add-btn:disabled{opacity:.5;cursor:not-allowed}
-.geo-add-btn.loading{pointer-events:none}
-.geo-add-btn.loading::after{content:'';width:14px;height:14px;border:2px solid transparent;border-top-color:#fff;border-radius:50%;animation:geoSpin .6s linear infinite}
-@keyframes geoSpin{to{transform:rotate(360deg)}}
+.geo-suggestions{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--brd);border-radius:10px;margin-top:4px;max-height:200px;overflow-y:auto;z-index:100;display:none}
+.geo-suggestions.active{display:block}
+.geo-suggestion-item{padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--brd);transition:background .2s}
+.geo-suggestion-item:last-child{border-bottom:none}
+.geo-suggestion-item:hover,.geo-suggestion-item.selected{background:var(--card2)}
+.geo-suggestion-item strong{color:var(--accent)}
 .geo-locs-section{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
 .geo-locs-header{display:flex;align-items:center;justify-content:space-between}
 .geo-locs-title{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
@@ -251,11 +251,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-api-btn:active{opacity:.85}
 .geo-api-note{margin-top:12px;padding:10px;background:rgba(255,193,7,.1);border-radius:8px;font-size:11px;color:#ffc107}
 .geo-api-note a{color:#e94560;text-decoration:none}
-.geo-progress-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1002;gap:16px}
-.geo-progress-overlay.hidden{display:none}
-.geo-progress-text{font-size:14px;color:var(--txt)}
-.geo-progress-bar{width:200px;height:6px;background:var(--card2);border-radius:3px;overflow:hidden}
-.geo-progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .3s ease;width:0}
 </style></head><body>
 
 <!-- SPLASH -->
@@ -355,7 +350,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
                 <div class="geo-settings-row">
                     <label>Distância mínima:</label>
                     <div class="geo-dist-group">
-                        <input type="number" class="geo-dist-input" id="geoMinDistance" value="2" min="0.1" step="0.1">
+                        <input type="number" class="geo-dist-input" id="geoMinDistance" value="0.5" min="0.1" step="0.1">
                         <span class="geo-unit">km</span>
                     </div>
                 </div>
@@ -368,8 +363,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
             </div>
             <div class="geo-input-section">
                 <div class="geo-input-wrap">
-                    <input type="text" class="geo-address-input" id="geoAddressInput" placeholder="Digite um endereço..." onkeypress="geoHandleKey(event)">
-                    <button class="geo-add-btn" id="geoAddBtn" onclick="geoAddLocation()">+</button>
+                    <input type="text" class="geo-address-input" id="geoSearchInput" placeholder="🔍 Buscar por nome, bairro, cidade, estado ou CEP..." oninput="geoFilterLocations()" autocomplete="off">
+                    <div class="geo-suggestions" id="geoSuggestions"></div>
                 </div>
             </div>
             <div class="geo-locs-section">
@@ -412,10 +407,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </div>
 </div>
 <div class="geo-toast-container" id="geoToastContainer"></div>
-<div class="geo-progress-overlay hidden" id="geoProgressOverlay">
-    <div class="geo-progress-text" id="geoProgressText">Processando...</div>
-    <div class="geo-progress-bar"><div class="geo-progress-fill" id="geoProgressFill"></div></div>
-</div>
 
 <!-- DEV: COMPRAS -->
 <div class="dev-screen" id="dev-compras">
@@ -750,68 +741,47 @@ function geoInitMap(){
     geoGeocoder=new google.maps.Geocoder();
     geoMapInitialized=true;
     
-    // Forçar redimensionamento após renderização
-    setTimeout(()=>{
-        google.maps.event.trigger(geoMap,'resize');
-        geoMap.setCenter({lat:-19.9167,lng:-43.9345});
-    },300);
+    // Carregar locais da base (instantâneo, sem geocodificação)
+    geoLocations = JSON.parse(JSON.stringify(GEO_BASE_LOCATIONS));
+    const minDist = parseFloat(document.getElementById('geoMinDistance').value) || 2;
     
-    // Carregar endereços salvos ou carregar da base automaticamente
-    const saved=localStorage.getItem('geo_locations');
-    if(saved && JSON.parse(saved).length > 0){
-        geoLocations=JSON.parse(saved);
-        geoLocations.forEach((loc,i)=>geoCreateMarker(loc,i));
-        geoUpdateUI();
-        setTimeout(()=>geoFitBounds(),500);
-    } else {
-        // Carregar base automaticamente se não houver dados salvos
-        setTimeout(()=>geoLoadBaseAddresses(),500);
-    }
-}
-
-function geoHandleKey(e){if(e.key==='Enter')geoAddLocation()}
-
-async function geoAddLocation(){
-    const input=document.getElementById('geoAddressInput');
-    const address=input.value.trim();
-    if(!address){geoShowToast('Digite um endereço','warning');return}
-    const btn=document.getElementById('geoAddBtn');
-    btn.disabled=true;btn.classList.add('loading');btn.textContent='';
-    try{
-        const result=await geoGeocode(address);
-        const minDist=parseFloat(document.getElementById('geoMinDistance').value)||2;
-        const conflicts=geoCheckConflicts(result.lat,result.lng,minDist);
-        const newLoc={id:Date.now(),address:result.address,lat:result.lat,lng:result.lng,bypass:false,conflicts:conflicts};
-        geoLocations.push(newLoc);
-        geoCreateMarker(newLoc,geoLocations.length-1);
-        geoSaveLocations();
-        geoUpdateUI();
-        input.value='';
-        if(conflicts.length>0){geoShowToast(`Adicionado com ${conflicts.length} conflito(s)`,'warning')}
-        else{geoShowToast('Local adicionado!','success')}
-        geoFitBounds();
-    }catch(err){geoShowToast(err.message,'error')}
-    finally{btn.disabled=false;btn.classList.remove('loading');btn.textContent='+'}
-}
-
-function geoGeocode(address){
-    return new Promise((resolve,reject)=>{
-        geoGeocoder.geocode({address:address},(results,status)=>{
-            if(status==='OK'&&results[0]){
-                resolve({address:results[0].formatted_address,lat:results[0].geometry.location.lat(),lng:results[0].geometry.location.lng()});
-            }else{reject(new Error('Endereço não encontrado'))}
-        });
+    // Calcular conflitos
+    geoLocations.forEach(loc => {
+        loc.conflicts = geoCheckConflictsLocal(loc.lat, loc.lng, minDist, loc.id);
     });
+    
+    // Criar marcadores
+    geoLocations.forEach((loc, i) => geoCreateMarker(loc, i));
+    geoUpdateUI();
+    
+    // Ajustar zoom
+    setTimeout(() => {
+        google.maps.event.trigger(geoMap, 'resize');
+        geoFitBounds();
+    }, 300);
 }
 
-function geoCheckConflicts(lat,lng,minDist,excludeId=null){
-    const conflicts=[];
-    const point=new google.maps.LatLng(lat,lng);
-    geoLocations.forEach(loc=>{
-        if(excludeId&&loc.id===excludeId)return;
-        const locPoint=new google.maps.LatLng(loc.lat,loc.lng);
-        const dist=google.maps.geometry.spherical.computeDistanceBetween(point,locPoint)/1000;
-        if(dist<minDist){conflicts.push({id:loc.id,distance:dist.toFixed(2)})}
+// Verificar conflitos sem usar Google Maps API
+function geoCheckConflictsLocal(lat, lng, minDist, excludeId) {
+    const conflicts = [];
+    const toRad = x => x * Math.PI / 180;
+    
+    geoLocations.forEach(loc => {
+        if (excludeId && loc.id === excludeId) return;
+        
+        // Fórmula de Haversine
+        const R = 6371; // km
+        const dLat = toRad(loc.lat - lat);
+        const dLng = toRad(loc.lng - lng);
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(toRad(lat)) * Math.cos(toRad(loc.lat)) *
+                  Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const dist = R * c;
+        
+        if (dist < minDist) {
+            conflicts.push({id: loc.id, distance: dist.toFixed(2)});
+        }
     });
     return conflicts;
 }
@@ -823,12 +793,23 @@ function geoCreateMarker(loc,index){
     if(isBypassed)color='#ffc107';
     else if(isConflict)color='#ff4757';
     else color='#00d9a5';
+    
+    // SVG do pin
+    const pinSvg = {
+        path: 'M12 0C7.58 0 4 3.58 4 8c0 5.25 8 13 8 13s8-7.75 8-13c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z',
+        fillColor: color,
+        fillOpacity: 1,
+        strokeColor: '#fff',
+        strokeWeight: 2,
+        scale: 1.8,
+        anchor: new google.maps.Point(12, 21)
+    };
+    
     const marker=new google.maps.Marker({
         position:{lat:loc.lat,lng:loc.lng},
         map:geoMap,
-        title:loc.address,
-        label:{text:String(index+1),color:'#000',fontWeight:'bold',fontSize:'11px'},
-        icon:{path:google.maps.SymbolPath.CIRCLE,scale:12,fillColor:color,fillOpacity:1,strokeColor:'#fff',strokeWeight:2}
+        title:loc.nome || loc.address,
+        icon: pinSvg
     });
     marker.locationId=loc.id;
     geoMarkers.push(marker);
@@ -950,95 +931,89 @@ function geoShowToast(msg,type='info'){
     setTimeout(()=>{toast.style.animation='geoToastIn .3s ease reverse';setTimeout(()=>toast.remove(),300)},3000);
 }
 
-// Base de endereços pré-definida
-const GEO_BASE_ADDRESSES = [
-    {codigo: 1, nome: 'Showroom ISA|PAES', logradouro: 'Rua Safira', numero: 541, bairro: 'Prado', municipio: 'Belo Horizonte', estado: 'MG', cep: '30411-127'},
-    {codigo: 2, nome: 'Fábrica ISA|PAES', logradouro: 'Rua Ituiutaba', numero: 401, bairro: 'Prado', municipio: 'Belo Horizonte', estado: 'MG', cep: '30411-023'},
-    {codigo: 3, nome: 'Outlet ISA|PAES', logradouro: 'Rua Cuiabá', numero: 586, bairro: 'Prado', municipio: 'Belo Horizonte', estado: 'MG', cep: '30411-213'}
+// Base de endereços com coordenadas fixas
+const GEO_BASE_LOCATIONS = [
+    {id: 1, nome: 'Showroom ISA|PAES', address: 'R. Safira, 541 - Prado, Belo Horizonte - MG, 30411-127, Brasil', bairro: 'Prado', cidade: 'Belo Horizonte', estado: 'MG', cep: '30411-127', lat: -19.927388, lng: -43.963786, bypass: false, conflicts: []},
+    {id: 2, nome: 'Fábrica ISA|PAES', address: 'R. Ituiutaba, 401 - Prado, Belo Horizonte - MG, 30411-023, Brasil', bairro: 'Prado', cidade: 'Belo Horizonte', estado: 'MG', cep: '30411-023', lat: -19.919356, lng: -43.960834, bypass: false, conflicts: []},
+    {id: 3, nome: 'Outlet ISA|PAES', address: 'R. Cuiabá, 586 - Prado, Belo Horizonte - MG, 30411-213, Brasil', bairro: 'Prado', cidade: 'Belo Horizonte', estado: 'MG', cep: '30411-213', lat: -19.928356, lng: -43.963672, bypass: false, conflicts: []}
 ];
 
-function geoFormatAddress(item) {
-    return `${item.logradouro}, ${item.numero} - ${item.bairro}, ${item.municipio} - ${item.estado}, ${item.cep}`;
-}
-
-async function geoLoadBaseAddresses() {
-    if (!geoMapInitialized) {
-        geoShowToast('Aguarde o mapa carregar', 'warning');
-        return;
-    }
-    if (GEO_BASE_ADDRESSES.length === 0) {
-        geoShowToast('Nenhum endereço na base', 'warning');
-        return;
-    }
-    await geoProcessAddressList(GEO_BASE_ADDRESSES);
-}
-
-async function geoProcessAddressList(addresses) {
-    const overlay = document.getElementById('geoProgressOverlay');
-    const progressText = document.getElementById('geoProgressText');
-    const progressFill = document.getElementById('geoProgressFill');
+// Filtrar locais com autocomplete
+function geoFilterLocations() {
+    const input = document.getElementById('geoSearchInput');
+    const search = input.value.toLowerCase().trim();
+    const suggestions = document.getElementById('geoSuggestions');
     
-    overlay.classList.remove('hidden');
-    progressFill.style.width = '0%';
-    
-    const minDist = parseFloat(document.getElementById('geoMinDistance').value) || 2;
-    let added = 0, skipped = 0, errors = 0;
-
-    for (let i = 0; i < addresses.length; i++) {
-        const item = addresses[i];
-        const fullAddress = geoFormatAddress(item);
-        const progress = ((i + 1) / addresses.length) * 100;
-        
-        progressText.textContent = `Processando ${i + 1}/${addresses.length}: ${item.nome || fullAddress.substring(0, 30)}...`;
-        progressFill.style.width = progress + '%';
-
-        // Verificar se já existe
-        const exists = geoLocations.some(l => 
-            l.address.toLowerCase().includes(item.logradouro.toLowerCase()) &&
-            l.address.includes(String(item.numero))
+    if (!search) {
+        // Mostrar todos e esconder sugestões
+        suggestions.classList.remove('active');
+        geoLocations = JSON.parse(JSON.stringify(GEO_BASE_LOCATIONS));
+    } else {
+        // Filtrar por nome, bairro, cidade, estado ou CEP
+        const filtered = GEO_BASE_LOCATIONS.filter(loc => 
+            loc.nome.toLowerCase().includes(search) ||
+            loc.bairro.toLowerCase().includes(search) ||
+            loc.cidade.toLowerCase().includes(search) ||
+            loc.estado.toLowerCase().includes(search) ||
+            loc.cep.includes(search) ||
+            loc.address.toLowerCase().includes(search)
         );
-
-        if (exists) {
-            skipped++;
-            continue;
-        }
-
-        try {
-            const result = await geoGeocode(fullAddress);
-            const conflicts = geoCheckConflicts(result.lat, result.lng, minDist);
-            
-            const newLoc = {
-                id: Date.now() + i,
-                address: result.address,
-                nome: item.nome || '',
-                lat: result.lat,
-                lng: result.lng,
-                bypass: false,
-                conflicts: conflicts
-            };
-
-            geoLocations.push(newLoc);
-            geoCreateMarker(newLoc, geoLocations.length - 1);
-            added++;
-            
-            // Pequena pausa para não sobrecarregar a API
-            await new Promise(r => setTimeout(r, 300));
-            
-        } catch (err) {
-            console.warn('Erro ao geocodificar:', fullAddress, err);
-            errors++;
+        
+        geoLocations = filtered.map(loc => JSON.parse(JSON.stringify(loc)));
+        
+        // Mostrar sugestões de nomes
+        const nameMatches = GEO_BASE_LOCATIONS.filter(loc => 
+            loc.nome.toLowerCase().includes(search)
+        );
+        
+        if (nameMatches.length > 0 && search.length >= 1) {
+            suggestions.innerHTML = nameMatches.map(loc => {
+                const highlighted = loc.nome.replace(
+                    new RegExp(`(${search})`, 'gi'), 
+                    '<strong>$1</strong>'
+                );
+                return `<div class="geo-suggestion-item" onclick="geoSelectSuggestion('${loc.nome}')">${highlighted}<br><small style="color:var(--txt2)">${loc.bairro}, ${loc.cidade}</small></div>`;
+            }).join('');
+            suggestions.classList.add('active');
+        } else {
+            suggestions.classList.remove('active');
         }
     }
-
-    overlay.classList.add('hidden');
-    geoSaveLocations();
-    geoUpdateUI();
-    geoFitBounds();
-
-    let msg = `${added} adicionado(s)`;
-    if (skipped > 0) msg += `, ${skipped} já existia(m)`;
-    if (errors > 0) msg += `, ${errors} erro(s)`;
     
-    geoShowToast(msg, errors > 0 ? 'warning' : 'success');
+    // Recalcular conflitos
+    const minDist = parseFloat(document.getElementById('geoMinDistance').value) || 0.5;
+    geoLocations.forEach(loc => {
+        loc.conflicts = geoCheckConflictsLocal(loc.lat, loc.lng, minDist, loc.id);
+    });
+    
+    // Atualizar marcadores
+    geoMarkers.forEach(m => m.setMap(null));
+    geoCircles.forEach(c => c.setMap(null));
+    geoMarkers = [];
+    geoCircles = [];
+    geoLocations.forEach((loc, i) => geoCreateMarker(loc, i));
+    geoUpdateUI();
+    
+    if (geoLocations.length > 0) {
+        geoFitBounds();
+    }
 }
+
+// Selecionar sugestão
+function geoSelectSuggestion(nome) {
+    const input = document.getElementById('geoSearchInput');
+    const suggestions = document.getElementById('geoSuggestions');
+    input.value = nome;
+    suggestions.classList.remove('active');
+    geoFilterLocations();
+}
+
+// Fechar sugestões ao clicar fora
+document.addEventListener('click', function(e) {
+    const suggestions = document.getElementById('geoSuggestions');
+    const input = document.getElementById('geoSearchInput');
+    if (suggestions && !suggestions.contains(e.target) && e.target !== input) {
+        suggestions.classList.remove('active');
+    }
+});
 </script></body></html>
