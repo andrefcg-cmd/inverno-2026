@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 <meta name="theme-color" content="#000000"><meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Isa Paes"><link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-title" content="Isa Paes"><link rel="manifest" href="/inverno-2026/manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png"><title>Isa Paes</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -202,5 +202,5 @@ function rP(s=''){let items=P;if(s){const q=s.toLowerCase();items=items.filter(x
 document.getElementById('lp').innerHTML=items.map(t=>{const sc=t.status==='Excelente'?'status-excelente':'status-bom';return`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="product-price">${fCF(t.preco)}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}/${t.estoqueEnviado}</span></div><div class="product-stat"><span class="product-stat-label">Giro: </span><span class="product-stat-value">${fP(t.giro)}</span></div><div class="product-stat"><span class="product-stat-label">Hoje: </span><span class="product-stat-value">${t.vendasHoje}</span></div></div><div style="margin-top:8px"><span class="status-badge ${sc}">${t.status}</span></div></div>`}).join('')}rP();
 document.getElementById('lf').innerHTML=F.map(t=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="product-price">${fCF(t.preco)}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}/${t.estoqueEnviado}</span></div><div class="product-stat"><span class="product-stat-label">Giro: </span><span class="product-stat-value">${fP(t.giro)}</span></div><div class="product-stat"><span class="product-stat-label">Hoje: </span><span class="product-stat-value">${t.vendasHoje}</span></div></div><div style="margin-top:8px"><span class="status-badge status-fotos">📷 Fotos ISA</span></div></div>`).join('');
 document.getElementById('sc')?.addEventListener('input',e=>rP(e.target.value));
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/inverno-2026/sw.js',{scope:'/inverno-2026/'}).catch(()=>{})}
 </script></body></html>
