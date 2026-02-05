@@ -177,6 +177,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-address-input{width:100%;padding:12px 14px;background:var(--card2);border:1px solid var(--brd);border-radius:12px;color:var(--txt);font-size:14px}
 .geo-address-input::placeholder{color:var(--txt2)}
 .geo-address-input:focus{outline:none;border-color:var(--accent)}
+.geo-suggestions{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--brd);border-radius:10px;margin-top:4px;max-height:200px;overflow-y:auto;z-index:100;display:none}
+.geo-suggestions.active{display:block}
+.geo-suggestion-item{padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--brd);transition:background .2s}
+.geo-suggestion-item:last-child{border-bottom:none}
+.geo-suggestion-item:hover{background:var(--card2)}
+.geo-suggestion-item strong{color:var(--accent)}
+.geo-suggestion-item small{color:var(--txt2)}
 .geo-locs-section{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
 .geo-locs-header{display:flex;align-items:center;justify-content:space-between}
 .geo-locs-title{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
@@ -372,7 +379,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <aside class="geo-sidebar">
             <div class="geo-input-section">
                 <div class="geo-input-wrap">
-                    <input type="text" class="geo-address-input" id="geoSearchInput" placeholder="🔍 Buscar por nome, bairro, cidade, estado ou CEP..." oninput="geoFilterLocations()">
+                    <input type="text" class="geo-address-input" id="geoSearchInput" placeholder="🔍 Buscar por nome, bairro, cidade, estado ou CEP..." oninput="geoFilterLocations()" autocomplete="off">
+                    <div class="geo-suggestions" id="geoSuggestions"></div>
                 </div>
             </div>
             <div class="geo-sidebar-row">
@@ -944,9 +952,11 @@ const GEO_BASE_LOCATIONS = [
 // Filtrar locais
 function geoFilterLocations() {
     const search = document.getElementById('geoSearchInput').value.toLowerCase().trim();
+    const suggestions = document.getElementById('geoSuggestions');
     
     if (!search) {
         geoLocations = JSON.parse(JSON.stringify(GEO_BASE_LOCATIONS));
+        suggestions.classList.remove('active');
     } else {
         geoLocations = GEO_BASE_LOCATIONS.filter(loc => 
             loc.nome.toLowerCase().includes(search) ||
@@ -956,6 +966,20 @@ function geoFilterLocations() {
             loc.cep.includes(search) ||
             loc.address.toLowerCase().includes(search)
         ).map(loc => JSON.parse(JSON.stringify(loc)));
+        
+        // Mostrar sugestões
+        if (geoLocations.length > 0) {
+            suggestions.innerHTML = geoLocations.map(loc => {
+                const highlighted = loc.nome.replace(
+                    new RegExp(`(${search})`, 'gi'), 
+                    '<strong>$1</strong>'
+                );
+                return `<div class="geo-suggestion-item" onclick="geoSelectSuggestion('${loc.nome}')">${highlighted}<br><small>${loc.bairro}, ${loc.cidade} - ${loc.estado}</small></div>`;
+            }).join('');
+            suggestions.classList.add('active');
+        } else {
+            suggestions.classList.remove('active');
+        }
     }
     
     // Recalcular conflitos
@@ -976,6 +1000,22 @@ function geoFilterLocations() {
         geoFitBounds();
     }
 }
+
+// Selecionar sugestão
+function geoSelectSuggestion(nome) {
+    document.getElementById('geoSearchInput').value = nome;
+    document.getElementById('geoSuggestions').classList.remove('active');
+    geoFilterLocations();
+}
+
+// Fechar sugestões ao clicar fora
+document.addEventListener('click', function(e) {
+    const suggestions = document.getElementById('geoSuggestions');
+    const input = document.getElementById('geoSearchInput');
+    if (suggestions && !suggestions.contains(e.target) && e.target !== input) {
+        suggestions.classList.remove('active');
+    }
+});
 
 // Toggle tela cheia do mapa
 function geoToggleFullscreen() {
