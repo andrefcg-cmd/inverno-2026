@@ -1,2 +1,2 @@
-# inverno-2026
+# Inverno-2026
 1ª CÁPSULA
