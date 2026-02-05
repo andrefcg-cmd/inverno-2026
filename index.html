@@ -256,8 +256,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-map-section.fullscreen #geoMap{min-height:100vh}
 .geo-map-section.fullscreen .geo-fullscreen-btn{top:20px;right:20px}
 .geo-map-section.fullscreen .geo-legend{bottom:20px}
-.geo-map-section.fullscreen .geo-stats{top:20px;left:50%;transform:translateX(-50%)}
-.geo-stats{position:absolute;top:12px;left:12px;right:12px;display:flex;gap:8px;z-index:10;flex-wrap:wrap}
+.geo-map-section.fullscreen .geo-stats{top:20px;left:20px;transform:none;flex-wrap:nowrap}
+.geo-stats{position:absolute;top:12px;left:12px;right:auto;display:flex;gap:8px;z-index:10;flex-wrap:nowrap}
 .geo-stat{background:rgba(0,0,0,.85);backdrop-filter:blur(8px);border:1px solid var(--brd);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px}
 .geo-stat-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
 .geo-stat-icon.total{background:rgba(233,69,96,.1);color:var(--accent)}
@@ -794,6 +794,8 @@ function geoInitMap(){
         mapTypeControl:false,
         streetViewControl:false,
         fullscreenControl:true,
+        gestureHandling:'greedy', // Permite arrastar com 1 dedo
+        scrollwheel:true
     });
     geoGeocoder=new google.maps.Geocoder();
     geoMapInitialized=true;
@@ -1188,7 +1190,7 @@ async function geoVerifyAddress() {
         });
         
         // Cor do pin: vermelho neon se há conflito, verde neon se OK
-        const pinColor = nearby.length > 0 ? '#ff0055' : '#39ff14';
+        const pinColor = nearby.length > 0 ? '#ff0055' : '#00e676';
         
         // Adicionar marcador para o endereço verificado com cor fluorescente
         geoVerifyMarker = new google.maps.Marker({
