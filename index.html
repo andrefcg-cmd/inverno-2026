@@ -225,6 +225,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-loc-card.valid .geo-loc-name{color:#00d9a5}
 .geo-loc-card.valid .geo-loc-marker{background:#00d9a5}
 .geo-loc-card.valid .geo-loc-status{color:#00d9a5}
+.geo-loc-card:hover{opacity:.9;transform:translateX(2px)}
+.geo-loc-dist{text-align:right;font-size:11px;min-width:60px}
+.geo-loc-dist-value{font-weight:600;color:var(--txt)}
+.geo-loc-dist-status{font-size:10px}
+.geo-loc-dist-status.valid{color:#00d9a5}
+.geo-loc-dist-status.conflict{color:#ff4757}
 .geo-loc-card.warning{border-color:var(--warn);background:rgba(255,193,7,.05)}
 .geo-loc-card.conflict{border-color:var(--red);background:rgba(255,71,87,.05)}
 @keyframes geoSlide{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
@@ -1129,12 +1135,17 @@ async function geoVerifyAddress() {
     const input = document.getElementById('geoVerifyInput');
     const btn = document.getElementById('geoVerifyBtn');
     const result = document.getElementById('geoVerifyResult');
-    const address = input.value.trim();
+    let address = input.value.trim();
     
     if (!address) {
         result.innerHTML = '<span class="error">Digite um endereço</span>';
         result.className = 'geo-verify-result error';
         return;
+    }
+    
+    // Adicionar Belo Horizonte como preferência se não especificado
+    if (!address.toLowerCase().includes('belo horizonte') && !address.toLowerCase().includes('bh') && !address.toLowerCase().includes(', mg')) {
+        address += ', Belo Horizonte, MG';
     }
     
     btn.disabled = true;
@@ -1217,7 +1228,7 @@ async function geoVerifyAddress() {
             // Mostrar o local mais próximo mesmo que fora do raio
             const closest = geoLocations.reduce((a, b) => a.distToVerify < b.distToVerify ? a : b);
             resultHtml += `<strong>✅ Nenhum local dentro de ${minDist}km!</strong>`;
-            resultHtml += `<div style="font-size:11px;color:var(--txt2);margin-top:4px">Local mais próximo: ${closest.nome} (${(closest.distToVerify * 1000).toFixed(0)}m)</div>`;
+            resultHtml += `<div style="font-size:11px;color:var(--txt2);margin-top:4px">Local mais próximo: ${closest.nome} (${geoFormatDistance(closest.distToVerify)})</div>`;
             result.innerHTML = resultHtml;
             result.className = 'geo-verify-result success';
         }
@@ -1225,18 +1236,9 @@ async function geoVerifyAddress() {
         // Mostrar botão de limpar
         document.getElementById('geoClearVerifyBtn').style.display = 'block';
         
-        // Ajustar mapa para mostrar o endereço verificado e todos os locais
-        const bounds = new google.maps.LatLngBounds();
-        bounds.extend({lat: geocodeResult.lat, lng: geocodeResult.lng});
-        geoLocations.forEach(loc => {
-            bounds.extend({lat: loc.lat, lng: loc.lng});
-        });
-        geoMap.fitBounds(bounds);
-        
-        // Se zoom muito distante, ajustar
-        google.maps.event.addListenerOnce(geoMap, 'idle', function() {
-            if (geoMap.getZoom() > 16) geoMap.setZoom(16);
-        });
+        // Centralizar no endereço verificado com zoom adequado
+        geoMap.setCenter({lat: geocodeResult.lat, lng: geocodeResult.lng});
+        geoMap.setZoom(15);
         
     } catch (err) {
         result.innerHTML = `<span class="error">❌ ${err.message}</span>`;
@@ -1245,6 +1247,15 @@ async function geoVerifyAddress() {
     
     btn.disabled = false;
     btn.textContent = 'Verificar';
+}
+
+// Formatar distância (km ou m)
+function geoFormatDistance(distKm) {
+    if (distKm >= 1) {
+        return distKm.toFixed(1) + ' km';
+    } else {
+        return Math.round(distKm * 1000) + 'm';
+    }
 }
 
 // Criar marcador no modo verificação (verde = longe, vermelho = perto)
@@ -1316,23 +1327,33 @@ function geoUpdateUIVerify() {
     
     list.innerHTML = sorted.map((loc, i) => {
         const isNearby = loc.isNearby;
-        const distMeters = loc.distToVerify ? (loc.distToVerify * 1000).toFixed(0) : '?';
+        const distFormatted = geoFormatDistance(loc.distToVerify);
         const statusClass = isNearby ? 'conflict' : 'valid';
         const statusIcon = isNearby ? '⚠️' : '✓';
-        const statusText = isNearby ? `${distMeters}m - PRÓXIMO` : `${distMeters}m - OK`;
+        const statusText = isNearby ? 'CONFLITO' : 'OK';
         
-        return `<div class="geo-loc-card ${statusClass}">
-            <div class="geo-loc-header">
-                <div class="geo-loc-num" style="background:${isNearby ? '#ff4757' : '#00d9a5'}">${statusIcon}</div>
-                <div class="geo-loc-info">
-                    <div class="geo-loc-name">${loc.nome || 'Sem nome'}</div>
-                    <div class="geo-loc-addr">${loc.address}</div>
-                    <div class="geo-loc-coords">${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}</div>
-                </div>
+        return `<div class="geo-loc-card ${statusClass}" onclick="geoFocusVerify(${loc.id})" style="cursor:pointer">
+            <div class="geo-loc-marker" style="background:${isNearby ? '#ff4757' : '#00d9a5'}">${statusIcon}</div>
+            <div class="geo-loc-info">
+                <div class="geo-loc-name">${loc.nome || 'Sem nome'}</div>
+                <div class="geo-loc-address">${loc.address}</div>
+                <div class="geo-loc-coords">${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}</div>
             </div>
-            <div class="geo-loc-status ${statusClass}">${statusText}</div>
+            <div class="geo-loc-dist">
+                <div class="geo-loc-dist-value">${distFormatted}</div>
+                <div class="geo-loc-dist-status ${statusClass}">- ${statusText}</div>
+            </div>
         </div>`;
     }).join('');
+}
+
+// Focar em um local no modo verificação
+function geoFocusVerify(id) {
+    const loc = geoLocations.find(l => l.id === id);
+    if (loc) {
+        geoMap.setCenter({lat: loc.lat, lng: loc.lng});
+        geoMap.setZoom(17);
+    }
 }
 
 // Limpar verificação
