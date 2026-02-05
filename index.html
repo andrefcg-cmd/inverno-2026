@@ -221,18 +221,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-locs-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;max-height:300px}
 @media(min-width:768px){.geo-locs-list{max-height:none}}
 .geo-loc-card{background:var(--card2);border-radius:12px;padding:12px;display:flex;align-items:flex-start;gap:10px;animation:geoSlide .3s ease;border:1px solid transparent}
-.geo-loc-card.valid{border-color:#00d9a5;background:rgba(0,217,165,.05)}
-.geo-loc-card.valid .geo-loc-name{color:#00d9a5}
-.geo-loc-card.valid .geo-loc-marker{background:#00d9a5}
-.geo-loc-card.valid .geo-loc-status{color:#00d9a5}
+.geo-loc-card.valid{border-color:#228b22;background:rgba(34,139,34,.1)}
+.geo-loc-card.valid .geo-loc-name{color:#228b22}
+.geo-loc-card.valid .geo-loc-marker{background:#228b22}
+.geo-loc-card.valid .geo-loc-status{color:#228b22}
 .geo-loc-card:hover{opacity:.9;transform:translateX(2px)}
 .geo-loc-dist{text-align:right;font-size:11px;min-width:60px}
 .geo-loc-dist-value{font-weight:600;color:var(--txt)}
 .geo-loc-dist-status{font-size:10px}
-.geo-loc-dist-status.valid{color:#00d9a5}
-.geo-loc-dist-status.conflict{color:#ff4757}
+.geo-loc-dist-status.valid{color:#228b22}
+.geo-loc-dist-status.conflict{color:#8b0000}
 .geo-loc-card.warning{border-color:var(--warn);background:rgba(255,193,7,.05)}
-.geo-loc-card.conflict{border-color:var(--red);background:rgba(255,71,87,.05)}
+.geo-loc-card.conflict{border-color:#8b0000;background:rgba(139,0,0,.1)}
 @keyframes geoSlide{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
 .geo-loc-marker{width:28px;height:28px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;color:#fff}
 .geo-loc-info{flex:1;min-width:0}
@@ -848,8 +848,8 @@ function geoCreateMarker(loc,index){
     const isBypassed=loc.bypass&&loc.conflicts&&loc.conflicts.length>0;
     let color;
     if(isBypassed)color='#ffc107';
-    else if(isConflict)color='#ff4757';
-    else color='#00d9a5';
+    else if(isConflict)color='#8b0000';
+    else color='#228b22';
     
     // SVG do pin
     const pinSvg = {
@@ -1262,7 +1262,7 @@ function geoFormatDistance(distKm) {
 // Criar marcador no modo verificação (verde = longe, vermelho = perto)
 function geoCreateMarkerVerify(loc, index) {
     const isNearby = loc.isNearby;
-    const color = isNearby ? '#ff4757' : '#00d9a5';
+    const color = isNearby ? '#8b0000' : '#228b22';
     
     const pinSvg = {
         path: 'M12 0C7.58 0 4 3.58 4 8c0 5.25 8 13 8 13s8-7.75 8-13c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z',
@@ -1334,7 +1334,7 @@ function geoUpdateUIVerify() {
         const statusText = isNearby ? 'CONFLITO' : 'OK';
         
         return `<div class="geo-loc-card ${statusClass}" onclick="geoFocusVerify(${loc.id})" style="cursor:pointer">
-            <div class="geo-loc-marker" style="background:${isNearby ? '#ff4757' : '#00d9a5'}">${statusIcon}</div>
+            <div class="geo-loc-marker" style="background:${isNearby ? '#8b0000' : '#228b22'}">${statusIcon}</div>
             <div class="geo-loc-info">
                 <div class="geo-loc-name">${loc.nome || 'Sem nome'}</div>
                 <div class="geo-loc-address">${loc.address}</div>
