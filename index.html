@@ -221,15 +221,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-locs-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;max-height:300px}
 @media(min-width:768px){.geo-locs-list{max-height:none}}
 .geo-loc-card{background:var(--card2);border-radius:12px;padding:12px;display:flex;align-items:flex-start;gap:10px;animation:geoSlide .3s ease;border:1px solid transparent}
-.geo-loc-card.valid{border-color:#2e8b57;background:rgba(46,139,87,.1)}
-.geo-loc-card.valid .geo-loc-name{color:#2e8b57}
-.geo-loc-card.valid .geo-loc-marker{background:#2e8b57}
-.geo-loc-card.valid .geo-loc-status{color:#2e8b57}
+.geo-loc-card.valid{border-color:#50c878;background:rgba(80,200,120,.1)}
+.geo-loc-card.valid .geo-loc-name{color:#50c878}
+.geo-loc-card.valid .geo-loc-marker{background:#50c878}
+.geo-loc-card.valid .geo-loc-status{color:#50c878}
 .geo-loc-card:hover{opacity:.9;transform:translateX(2px)}
 .geo-loc-dist{text-align:right;font-size:11px;min-width:60px}
 .geo-loc-dist-value{font-weight:600;color:var(--txt)}
 .geo-loc-dist-status{font-size:10px}
-.geo-loc-dist-status.valid{color:#2e8b57}
+.geo-loc-dist-status.valid{color:#50c878}
 .geo-loc-dist-status.conflict{color:#cc2936}
 .geo-loc-card.warning{border-color:var(--warn);background:rgba(255,193,7,.05)}
 .geo-loc-card.conflict{border-color:#cc2936;background:rgba(204,41,54,.1)}
@@ -849,7 +849,7 @@ function geoCreateMarker(loc,index){
     let color;
     if(isBypassed)color='#ffc107';
     else if(isConflict)color='#cc2936';
-    else color='#2e8b57';
+    else color='#50c878';
     
     // SVG do pin
     const pinSvg = {
@@ -1262,7 +1262,7 @@ function geoFormatDistance(distKm) {
 // Criar marcador no modo verificação (verde = longe, vermelho = perto)
 function geoCreateMarkerVerify(loc, index) {
     const isNearby = loc.isNearby;
-    const color = isNearby ? '#cc2936' : '#2e8b57';
+    const color = isNearby ? '#cc2936' : '#50c878';
     
     const pinSvg = {
         path: 'M12 0C7.58 0 4 3.58 4 8c0 5.25 8 13 8 13s8-7.75 8-13c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z',
@@ -1334,7 +1334,7 @@ function geoUpdateUIVerify() {
         const statusText = isNearby ? 'CONFLITO' : 'OK';
         
         return `<div class="geo-loc-card ${statusClass}" onclick="geoFocusVerify(${loc.id})" style="cursor:pointer">
-            <div class="geo-loc-marker" style="background:${isNearby ? '#cc2936' : '#2e8b57'}">${statusIcon}</div>
+            <div class="geo-loc-marker" style="background:${isNearby ? '#cc2936' : '#50c878'}">${statusIcon}</div>
             <div class="geo-loc-info">
                 <div class="geo-loc-name">${loc.nome || 'Sem nome'}</div>
                 <div class="geo-loc-address">${loc.address}</div>
