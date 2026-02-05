@@ -148,6 +148,119 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .changepw-back{margin-top:24px;background:none;border:none;color:var(--txt2);font-size:13px;cursor:pointer;text-align:center;display:block;width:100%}
 .settings-btn{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:10px 18px;color:var(--txt2);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:16px;transition:all .15s}
 .settings-btn:active{background:var(--card2);transform:scale(0.98)}
+
+/* GEOLOCATOR */
+.geo-screen{display:none;min-height:100vh;flex-direction:column;background:var(--bg)}
+.geo-screen.active{display:flex}
+.geo-header{background:var(--card);padding:16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:12px}
+.geo-header h1{font-size:16px;font-weight:600;flex:1}
+.geo-body{display:flex;flex:1;flex-direction:column}
+@media(min-width:768px){.geo-body{flex-direction:row}}
+.geo-sidebar{background:var(--card);padding:16px;display:flex;flex-direction:column;gap:16px;border-bottom:1px solid var(--brd)}
+@media(min-width:768px){.geo-sidebar{width:340px;border-bottom:none;border-right:1px solid var(--brd);max-height:calc(100vh - 60px);overflow-y:auto}}
+.geo-settings{background:var(--card2);border-radius:12px;padding:14px}
+.geo-settings-title{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.geo-settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.geo-settings-row label{font-size:13px}
+.geo-dist-group{display:flex;align-items:center;gap:6px}
+.geo-dist-input{width:60px;padding:8px 10px;background:var(--bg);border:1px solid var(--brd);border-radius:8px;color:var(--txt);font-size:13px;text-align:center}
+.geo-dist-input:focus{outline:none;border-color:var(--accent)}
+.geo-unit{font-size:11px;color:var(--txt2)}
+.geo-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--brd)}
+.geo-toggle-label{font-size:12px;color:var(--txt2)}
+.geo-toggle{position:relative;width:40px;height:22px;background:var(--bg);border-radius:11px;cursor:pointer;transition:background .3s}
+.geo-toggle.active{background:var(--accent)}
+.geo-toggle-knob{position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .3s}
+.geo-toggle.active .geo-toggle-knob{transform:translateX(18px)}
+.geo-input-section{display:flex;flex-direction:column;gap:10px}
+.geo-input-wrap{position:relative}
+.geo-address-input{width:100%;padding:12px 50px 12px 14px;background:var(--card2);border:1px solid var(--brd);border-radius:12px;color:var(--txt);font-size:14px}
+.geo-address-input::placeholder{color:var(--txt2)}
+.geo-address-input:focus{outline:none;border-color:var(--accent)}
+.geo-add-btn{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:34px;height:34px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.geo-add-btn:active{transform:translateY(-50%) scale(0.95)}
+.geo-add-btn:disabled{opacity:.5;cursor:not-allowed}
+.geo-add-btn.loading{pointer-events:none}
+.geo-add-btn.loading::after{content:'';width:14px;height:14px;border:2px solid transparent;border-top-color:#fff;border-radius:50%;animation:geoSpin .6s linear infinite}
+@keyframes geoSpin{to{transform:rotate(360deg)}}
+.geo-locs-section{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
+.geo-locs-header{display:flex;align-items:center;justify-content:space-between}
+.geo-locs-title{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
+.geo-locs-count{font-size:11px;color:var(--accent);background:rgba(233,69,96,.1);padding:3px 8px;border-radius:10px}
+.geo-locs-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;max-height:300px}
+@media(min-width:768px){.geo-locs-list{max-height:none}}
+.geo-loc-card{background:var(--card2);border-radius:12px;padding:12px;display:flex;align-items:flex-start;gap:10px;animation:geoSlide .3s ease;border:1px solid transparent}
+.geo-loc-card.warning{border-color:var(--warn);background:rgba(255,193,7,.05)}
+.geo-loc-card.conflict{border-color:var(--red);background:rgba(255,71,87,.05)}
+@keyframes geoSlide{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.geo-loc-marker{width:28px;height:28px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;color:#fff}
+.geo-loc-info{flex:1;min-width:0}
+.geo-loc-address{font-size:12px;line-height:1.4;word-break:break-word}
+.geo-loc-name{font-size:13px;font-weight:600;color:var(--accent);margin-bottom:2px}
+.geo-loc-coords{font-size:10px;color:var(--txt2);margin-top:2px}
+.geo-loc-status{font-size:10px;margin-top:4px;padding:2px 6px;border-radius:4px;display:inline-block}
+.geo-loc-status.ok{background:rgba(0,217,165,.1);color:var(--green)}
+.geo-loc-status.conflict{background:rgba(255,71,87,.1);color:var(--red)}
+.geo-loc-status.bypassed{background:rgba(255,193,7,.1);color:var(--warn)}
+.geo-loc-actions{display:flex;flex-direction:column;gap:4px}
+.geo-action-btn{width:26px;height:26px;background:var(--bg);border:1px solid var(--brd);border-radius:6px;color:var(--txt2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s}
+.geo-action-btn:active{transform:scale(0.95)}
+.geo-action-btn.delete:hover{border-color:var(--red);color:var(--red)}
+.geo-action-btn.bypass.active{background:var(--warn);border-color:var(--warn);color:#000}
+.geo-clear-btn{width:100%;padding:10px;background:transparent;border:1px solid rgba(255,71,87,.3);border-radius:10px;color:var(--red);font-size:12px;cursor:pointer;transition:all .2s}
+.geo-clear-btn:active{background:rgba(255,71,87,.1)}
+.geo-map-section{flex:1;position:relative;min-height:400px}
+#geoMap{width:100%;height:100%;min-height:400px;background:var(--card2)}
+.geo-stats{position:absolute;top:12px;left:12px;right:12px;display:flex;gap:8px;z-index:10;flex-wrap:wrap}
+.geo-stat{background:rgba(0,0,0,.85);backdrop-filter:blur(8px);border:1px solid var(--brd);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px}
+.geo-stat-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.geo-stat-icon.total{background:rgba(233,69,96,.1);color:var(--accent)}
+.geo-stat-icon.valid{background:rgba(0,217,165,.1);color:var(--green)}
+.geo-stat-icon.conflicts{background:rgba(255,71,87,.1);color:var(--red)}
+.geo-stat-value{font-size:16px;font-weight:700}
+.geo-stat-label{font-size:10px;color:var(--txt2);text-transform:uppercase}
+.geo-legend{position:absolute;bottom:12px;left:12px;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);border:1px solid var(--brd);border-radius:10px;padding:10px 14px;display:flex;gap:14px;z-index:10}
+.geo-legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--txt2)}
+.geo-legend-dot{width:10px;height:10px;border-radius:50%}
+.geo-legend-dot.valid{background:var(--green)}
+.geo-legend-dot.conflict{background:var(--red)}
+.geo-legend-dot.bypassed{background:var(--warn)}
+.geo-legend-dot.radius{background:rgba(233,69,96,.3);border:2px solid var(--accent)}
+.geo-empty{text-align:center;padding:30px 16px;color:var(--txt2)}
+.geo-empty-icon{font-size:40px;margin-bottom:12px;opacity:.5}
+.geo-empty p{font-size:13px}
+.geo-toast-container{position:fixed;bottom:16px;right:16px;display:flex;flex-direction:column;gap:8px;z-index:1000}
+.geo-toast{background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:8px;animation:geoToastIn .3s ease;max-width:300px}
+.geo-toast.error{border-color:var(--red)}
+.geo-toast.success{border-color:var(--green)}
+.geo-toast.warning{border-color:var(--warn)}
+@keyframes geoToastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.geo-toast-icon{font-size:16px}
+.geo-toast.error .geo-toast-icon{color:var(--red)}
+.geo-toast.success .geo-toast-icon{color:var(--green)}
+.geo-toast.warning .geo-toast-icon{color:var(--warn)}
+.geo-toast-msg{font-size:12px;line-height:1.3}
+.geo-api-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:1001;padding:20px}
+.geo-api-modal.hidden{display:none}
+.geo-api-box{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:24px;max-width:400px;width:100%}
+.geo-api-box h2{font-size:18px;margin-bottom:6px}
+.geo-api-box p{font-size:13px;color:var(--txt2);margin-bottom:16px;line-height:1.5}
+.geo-api-input{width:100%;padding:12px 14px;background:var(--bg);border:1px solid var(--brd);border-radius:10px;color:var(--txt);font-size:13px;margin-bottom:12px}
+.geo-api-input:focus{outline:none;border-color:var(--accent)}
+.geo-api-btn{width:100%;padding:12px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.geo-api-btn:active{opacity:.85}
+.geo-api-note{margin-top:12px;padding:10px;background:rgba(255,193,7,.1);border-radius:8px;font-size:11px;color:var(--warn)}
+.geo-api-note a{color:var(--accent);text-decoration:none}
+.geo-import-row{display:flex;gap:8px;margin-top:8px}
+.geo-import-btn{flex:1;padding:10px;background:var(--card2);border:1px dashed var(--brd);border-radius:10px;color:var(--txt2);font-size:12px;cursor:pointer;text-align:center;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.geo-import-btn:hover{border-color:var(--accent);color:var(--accent)}
+.geo-load-base-btn{flex:1;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.geo-load-base-btn:active{transform:scale(0.98);opacity:.9}
+.geo-progress-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1002;gap:16px}
+.geo-progress-overlay.hidden{display:none}
+.geo-progress-text{font-size:14px;color:var(--txt)}
+.geo-progress-bar{width:200px;height:6px;background:var(--card2);border-radius:3px;overflow:hidden}
+.geo-progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .3s ease;width:0}
 </style></head><body>
 
 <!-- SPLASH -->
@@ -174,6 +287,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
             <div class="mod-icon">💰</div>
             <div class="mod-info"><div class="mod-name">Financeiro</div><div class="mod-desc">Fluxo de caixa e contas</div></div>
             <span class="mod-soon">Em breve</span>
+        </div>
+        <div class="mod-btn" onclick="openGeolocator()">
+            <div class="mod-icon">📍</div>
+            <div class="mod-info"><div class="mod-name">GeoLocalizador</div><div class="mod-desc">Mapeador de endereços</div></div>
+            <div class="mod-arrow">›</div>
         </div>
     </div>
     <div class="install-banner" id="installBanner" onclick="installApp()">
@@ -227,6 +345,102 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </div>
     <button class="submenu-back" onclick="goHome()">← Voltar ao menu</button>
     <button class="settings-btn" onclick="openChangePw()">⚙️ Alterar Senha</button>
+</div>
+
+<!-- DEV: COMPRAS -->
+<div class="dev-screen" id="dev-compras">
+
+<!-- GEOLOCALIZADOR -->
+<div class="geo-screen" id="geo-screen">
+    <div class="geo-api-modal hidden" id="geoApiModal">
+        <div class="geo-api-box">
+            <h2>🔑 API Key do Google Maps</h2>
+            <p>Para usar o geocodificador, insira sua API Key do Google Maps com as APIs <strong>Maps JavaScript</strong> e <strong>Geocoding</strong> habilitadas.</p>
+            <input type="text" class="geo-api-input" id="geoApiKeyInput" placeholder="Cole sua API Key aqui...">
+            <button class="geo-api-btn" onclick="geoSaveApiKey()">Salvar e Iniciar</button>
+            <div class="geo-api-note">
+                💡 Não tem uma API Key? <a href="https://console.cloud.google.com/google/maps-apis" target="_blank">Crie uma aqui</a>
+            </div>
+        </div>
+    </div>
+    <div class="geo-header">
+        <button class="back-btn" onclick="goHome()">←</button>
+        <h1>📍 GeoLocalizador</h1>
+    </div>
+    <div class="geo-body">
+        <aside class="geo-sidebar">
+            <div class="geo-settings">
+                <div class="geo-settings-title">⚙️ Configurações</div>
+                <div class="geo-settings-row">
+                    <label>Distância mínima:</label>
+                    <div class="geo-dist-group">
+                        <input type="number" class="geo-dist-input" id="geoMinDistance" value="2" min="0.1" step="0.1">
+                        <span class="geo-unit">km</span>
+                    </div>
+                </div>
+                <div class="geo-toggle-row">
+                    <span class="geo-toggle-label">Mostrar raios</span>
+                    <div class="geo-toggle active" id="geoShowRadius" onclick="geoToggleRadius()">
+                        <div class="geo-toggle-knob"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="geo-input-section">
+                <div class="geo-input-wrap">
+                    <input type="text" class="geo-address-input" id="geoAddressInput" placeholder="Digite um endereço..." onkeypress="geoHandleKey(event)">
+                    <button class="geo-add-btn" id="geoAddBtn" onclick="geoAddLocation()">+</button>
+                </div>
+                <div class="geo-import-row">
+                    <label class="geo-import-btn" for="geoFileInput">
+                        <span>📥 Importar Excel</span>
+                        <input type="file" id="geoFileInput" accept=".xlsx,.xls" onchange="geoImportExcel(event)" style="display:none">
+                    </label>
+                    <button class="geo-load-base-btn" onclick="geoLoadBaseAddresses()">📋 Carregar Base</button>
+                </div>
+            </div>
+            <div class="geo-locs-section">
+                <div class="geo-locs-header">
+                    <span class="geo-locs-title">📍 Locais</span>
+                    <span class="geo-locs-count" id="geoLocsCount">0 locais</span>
+                </div>
+                <div class="geo-locs-list" id="geoLocsList">
+                    <div class="geo-empty">
+                        <div class="geo-empty-icon">🗺️</div>
+                        <p>Adicione endereços para começar</p>
+                    </div>
+                </div>
+            </div>
+            <button class="geo-clear-btn" onclick="geoClearAll()">🗑️ Limpar Todos</button>
+        </aside>
+        <main class="geo-map-section">
+            <div class="geo-stats">
+                <div class="geo-stat">
+                    <div class="geo-stat-icon total">📍</div>
+                    <div><div class="geo-stat-value" id="geoTotal">0</div><div class="geo-stat-label">Total</div></div>
+                </div>
+                <div class="geo-stat">
+                    <div class="geo-stat-icon valid">✓</div>
+                    <div><div class="geo-stat-value" id="geoValid">0</div><div class="geo-stat-label">Válidos</div></div>
+                </div>
+                <div class="geo-stat">
+                    <div class="geo-stat-icon conflicts">⚠</div>
+                    <div><div class="geo-stat-value" id="geoConflicts">0</div><div class="geo-stat-label">Conflitos</div></div>
+                </div>
+            </div>
+            <div id="geoMap"></div>
+            <div class="geo-legend">
+                <div class="geo-legend-item"><div class="geo-legend-dot valid"></div><span>Válido</span></div>
+                <div class="geo-legend-item"><div class="geo-legend-dot conflict"></div><span>Conflito</span></div>
+                <div class="geo-legend-item"><div class="geo-legend-dot bypassed"></div><span>Bypass</span></div>
+                <div class="geo-legend-item"><div class="geo-legend-dot radius"></div><span>Raio</span></div>
+            </div>
+        </main>
+    </div>
+</div>
+<div class="geo-toast-container" id="geoToastContainer"></div>
+<div class="geo-progress-overlay hidden" id="geoProgressOverlay">
+    <div class="geo-progress-text" id="geoProgressText">Processando...</div>
+    <div class="geo-progress-bar"><div class="geo-progress-fill" id="geoProgressFill"></div></div>
 </div>
 
 <!-- DEV: COMPRAS -->
@@ -312,10 +526,10 @@ setTimeout(()=>{
 
 // ===== USUÁRIOS E PERMISSÕES =====
 const USERS = {
-    'andre':   {pw:'736221', nome:'André',    role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce']},
-    'rafael':  {pw:'3022',   nome:'Rafael',   role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce']},
-    'isabella':{pw:'Isa',    nome:'Isabella', role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce']},
-    'mariana.s':{pw:'1402',  nome:'Mariana S.',role:'user', access:['comercial'], channels:['showroom']}
+    'andre':   {pw:'736221', nome:'André',    role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce','geolocator']},
+    'rafael':  {pw:'3022',   nome:'Rafael',   role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce','geolocator']},
+    'isabella':{pw:'Isa',    nome:'Isabella', role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce','geolocator']},
+    'mariana.s':{pw:'1402',  nome:'Mariana S.',role:'user', access:['comercial'], channels:['showroom','geolocator']}
 };
 
 // ===== SENHAS PERSISTENTES (localStorage) =====
@@ -337,6 +551,7 @@ function openChangePw(){
     else if(document.getElementById('dev-compras').classList.contains('active'))changePwReturnTo='dev-compras';
     else if(document.getElementById('dev-financeiro').classList.contains('active'))changePwReturnTo='dev-financeiro';
     else if(document.getElementById('app-comercial').classList.contains('active'))changePwReturnTo='sub-comercial';
+    else if(document.getElementById('geo-screen').classList.contains('active'))changePwReturnTo='sub-comercial';
     else changePwReturnTo='home';
     hideAll();
     document.getElementById('changepw-screen').classList.add('active');
@@ -458,6 +673,11 @@ function openChannel(ch){
     hideAll();
     if(ch==='showroom'){document.getElementById('app-comercial').classList.add('active')}
 }
+function openGeolocator(){
+    hideAll();
+    document.getElementById('geo-screen').classList.add('active');
+    geoInit();
+}
 function backToSub(){hideAll();document.getElementById('sub-comercial').classList.add('active')}
 function goHome(){hideAll();currentMod=null;document.getElementById('home').classList.remove('hidden');document.getElementById('home').classList.add('visible')}
 function fC(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}).format(v)}
@@ -510,4 +730,425 @@ function installApp(){
 window.addEventListener('appinstalled',()=>{ib.classList.remove('visible')});
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/inverno-2026/sw.js',{scope:'/inverno-2026/'}).catch(()=>{})}
+
+// ========== GEOLOCALIZADOR ==========
+let geoMap,geoGeocoder,geoLocations=[],geoMarkers=[],geoCircles=[],geoShowRadius=true,geoApiKey=localStorage.getItem('geo_api_key'),geoMapInitialized=false;
+
+function geoInit(){
+    if(!geoApiKey){
+        // Sem API Key - mostrar modal
+        document.getElementById('geoApiModal').classList.remove('hidden');
+    }else if(!geoMapInitialized){
+        // Tem API Key mas mapa não foi inicializado
+        geoLoadMaps();
+    }else{
+        // Mapa já inicializado - apenas atualizar UI
+        geoUpdateUI();
+        // Forçar redimensionamento do mapa (fix para quando a tela estava oculta)
+        setTimeout(()=>{
+            if(geoMap){
+                google.maps.event.trigger(geoMap,'resize');
+                if(geoMarkers.length>0)geoFitBounds();
+            }
+        },100);
+    }
+}
+
+function geoSaveApiKey(){
+    const key=document.getElementById('geoApiKeyInput').value.trim();
+    if(!key){geoShowToast('Insira uma API Key válida','error');return}
+    geoApiKey=key;
+    localStorage.setItem('geo_api_key',geoApiKey);
+    document.getElementById('geoApiModal').classList.add('hidden');
+    geoLoadMaps();
+}
+
+function geoLoadMaps(){
+    if(window.google&&window.google.maps){
+        geoInitMap();
+        return;
+    }
+    const script=document.createElement('script');
+    script.src=`https://maps.googleapis.com/maps/api/js?key=${geoApiKey}&callback=geoInitMap&libraries=geometry`;
+    script.async=true;
+    script.defer=true;
+    script.onerror=()=>{
+        geoShowToast('Erro ao carregar Google Maps. Verifique sua API Key.','error');
+        localStorage.removeItem('geo_api_key');
+        geoApiKey=null;
+        document.getElementById('geoApiModal').classList.remove('hidden');
+    };
+    document.head.appendChild(script);
+}
+
+function geoInitMap(){
+    document.getElementById('geoApiModal').classList.add('hidden');
+    geoMap=new google.maps.Map(document.getElementById('geoMap'),{
+        center:{lat:-19.9167,lng:-43.9345}, // Belo Horizonte
+        zoom:12,
+        styles:[
+            {elementType:"geometry",stylers:[{color:"#1a1a1a"}]},
+            {elementType:"labels.text.stroke",stylers:[{color:"#1a1a1a"}]},
+            {elementType:"labels.text.fill",stylers:[{color:"#777"}]},
+            {featureType:"road",elementType:"geometry",stylers:[{color:"#2a2a2a"}]},
+            {featureType:"water",elementType:"geometry",stylers:[{color:"#0e1626"}]},
+            {featureType:"poi",elementType:"geometry",stylers:[{color:"#1e1e1e"}]},
+        ],
+        disableDefaultUI:false,
+        zoomControl:true,
+        mapTypeControl:false,
+        streetViewControl:false,
+        fullscreenControl:true,
+    });
+    geoGeocoder=new google.maps.Geocoder();
+    geoMapInitialized=true;
+    
+    // Forçar redimensionamento após renderização
+    setTimeout(()=>{
+        google.maps.event.trigger(geoMap,'resize');
+    },200);
+    
+    const saved=localStorage.getItem('geo_locations');
+    if(saved){
+        geoLocations=JSON.parse(saved);
+        geoLocations.forEach((loc,i)=>geoCreateMarker(loc,i));
+        geoUpdateUI();
+        setTimeout(()=>geoFitBounds(),300);
+    }
+}
+
+function geoHandleKey(e){if(e.key==='Enter')geoAddLocation()}
+
+async function geoAddLocation(){
+    const input=document.getElementById('geoAddressInput');
+    const address=input.value.trim();
+    if(!address){geoShowToast('Digite um endereço','warning');return}
+    const btn=document.getElementById('geoAddBtn');
+    btn.disabled=true;btn.classList.add('loading');btn.textContent='';
+    try{
+        const result=await geoGeocode(address);
+        const minDist=parseFloat(document.getElementById('geoMinDistance').value)||2;
+        const conflicts=geoCheckConflicts(result.lat,result.lng,minDist);
+        const newLoc={id:Date.now(),address:result.address,lat:result.lat,lng:result.lng,bypass:false,conflicts:conflicts};
+        geoLocations.push(newLoc);
+        geoCreateMarker(newLoc,geoLocations.length-1);
+        geoSaveLocations();
+        geoUpdateUI();
+        input.value='';
+        if(conflicts.length>0){geoShowToast(`Adicionado com ${conflicts.length} conflito(s)`,'warning')}
+        else{geoShowToast('Local adicionado!','success')}
+        geoFitBounds();
+    }catch(err){geoShowToast(err.message,'error')}
+    finally{btn.disabled=false;btn.classList.remove('loading');btn.textContent='+'}
+}
+
+function geoGeocode(address){
+    return new Promise((resolve,reject)=>{
+        geoGeocoder.geocode({address:address},(results,status)=>{
+            if(status==='OK'&&results[0]){
+                resolve({address:results[0].formatted_address,lat:results[0].geometry.location.lat(),lng:results[0].geometry.location.lng()});
+            }else{reject(new Error('Endereço não encontrado'))}
+        });
+    });
+}
+
+function geoCheckConflicts(lat,lng,minDist,excludeId=null){
+    const conflicts=[];
+    const point=new google.maps.LatLng(lat,lng);
+    geoLocations.forEach(loc=>{
+        if(excludeId&&loc.id===excludeId)return;
+        const locPoint=new google.maps.LatLng(loc.lat,loc.lng);
+        const dist=google.maps.geometry.spherical.computeDistanceBetween(point,locPoint)/1000;
+        if(dist<minDist){conflicts.push({id:loc.id,distance:dist.toFixed(2)})}
+    });
+    return conflicts;
+}
+
+function geoCreateMarker(loc,index){
+    const isConflict=loc.conflicts&&loc.conflicts.length>0&&!loc.bypass;
+    const isBypassed=loc.bypass&&loc.conflicts&&loc.conflicts.length>0;
+    let color;
+    if(isBypassed)color='#ffc107';
+    else if(isConflict)color='#ff4757';
+    else color='#00d9a5';
+    const marker=new google.maps.Marker({
+        position:{lat:loc.lat,lng:loc.lng},
+        map:geoMap,
+        title:loc.address,
+        label:{text:String(index+1),color:'#000',fontWeight:'bold',fontSize:'11px'},
+        icon:{path:google.maps.SymbolPath.CIRCLE,scale:12,fillColor:color,fillOpacity:1,strokeColor:'#fff',strokeWeight:2}
+    });
+    marker.locationId=loc.id;
+    geoMarkers.push(marker);
+    const minDist=parseFloat(document.getElementById('geoMinDistance').value)||2;
+    const circle=new google.maps.Circle({
+        map:geoShowRadius?geoMap:null,
+        center:{lat:loc.lat,lng:loc.lng},
+        radius:minDist*1000,
+        fillColor:'#e94560',
+        fillOpacity:0.08,
+        strokeColor:'#e94560',
+        strokeOpacity:0.3,
+        strokeWeight:1
+    });
+    circle.locationId=loc.id;
+    geoCircles.push(circle);
+    const infoWindow=new google.maps.InfoWindow({
+        content:`<div style="color:#000;padding:8px;max-width:220px;"><strong>${index+1}. ${loc.address}</strong><div style="margin-top:6px;font-size:11px;color:#666;">Lat: ${loc.lat.toFixed(6)}<br>Lng: ${loc.lng.toFixed(6)}</div></div>`
+    });
+    marker.addListener('click',()=>infoWindow.open(geoMap,marker));
+}
+
+function geoUpdateUI(){
+    const minDist=parseFloat(document.getElementById('geoMinDistance').value)||2;
+    geoLocations.forEach(loc=>{loc.conflicts=geoCheckConflicts(loc.lat,loc.lng,minDist,loc.id)});
+    const total=geoLocations.length;
+    const valid=geoLocations.filter(l=>l.conflicts.length===0||l.bypass).length;
+    const conflicts=total-valid;
+    document.getElementById('geoTotal').textContent=total;
+    document.getElementById('geoValid').textContent=valid;
+    document.getElementById('geoConflicts').textContent=conflicts;
+    document.getElementById('geoLocsCount').textContent=`${total} locais`;
+    const list=document.getElementById('geoLocsList');
+    if(geoLocations.length===0){
+        list.innerHTML='<div class="geo-empty"><div class="geo-empty-icon">🗺️</div><p>Adicione endereços para começar</p></div>';
+        return;
+    }
+    list.innerHTML=geoLocations.map((loc,i)=>{
+        const hasConflict=loc.conflicts&&loc.conflicts.length>0;
+        const isBypassed=loc.bypass&&hasConflict;
+        let cardClass='',statusHtml='';
+        if(isBypassed){cardClass='warning';statusHtml=`<span class="geo-loc-status bypassed">⚡ Bypass (${loc.conflicts.length})</span>`}
+        else if(hasConflict){cardClass='conflict';const dets=loc.conflicts.map(c=>c.distance+'km').join(', ');statusHtml=`<span class="geo-loc-status conflict">⚠️ ${loc.conflicts.length}: ${dets}</span>`}
+        else{statusHtml='<span class="geo-loc-status ok">✓ OK</span>'}
+        const displayName = loc.nome ? `<div class="geo-loc-name">${loc.nome}</div>` : '';
+        return`<div class="geo-loc-card ${cardClass}"><div class="geo-loc-marker">${i+1}</div><div class="geo-loc-info">${displayName}<div class="geo-loc-address">${loc.address}</div><div class="geo-loc-coords">${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}</div>${statusHtml}</div><div class="geo-loc-actions"><button class="geo-action-btn" onclick="geoFocus(${loc.id})" title="Focar">🎯</button>${hasConflict?`<button class="geo-action-btn bypass ${loc.bypass?'active':''}" onclick="geoToggleBypass(${loc.id})" title="Bypass">⚡</button>`:''}<button class="geo-action-btn delete" onclick="geoRemove(${loc.id})" title="Remover">×</button></div></div>`;
+    }).join('');
+    geoUpdateMarkers();
+}
+
+function geoUpdateMarkers(){
+    geoMarkers.forEach(m=>m.setMap(null));
+    geoCircles.forEach(c=>c.setMap(null));
+    geoMarkers=[];geoCircles=[];
+    geoLocations.forEach((loc,i)=>geoCreateMarker(loc,i));
+}
+
+function geoFocus(id){
+    const loc=geoLocations.find(l=>l.id===id);
+    if(loc){geoMap.setCenter({lat:loc.lat,lng:loc.lng});geoMap.setZoom(15)}
+}
+
+function geoToggleBypass(id){
+    const loc=geoLocations.find(l=>l.id===id);
+    if(loc){loc.bypass=!loc.bypass;geoSaveLocations();geoUpdateUI();geoShowToast(loc.bypass?'Bypass ativado':'Bypass desativado',loc.bypass?'warning':'success')}
+}
+
+function geoRemove(id){
+    geoLocations=geoLocations.filter(l=>l.id!==id);
+    geoSaveLocations();geoUpdateUI();
+    geoShowToast('Local removido','success');
+}
+
+function geoClearAll(){
+    if(geoLocations.length===0)return;
+    if(confirm('Remover todos os locais?')){
+        geoLocations=[];
+        geoMarkers.forEach(m=>m.setMap(null));
+        geoCircles.forEach(c=>c.setMap(null));
+        geoMarkers=[];geoCircles=[];
+        geoSaveLocations();geoUpdateUI();
+        geoShowToast('Todos removidos','success');
+    }
+}
+
+function geoToggleRadius(){
+    const toggle=document.getElementById('geoShowRadius');
+    geoShowRadius=!geoShowRadius;
+    toggle.classList.toggle('active',geoShowRadius);
+    geoCircles.forEach(c=>c.setMap(geoShowRadius?geoMap:null));
+}
+
+function geoFitBounds(){
+    if(geoMarkers.length===0)return;
+    const bounds=new google.maps.LatLngBounds();
+    geoMarkers.forEach(m=>bounds.extend(m.getPosition()));
+    geoMap.fitBounds(bounds);
+    const listener=google.maps.event.addListener(geoMap,'idle',()=>{
+        if(geoMap.getZoom()>15)geoMap.setZoom(15);
+        google.maps.event.removeListener(listener);
+    });
+}
+
+function geoSaveLocations(){localStorage.setItem('geo_locations',JSON.stringify(geoLocations))}
+
+document.getElementById('geoMinDistance').addEventListener('change',()=>{
+    geoUpdateUI();
+    const minDist=parseFloat(document.getElementById('geoMinDistance').value)||2;
+    geoCircles.forEach(c=>c.setRadius(minDist*1000));
+});
+
+function geoShowToast(msg,type='info'){
+    const container=document.getElementById('geoToastContainer');
+    const toast=document.createElement('div');
+    toast.className=`geo-toast ${type}`;
+    const icons={error:'❌',success:'✅',warning:'⚠️',info:'ℹ️'};
+    toast.innerHTML=`<span class="geo-toast-icon">${icons[type]}</span><span class="geo-toast-msg">${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(()=>{toast.style.animation='geoToastIn .3s ease reverse';setTimeout(()=>toast.remove(),300)},3000);
+}
+
+// Base de endereços pré-definida
+const GEO_BASE_ADDRESSES = [
+    {codigo: 1, nome: 'Showroom ISA|PAES', logradouro: 'Rua Safira', numero: 541, bairro: 'Prado', municipio: 'Belo Horizonte', estado: 'MG', cep: '30411-127'},
+    {codigo: 2, nome: 'Fábrica ISA|PAES', logradouro: 'Rua Ituiutaba', numero: 401, bairro: 'Prado', municipio: 'Belo Horizonte', estado: 'MG', cep: '30411-023'},
+    {codigo: 3, nome: 'Outlet ISA|PAES', logradouro: 'Rua Cuiabá', numero: 586, bairro: 'Prado', municipio: 'Belo Horizonte', estado: 'MG', cep: '30411-213'}
+];
+
+function geoFormatAddress(item) {
+    return `${item.logradouro}, ${item.numero} - ${item.bairro}, ${item.municipio} - ${item.estado}, ${item.cep}`;
+}
+
+async function geoLoadBaseAddresses() {
+    if (!geoMapInitialized) {
+        geoShowToast('Aguarde o mapa carregar', 'warning');
+        return;
+    }
+    if (GEO_BASE_ADDRESSES.length === 0) {
+        geoShowToast('Nenhum endereço na base', 'warning');
+        return;
+    }
+    await geoProcessAddressList(GEO_BASE_ADDRESSES);
+}
+
+async function geoImportExcel(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (!geoMapInitialized) {
+        geoShowToast('Aguarde o mapa carregar', 'warning');
+        event.target.value = '';
+        return;
+    }
+
+    // Carregar SheetJS dinamicamente se necessário
+    if (!window.XLSX) {
+        geoShowToast('Carregando leitor de Excel...', 'info');
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    try {
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data);
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet);
+
+        if (rows.length === 0) {
+            geoShowToast('Planilha vazia', 'error');
+            return;
+        }
+
+        // Mapear colunas (flexível)
+        const addresses = rows.map(row => {
+            const logradouro = row['Logradouro'] || row['logradouro'] || row['Endereco'] || row['endereco'] || row['Rua'] || row['rua'] || '';
+            const numero = row['Número'] || row['numero'] || row['Numero'] || row['Num'] || row['num'] || '';
+            const bairro = row['Bairro'] || row['bairro'] || '';
+            const municipio = row['Município'] || row['municipio'] || row['Municipio'] || row['Cidade'] || row['cidade'] || '';
+            const estado = row['Estado'] || row['estado'] || row['UF'] || row['uf'] || '';
+            const cep = row['CEP'] || row['cep'] || row['Cep'] || '';
+            const nome = row['Nome'] || row['nome'] || row['Local'] || row['local'] || '';
+            const codigo = row['Codigo'] || row['codigo'] || row['Código'] || row['ID'] || row['id'] || '';
+            
+            return { codigo, nome, logradouro, numero, bairro, municipio, estado, cep };
+        }).filter(a => a.logradouro || a.municipio);
+
+        if (addresses.length === 0) {
+            geoShowToast('Nenhum endereço válido encontrado', 'error');
+            return;
+        }
+
+        await geoProcessAddressList(addresses);
+        
+    } catch (err) {
+        console.error(err);
+        geoShowToast('Erro ao ler planilha', 'error');
+    }
+    
+    event.target.value = '';
+}
+
+async function geoProcessAddressList(addresses) {
+    const overlay = document.getElementById('geoProgressOverlay');
+    const progressText = document.getElementById('geoProgressText');
+    const progressFill = document.getElementById('geoProgressFill');
+    
+    overlay.classList.remove('hidden');
+    progressFill.style.width = '0%';
+    
+    const minDist = parseFloat(document.getElementById('geoMinDistance').value) || 2;
+    let added = 0, skipped = 0, errors = 0;
+
+    for (let i = 0; i < addresses.length; i++) {
+        const item = addresses[i];
+        const fullAddress = geoFormatAddress(item);
+        const progress = ((i + 1) / addresses.length) * 100;
+        
+        progressText.textContent = `Processando ${i + 1}/${addresses.length}: ${item.nome || fullAddress.substring(0, 30)}...`;
+        progressFill.style.width = progress + '%';
+
+        // Verificar se já existe
+        const exists = geoLocations.some(l => 
+            l.address.toLowerCase().includes(item.logradouro.toLowerCase()) &&
+            l.address.includes(String(item.numero))
+        );
+
+        if (exists) {
+            skipped++;
+            continue;
+        }
+
+        try {
+            const result = await geoGeocode(fullAddress);
+            const conflicts = geoCheckConflicts(result.lat, result.lng, minDist);
+            
+            const newLoc = {
+                id: Date.now() + i,
+                address: result.address,
+                nome: item.nome || '',
+                lat: result.lat,
+                lng: result.lng,
+                bypass: false,
+                conflicts: conflicts
+            };
+
+            geoLocations.push(newLoc);
+            geoCreateMarker(newLoc, geoLocations.length - 1);
+            added++;
+            
+            // Pequena pausa para não sobrecarregar a API
+            await new Promise(r => setTimeout(r, 300));
+            
+        } catch (err) {
+            console.warn('Erro ao geocodificar:', fullAddress, err);
+            errors++;
+        }
+    }
+
+    overlay.classList.add('hidden');
+    geoSaveLocations();
+    geoUpdateUI();
+    geoFitBounds();
+
+    let msg = `${added} adicionado(s)`;
+    if (skipped > 0) msg += `, ${skipped} já existia(m)`;
+    if (errors > 0) msg += `, ${errors} erro(s)`;
+    
+    geoShowToast(msg, errors > 0 ? 'warning' : 'success');
+}
 </script></body></html>
