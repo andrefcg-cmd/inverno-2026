@@ -15,14 +15,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .splash.fade-out{opacity:0;pointer-events:none}
 .splash-logo{width:200px;animation:splashPulse 1.5s ease-in-out infinite}
 .splash-icons{margin-top:32px;display:flex;gap:20px;font-size:24px}
-.splash-icon{animation:splashIcon 2s ease-in-out infinite;opacity:0.3}
-.splash-icon:nth-child(1){animation-delay:0s}
-.splash-icon:nth-child(2){animation-delay:0.3s}
-.splash-icon:nth-child(3){animation-delay:0.6s}
-.splash-icon:nth-child(4){animation-delay:0.9s}
-.splash-icon:nth-child(5){animation-delay:1.2s}
+.splash-icon{opacity:0.3}
+.splash-icon:nth-child(1){animation:splashIcon 2.5s ease-in-out}
+.splash-icon:nth-child(2){animation:splashIcon 2.5s ease-in-out 0.5s}
+.splash-icon:nth-child(3){animation:splashIcon 2.5s ease-in-out 1s}
+.splash-icon:nth-child(4){animation:splashIcon 2.5s ease-in-out 1.5s}
+.splash-icon:nth-child(5){animation:splashIcon 2.5s ease-in-out 2s}
 @keyframes splashPulse{0%,100%{opacity:.8}50%{opacity:1}}
-@keyframes splashIcon{0%,100%{opacity:0.3;transform:scale(1)}50%{opacity:1;transform:scale(1.2)}}
+@keyframes splashIcon{0%,100%{opacity:0.3;transform:scale(1)}20%{opacity:1;transform:scale(1.2)}40%{opacity:0.3;transform:scale(1)}}
 
 /* HOME */
 .home{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
@@ -555,7 +555,7 @@ const F=[{"referencia": "BLI26028", "descricao": "BLUSA TOP PAETE PEPLUM DETALHE
 setTimeout(()=>{
     document.getElementById('splash').classList.add('fade-out');
     setTimeout(()=>{document.getElementById('splash').style.display='none';document.getElementById('home').classList.add('visible')},500);
-},2000);
+},3000);
 
 // ===== USUÁRIOS E PERMISSÕES =====
 const USERS = {
