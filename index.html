@@ -49,6 +49,41 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .dev-back{margin-top:32px;background:var(--card);border:1px solid var(--brd);color:var(--txt);padding:14px 32px;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer}
 .dev-back:active{background:var(--card2)}
 
+/* LOGIN */
+.login-screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+.login-screen.active{display:flex}
+.login-box{width:100%;max-width:320px}
+.login-icon{font-size:48px;text-align:center;margin-bottom:8px}
+.login-title{font-size:20px;font-weight:600;text-align:center;margin-bottom:4px}
+.login-subtitle{font-size:12px;color:var(--txt2);text-align:center;margin-bottom:32px}
+.login-field{margin-bottom:16px}
+.login-label{font-size:12px;color:var(--txt2);margin-bottom:6px;display:block}
+.login-input{width:100%;background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:14px 16px;color:var(--txt);font-size:14px;outline:none}
+.login-input:focus{border-color:var(--accent)}
+.login-input::placeholder{color:#444}
+.login-btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px}
+.login-btn:active{opacity:0.85}
+.login-error{font-size:12px;color:var(--red);text-align:center;margin-top:12px;min-height:18px}
+.login-back{margin-top:24px;background:none;border:none;color:var(--txt2);font-size:13px;cursor:pointer;text-align:center;display:block;width:100%}
+
+/* SUBMENU */
+.submenu-screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+.submenu-screen.active{display:flex}
+.submenu-title{font-size:20px;font-weight:600;margin-bottom:6px}
+.submenu-desc{font-size:12px;color:var(--txt2);margin-bottom:32px}
+.submenu-grid{display:flex;flex-direction:column;gap:14px;width:100%;max-width:360px}
+.sub-btn{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all .15s}
+.sub-btn:active{transform:scale(0.98);background:var(--card2)}
+.sub-btn.disabled{opacity:0.4;cursor:default}
+.sub-btn.disabled:active{transform:none}
+.sub-icon{font-size:24px;width:44px;height:44px;background:var(--card2);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sub-info{flex:1}
+.sub-name{font-size:15px;font-weight:600}
+.sub-desc{font-size:11px;color:var(--txt2);margin-top:2px}
+.sub-arrow{color:var(--txt2);font-size:18px}
+.sub-soon{font-size:10px;color:var(--txt2);background:var(--card2);border:1px solid var(--brd);padding:4px 10px;border-radius:10px;white-space:nowrap}
+.submenu-back{margin-top:32px;background:none;border:none;color:var(--txt2);font-size:13px;cursor:pointer}
+
 /* APP */
 .app-screen{display:none}.app-screen.active{display:block}
 .header{background:var(--card);padding:16px;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:12px}
@@ -127,6 +162,51 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="home-footer">Isa Paes © 2026</div>
 </div>
 
+<!-- LOGIN ÚNICO -->
+<div class="login-screen" id="login-screen">
+    <div class="login-box">
+        <div class="login-icon" id="login-mod-icon">📊</div>
+        <div class="login-title" id="login-mod-title">Comercial</div>
+        <div class="login-subtitle">Faça login para acessar</div>
+        <div class="login-field">
+            <label class="login-label">Usuário</label>
+            <input type="text" class="login-input" id="login-user" placeholder="Digite seu usuário" autocomplete="username" autocapitalize="none">
+        </div>
+        <div class="login-field">
+            <label class="login-label">Senha</label>
+            <input type="password" class="login-input" id="login-pw" placeholder="••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <button class="login-btn" onclick="doLogin()">Entrar</button>
+        <div class="login-error" id="login-error"></div>
+        <button class="login-back" onclick="goHome()">← Voltar</button>
+    </div>
+</div>
+
+<!-- SUBMENU: COMERCIAL -->
+<div class="submenu-screen" id="sub-comercial">
+    <div class="login-icon">📊</div>
+    <div class="submenu-title">Comercial</div>
+    <div class="submenu-desc">Selecione o canal de vendas</div>
+    <div class="submenu-grid">
+        <div class="sub-btn" onclick="openChannel('showroom')">
+            <div class="sub-icon">🏬</div>
+            <div class="sub-info"><div class="sub-name">Showroom</div><div class="sub-desc">Vendas presenciais</div></div>
+            <div class="sub-arrow">›</div>
+        </div>
+        <div class="sub-btn disabled">
+            <div class="sub-icon">🏷️</div>
+            <div class="sub-info"><div class="sub-name">Outlet</div><div class="sub-desc">Vendas outlet</div></div>
+            <span class="sub-soon">Em breve</span>
+        </div>
+        <div class="sub-btn disabled">
+            <div class="sub-icon">🌐</div>
+            <div class="sub-info"><div class="sub-name">E-commerce</div><div class="sub-desc">Vendas online</div></div>
+            <span class="sub-soon">Em breve</span>
+        </div>
+    </div>
+    <button class="submenu-back" onclick="goHome()">← Voltar ao menu</button>
+</div>
+
 <!-- DEV: COMPRAS -->
 <div class="dev-screen" id="dev-compras">
     <div class="dev-icon">🛒</div>
@@ -146,7 +226,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <!-- COMERCIAL -->
 <div class="app-screen" id="app-comercial">
 <div class="header">
-    <button class="back-btn" onclick="goHome()">←</button>
+    <button class="back-btn" onclick="backToSub()">←</button>
     <div class="header-info"><h1>Comercial</h1><div class="sub">1ª Cápsula Inverno 2026</div></div>
 </div>
 <nav class="nav"><button class="nav-btn active" data-screen="dashboard">📊 Resumo</button><button class="nav-btn" data-screen="meta">🎯 Meta 80%</button><button class="nav-btn" data-screen="ranking">🏆 Ranking</button><button class="nav-btn" data-screen="campanha">🔥 Campanha</button></nav>
@@ -181,16 +261,96 @@ setTimeout(()=>{
     setTimeout(()=>{document.getElementById('splash').style.display='none';document.getElementById('home').classList.add('visible')},500);
 },2000);
 
+// ===== USUÁRIOS E PERMISSÕES =====
+const USERS = {
+    'andre':   {pw:'736221', nome:'André',    role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce']},
+    'rafael':  {pw:'3022',   nome:'Rafael',   role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce']},
+    'isabella':{pw:'Isa',    nome:'Isabella', role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce']}
+};
+let currentMod=null, currentUser=null;
+const allScreens='.app-screen,.dev-screen,.login-screen,.submenu-screen';
+function hideAll(){document.querySelectorAll(allScreens).forEach(s=>s.classList.remove('active'))}
+const modIcons={comercial:'📊',compras:'🛒',financeiro:'💰'};
+const modNames={comercial:'Comercial',compras:'Compras',financeiro:'Financeiro'};
+
 function openModule(mod){
+    currentMod=mod;
     document.getElementById('home').classList.remove('visible');document.getElementById('home').classList.add('hidden');
-    if(mod==='comercial'){document.getElementById('app-comercial').classList.add('active')}
+    hideAll();
+    const bioUser=localStorage.getItem('bio-user');
+    if(bioUser && USERS[bioUser]){tryBiometric(mod,bioUser);return}
+    if(sessionStorage.getItem('auth-'+mod)){afterLogin(mod,sessionStorage.getItem('auth-'+mod));return}
+    showLoginScreen(mod);
+}
+function showLoginScreen(mod){
+    hideAll();
+    document.getElementById('login-mod-icon').textContent=modIcons[mod]||'📊';
+    document.getElementById('login-mod-title').textContent=modNames[mod]||mod;
+    document.getElementById('login-screen').classList.add('active');
+    document.getElementById('login-user').value='';
+    document.getElementById('login-pw').value='';
+    document.getElementById('login-error').textContent='';
+    setTimeout(()=>document.getElementById('login-user').focus(),100);
+}
+function doLogin(){
+    const user=document.getElementById('login-user').value.trim().toLowerCase();
+    const pw=document.getElementById('login-pw').value;
+    const u=USERS[user];
+    if(!u||u.pw!==pw){document.getElementById('login-error').textContent='Usuário ou senha incorretos';document.getElementById('login-pw').value='';return}
+    if(!u.access.includes(currentMod)){document.getElementById('login-error').textContent='Sem permissão para este módulo';return}
+    currentUser=user;
+    document.getElementById('login-error').textContent='';
+    sessionStorage.setItem('auth-'+currentMod,user);
+    if(!localStorage.getItem('bio-user')&&window.PublicKeyCredential){
+        if(confirm('Olá, '+u.nome+'! Deseja ativar a biometria para login rápido?')){registerBiometric(user)}
+    }
+    afterLogin(currentMod,user);
+}
+// ===== BIOMETRIA =====
+async function registerBiometric(user){
+    try{
+        const id=new TextEncoder().encode(user);
+        const cred=await navigator.credentials.create({publicKey:{
+            challenge:crypto.getRandomValues(new Uint8Array(32)),
+            rp:{name:'Isa Paes',id:location.hostname},
+            user:{id,name:user,displayName:USERS[user].nome},
+            pubKeyCredParams:[{alg:-7,type:'public-key'}],
+            authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'},
+            timeout:60000
+        }});
+        if(cred){localStorage.setItem('bio-user',user);localStorage.setItem('bio-cred-id',btoa(String.fromCharCode(...new Uint8Array(cred.rawId))))}
+    }catch(e){console.log('Bio cancelado')}
+}
+async function tryBiometric(mod,user){
+    try{
+        const credId=localStorage.getItem('bio-cred-id');
+        if(!credId){showLoginScreen(mod);return}
+        const rawId=Uint8Array.from(atob(credId),c=>c.charCodeAt(0));
+        const a=await navigator.credentials.get({publicKey:{
+            challenge:crypto.getRandomValues(new Uint8Array(32)),
+            allowCredentials:[{id:rawId,type:'public-key',transports:['internal']}],
+            userVerification:'required',timeout:60000
+        }});
+        if(a){
+            currentUser=user;const u=USERS[user];
+            if(!u.access.includes(mod)){alert('Sem permissão para este módulo');goHome();return}
+            sessionStorage.setItem('auth-'+mod,user);afterLogin(mod,user);
+        }else{showLoginScreen(mod)}
+    }catch(e){showLoginScreen(mod)}
+}
+function afterLogin(mod,user){
+    hideAll();currentUser=user;
+    if(mod==='comercial'){document.getElementById('sub-comercial').classList.add('active')}
     else if(mod==='compras'){document.getElementById('dev-compras').classList.add('active')}
     else if(mod==='financeiro'){document.getElementById('dev-financeiro').classList.add('active')}
 }
-function goHome(){
-    document.querySelectorAll('.app-screen,.dev-screen').forEach(s=>s.classList.remove('active'));
-    document.getElementById('home').classList.remove('hidden');document.getElementById('home').classList.add('visible');
+function openChannel(ch){
+    if(currentUser){const u=USERS[currentUser];if(u&&!u.channels.includes(ch)){alert('Sem permissão para este canal');return}}
+    hideAll();
+    if(ch==='showroom'){document.getElementById('app-comercial').classList.add('active')}
 }
+function backToSub(){hideAll();document.getElementById('sub-comercial').classList.add('active')}
+function goHome(){hideAll();currentMod=null;document.getElementById('home').classList.remove('hidden');document.getElementById('home').classList.add('visible')}
 function fC(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}).format(v)}
 function fCF(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v)}
 function fP(v){return(v*100).toFixed(1)+'%'}
