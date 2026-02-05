@@ -592,8 +592,8 @@ function backFromChangePw(){
     changePwReturnTo=null;
 }
 let currentMod=null, currentUser=null;
-const allScreens='.app-screen,.dev-screen,.login-screen,.submenu-screen,.changepw-screen';
-function hideAll(){document.querySelectorAll(allScreens).forEach(s=>s.classList.remove('active'))}
+const allScreens='.app-screen,.dev-screen,.login-screen,.submenu-screen,.changepw-screen,.geo-screen';
+function hideAll(){document.querySelectorAll(allScreens).forEach(s=>s.classList.remove('active'));document.getElementById('home').classList.add('hidden');document.getElementById('home').classList.remove('visible')}
 const modIcons={comercial:'📊',compras:'🛒',financeiro:'💰'};
 const modNames={comercial:'Comercial',compras:'Compras',financeiro:'Financeiro'};
 
