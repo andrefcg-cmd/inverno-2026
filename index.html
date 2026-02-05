@@ -907,13 +907,11 @@ function geoUpdateUI(){
     }
     list.innerHTML=geoLocations.map((loc,i)=>{
         const hasConflict=loc.conflicts&&loc.conflicts.length>0;
-        const isBypassed=loc.bypass&&hasConflict;
         let cardClass='',statusHtml='';
-        if(isBypassed){cardClass='warning';statusHtml=`<span class="geo-loc-status bypassed">⚡ Bypass (${loc.conflicts.length})</span>`}
-        else if(hasConflict){cardClass='conflict';const dets=loc.conflicts.map(c=>c.distance+'km').join(', ');statusHtml=`<span class="geo-loc-status conflict">⚠️ ${loc.conflicts.length}: ${dets}</span>`}
+        if(hasConflict){cardClass='conflict';const dets=loc.conflicts.map(c=>c.distance+'km').join(', ');statusHtml=`<span class="geo-loc-status conflict">⚠️ ${loc.conflicts.length}: ${dets}</span>`}
         else{cardClass='valid';statusHtml='<span class="geo-loc-status ok">✓ OK</span>'}
         const displayName = loc.nome ? `<div class="geo-loc-name">${loc.nome}</div>` : '';
-        return`<div class="geo-loc-card ${cardClass}"><div class="geo-loc-marker">${i+1}</div><div class="geo-loc-info">${displayName}<div class="geo-loc-address">${loc.address}</div><div class="geo-loc-coords">${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}</div>${statusHtml}</div><div class="geo-loc-actions"><button class="geo-action-btn" onclick="geoFocus(${loc.id})" title="Focar">🎯</button>${hasConflict?`<button class="geo-action-btn bypass ${loc.bypass?'active':''}" onclick="geoToggleBypass(${loc.id})" title="Bypass">⚡</button>`:''}<button class="geo-action-btn delete" onclick="geoRemove(${loc.id})" title="Remover">×</button></div></div>`;
+        return`<div class="geo-loc-card ${cardClass}" onclick="geoFocus(${loc.id})" style="cursor:pointer"><div class="geo-loc-marker">${i+1}</div><div class="geo-loc-info">${displayName}<div class="geo-loc-address">${loc.address}</div><div class="geo-loc-coords">${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}</div>${statusHtml}</div><div class="geo-loc-actions"><button class="geo-action-btn delete" onclick="event.stopPropagation();geoRemove(${loc.id})" title="Remover">×</button></div></div>`;
     }).join('');
     geoUpdateMarkers();
 }
