@@ -1,11 +1,11 @@
 {
-    "name": "1ª Cápsula Inverno 2026 - Análise de Vendas",
-    "short_name": "Cápsula 2026",
-    "description": "Aplicativo de análise de vendas da 1ª Cápsula Inverno 2026",
+    "name": "Isa Paes - Análise de Vendas",
+    "short_name": "Isa Paes",
+    "description": "Aplicativo de análise de vendas - Isa Paes",
     "start_url": "/index.html",
     "display": "standalone",
-    "background_color": "#0f0f1a",
-    "theme_color": "#1a1a2e",
+    "background_color": "#000000",
+    "theme_color": "#000000",
     "orientation": "portrait",
     "icons": [
         {
