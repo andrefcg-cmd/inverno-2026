@@ -352,17 +352,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <!-- GEOLOCALIZADOR -->
 <div class="geo-screen" id="geo-screen">
-    <div class="geo-api-modal" id="geoApiModal">
-        <div class="geo-api-box">
-            <h2>🔑 API Key do Google Maps</h2>
-            <p>Para usar o geocodificador, insira sua API Key do Google Maps com as APIs <strong>Maps JavaScript</strong> e <strong>Geocoding</strong> habilitadas.</p>
-            <input type="text" class="geo-api-input" id="geoApiKeyInput" placeholder="Cole sua API Key aqui...">
-            <button class="geo-api-btn" onclick="geoSaveApiKey()">Salvar e Iniciar</button>
-            <div class="geo-api-note">
-                💡 Não tem uma API Key? <a href="https://console.cloud.google.com/google/maps-apis" target="_blank">Crie uma aqui</a>
-            </div>
-        </div>
-    </div>
     <div class="geo-header">
         <button class="back-btn" onclick="goHome()">←</button>
         <h1>📍 GeoLocalizador</h1>
@@ -732,39 +721,20 @@ window.addEventListener('appinstalled',()=>{ib.classList.remove('visible')});
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/inverno-2026/sw.js',{scope:'/inverno-2026/'}).catch(()=>{})}
 
 // ========== GEOLOCALIZADOR ==========
-let geoMap,geoGeocoder,geoLocations=[],geoMarkers=[],geoCircles=[],geoShowRadius=true,geoApiKey=localStorage.getItem('geo_api_key'),geoMapInitialized=false;
+let geoMap,geoGeocoder,geoLocations=[],geoMarkers=[],geoCircles=[],geoShowRadius=true,geoApiKey='AIzaSyARGjgURb7_rNxQVkeV6XLk4UcPzhc',geoMapInitialized=false;
 
 function geoInit(){
-    if(!geoApiKey){
-        // Sem API Key - mostrar modal
-        document.getElementById('geoApiModal').classList.remove('hidden');
+    if(!geoMapInitialized){
+        geoLoadMaps();
     }else{
-        // Tem API Key - esconder modal
-        document.getElementById('geoApiModal').classList.add('hidden');
-        if(!geoMapInitialized){
-            // Mapa não foi inicializado ainda
-            geoLoadMaps();
-        }else{
-            // Mapa já inicializado - apenas atualizar UI
-            geoUpdateUI();
-            // Forçar redimensionamento do mapa (fix para quando a tela estava oculta)
-            setTimeout(()=>{
-                if(geoMap){
-                    google.maps.event.trigger(geoMap,'resize');
-                    if(geoMarkers.length>0)geoFitBounds();
-                }
-            },100);
-        }
+        geoUpdateUI();
+        setTimeout(()=>{
+            if(geoMap){
+                google.maps.event.trigger(geoMap,'resize');
+                if(geoMarkers.length>0)geoFitBounds();
+            }
+        },100);
     }
-}
-
-function geoSaveApiKey(){
-    const key=document.getElementById('geoApiKeyInput').value.trim();
-    if(!key){geoShowToast('Insira uma API Key válida','error');return}
-    geoApiKey=key;
-    localStorage.setItem('geo_api_key',geoApiKey);
-    document.getElementById('geoApiModal').classList.add('hidden');
-    geoLoadMaps();
 }
 
 function geoLoadMaps(){
@@ -777,16 +747,12 @@ function geoLoadMaps(){
     script.async=true;
     script.defer=true;
     script.onerror=()=>{
-        geoShowToast('Erro ao carregar Google Maps. Verifique sua API Key.','error');
-        localStorage.removeItem('geo_api_key');
-        geoApiKey=null;
-        document.getElementById('geoApiModal').classList.remove('hidden');
+        geoShowToast('Erro ao carregar Google Maps.','error');
     };
     document.head.appendChild(script);
 }
 
 function geoInitMap(){
-    document.getElementById('geoApiModal').classList.add('hidden');
     geoMap=new google.maps.Map(document.getElementById('geoMap'),{
         center:{lat:-19.9167,lng:-43.9345}, // Belo Horizonte
         zoom:12,
