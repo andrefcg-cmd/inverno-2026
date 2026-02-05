@@ -1,4 +1,4 @@
-const CACHE_NAME = 'isapaes-v4';
+const CACHE_NAME = 'isapaes-v5';
 const BASE = '/inverno-2026/';
 const urlsToCache = [
     BASE,
