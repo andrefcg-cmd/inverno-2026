@@ -1127,13 +1127,20 @@ async function geoVerifyAddress() {
         geoLocations.forEach((loc, i) => geoCreateMarkerVerify(loc, i));
         geoUpdateUIVerify();
         
-        // Mostrar resultado
+        // Mostrar resultado com endereço encontrado
+        let resultHtml = `<div style="font-size:11px;color:var(--txt2);margin-bottom:8px">📍 Encontrado: ${geocodeResult.address}</div>`;
+        
         if (nearby.length > 0) {
             nearby.sort((a, b) => a.dist - b.dist);
-            result.innerHTML = `<strong>⚠️ ${nearby.length} local(is) dentro de ${minDist}km!</strong>`;
+            resultHtml += `<strong>⚠️ ${nearby.length} local(is) dentro de ${minDist}km!</strong>`;
+            result.innerHTML = resultHtml;
             result.className = 'geo-verify-result warning';
         } else {
-            result.innerHTML = `<strong>✅ Nenhum local dentro de ${minDist}km!</strong>`;
+            // Mostrar o local mais próximo mesmo que fora do raio
+            const closest = geoLocations.reduce((a, b) => a.distToVerify < b.distToVerify ? a : b);
+            resultHtml += `<strong>✅ Nenhum local dentro de ${minDist}km!</strong>`;
+            resultHtml += `<div style="font-size:11px;color:var(--txt2);margin-top:4px">Local mais próximo: ${closest.nome} (${(closest.distToVerify * 1000).toFixed(0)}m)</div>`;
+            result.innerHTML = resultHtml;
             result.className = 'geo-verify-result success';
         }
         
