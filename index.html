@@ -213,22 +213,32 @@ document.getElementById('lf').innerHTML=F.map(t=>`<div class="product-item"><div
 document.getElementById('sc')?.addEventListener('input',e=>rP(e.target.value));
 // PWA Install
 let deferredPrompt;
+const ib=document.getElementById('installBanner');
+const isStandalone=window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone;
+if(!isStandalone){ib.classList.add('visible')}
 window.addEventListener('beforeinstallprompt',e=>{
     e.preventDefault();
     deferredPrompt=e;
-    document.getElementById('installBanner').classList.add('visible');
+    if(!isStandalone)ib.classList.add('visible');
 });
 function installApp(){
     if(deferredPrompt){
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then(r=>{
-            if(r.outcome==='accepted')document.getElementById('installBanner').classList.remove('visible');
+            if(r.outcome==='accepted')ib.classList.remove('visible');
             deferredPrompt=null;
         });
+    }else{
+        // Fallback: instrução manual
+        const ua=navigator.userAgent.toLowerCase();
+        if(ua.includes('iphone')||ua.includes('ipad')){
+            alert('Para instalar:\n\n1. Toque no botão Compartilhar ⬆️\n2. Selecione "Adicionar à Tela de Início"');
+        }else{
+            alert('Para instalar:\n\n1. Toque nos 3 pontinhos (⋮) do navegador\n2. Selecione "Instalar app" ou "Adicionar à tela inicial"');
+        }
     }
 }
-window.addEventListener('appinstalled',()=>{document.getElementById('installBanner').classList.remove('visible')});
-if(window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone){document.getElementById('installBanner').style.display='none'}
+window.addEventListener('appinstalled',()=>{ib.classList.remove('visible')});
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register('/inverno-2026/sw.js',{scope:'/inverno-2026/'}).catch(()=>{})}
 </script></body></html>
