@@ -127,6 +127,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .summary-card-value{font-size:16px;font-weight:700}.summary-card-label{font-size:10px;color:var(--txt2);margin-top:2px}
 .info-banner{background:linear-gradient(135deg,var(--accent),#ff6b6b);border-radius:12px;padding:14px 16px;margin-bottom:16px}
 .info-banner-title{font-size:12px;font-weight:600;color:rgba(255,255,255,.9)}.info-banner-value{font-size:14px;font-weight:700;color:#fff;margin-top:4px}
+
+/* CHANGE PASSWORD */
+.changepw-screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+.changepw-screen.active{display:flex}
+.changepw-box{width:100%;max-width:320px}
+.changepw-icon{font-size:48px;text-align:center;margin-bottom:8px}
+.changepw-title{font-size:20px;font-weight:600;text-align:center;margin-bottom:4px}
+.changepw-subtitle{font-size:12px;color:var(--txt2);text-align:center;margin-bottom:32px}
+.changepw-field{margin-bottom:16px}
+.changepw-label{font-size:12px;color:var(--txt2);margin-bottom:6px;display:block}
+.changepw-input{width:100%;background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:14px 16px;color:var(--txt);font-size:14px;outline:none}
+.changepw-input:focus{border-color:var(--accent)}
+.changepw-input::placeholder{color:#444}
+.changepw-btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px}
+.changepw-btn:active{opacity:0.85}
+.changepw-msg{font-size:12px;text-align:center;margin-top:12px;min-height:18px}
+.changepw-msg.error{color:var(--red)}
+.changepw-msg.success{color:var(--green)}
+.changepw-back{margin-top:24px;background:none;border:none;color:var(--txt2);font-size:13px;cursor:pointer;text-align:center;display:block;width:100%}
+.settings-btn{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:10px 18px;color:var(--txt2);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:16px;transition:all .15s}
+.settings-btn:active{background:var(--card2);transform:scale(0.98)}
 </style></head><body>
 
 <!-- SPLASH -->
@@ -205,6 +226,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         </div>
     </div>
     <button class="submenu-back" onclick="goHome()">← Voltar ao menu</button>
+    <button class="settings-btn" onclick="openChangePw()">⚙️ Alterar Senha</button>
 </div>
 
 <!-- DEV: COMPRAS -->
@@ -213,6 +235,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="dev-title">Compras</div>
     <div class="dev-text">Este módulo está em desenvolvimento.<br>Em breve você terá acesso aos relatórios de compras, pedidos e fornecedores.</div>
     <button class="dev-back" onclick="goHome()">← Voltar</button>
+    <button class="settings-btn" onclick="openChangePw()">⚙️ Alterar Senha</button>
 </div>
 
 <!-- DEV: FINANCEIRO -->
@@ -221,13 +244,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="dev-title">Financeiro</div>
     <div class="dev-text">Este módulo está em desenvolvimento.<br>Em breve você terá acesso ao fluxo de caixa, contas a pagar e receber.</div>
     <button class="dev-back" onclick="goHome()">← Voltar</button>
+    <button class="settings-btn" onclick="openChangePw()">⚙️ Alterar Senha</button>
+</div>
+
+<!-- ALTERAR SENHA -->
+<div class="changepw-screen" id="changepw-screen">
+    <div class="changepw-box">
+        <div class="changepw-icon">🔒</div>
+        <div class="changepw-title">Alterar Senha</div>
+        <div class="changepw-subtitle" id="changepw-user-label">Logado como: —</div>
+        <div class="changepw-field">
+            <label class="changepw-label">Senha Atual</label>
+            <input type="password" class="changepw-input" id="changepw-current" placeholder="••••••" autocomplete="current-password">
+        </div>
+        <div class="changepw-field">
+            <label class="changepw-label">Nova Senha</label>
+            <input type="password" class="changepw-input" id="changepw-new" placeholder="••••••" autocomplete="new-password">
+        </div>
+        <div class="changepw-field">
+            <label class="changepw-label">Confirmar Nova Senha</label>
+            <input type="password" class="changepw-input" id="changepw-confirm" placeholder="••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')doChangePw()">
+        </div>
+        <button class="changepw-btn" onclick="doChangePw()">Salvar Nova Senha</button>
+        <div class="changepw-msg" id="changepw-msg"></div>
+        <button class="changepw-back" onclick="backFromChangePw()">← Voltar</button>
+    </div>
 </div>
 
 <!-- COMERCIAL -->
 <div class="app-screen" id="app-comercial">
 <div class="header">
     <button class="back-btn" onclick="backToSub()">←</button>
-    <div class="header-info"><h1>Comercial</h1><div class="sub">1ª Cápsula Inverno 2026</div></div>
+    <div class="header-info" style="flex:1"><h1>Comercial</h1><div class="sub">1ª Cápsula Inverno 2026</div></div>
+    <button class="back-btn" onclick="openChangePw()" title="Alterar Senha">⚙️</button>
 </div>
 <nav class="nav"><button class="nav-btn active" data-screen="dashboard">📊 Resumo</button><button class="nav-btn" data-screen="meta">🎯 Meta 80%</button><button class="nav-btn" data-screen="ranking">🏆 Ranking</button><button class="nav-btn" data-screen="campanha">🔥 Campanha</button></nav>
 <main class="content">
@@ -265,10 +314,70 @@ setTimeout(()=>{
 const USERS = {
     'andre':   {pw:'736221', nome:'André',    role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce']},
     'rafael':  {pw:'3022',   nome:'Rafael',   role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce']},
-    'isabella':{pw:'Isa',    nome:'Isabella', role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce']}
+    'isabella':{pw:'Isa',    nome:'Isabella', role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce']},
+    'mariana.s':{pw:'1402',  nome:'Mariana S.',role:'user', access:['comercial'], channels:['showroom']}
 };
+
+// ===== SENHAS PERSISTENTES (localStorage) =====
+(function loadSavedPasswords(){
+    const saved=localStorage.getItem('isa-paes-passwords');
+    if(saved){try{const pw=JSON.parse(saved);Object.keys(pw).forEach(u=>{if(USERS[u])USERS[u].pw=pw[u]})}catch(e){}}
+})();
+function savePasswords(){
+    const pw={};Object.keys(USERS).forEach(u=>pw[u]=USERS[u].pw);
+    localStorage.setItem('isa-paes-passwords',JSON.stringify(pw));
+}
+
+// ===== ALTERAR SENHA =====
+let changePwReturnTo=null;
+function openChangePw(){
+    if(!currentUser){alert('Faça login primeiro');return}
+    // detectar de qual tela veio
+    if(document.getElementById('sub-comercial').classList.contains('active'))changePwReturnTo='sub-comercial';
+    else if(document.getElementById('dev-compras').classList.contains('active'))changePwReturnTo='dev-compras';
+    else if(document.getElementById('dev-financeiro').classList.contains('active'))changePwReturnTo='dev-financeiro';
+    else if(document.getElementById('app-comercial').classList.contains('active'))changePwReturnTo='sub-comercial';
+    else changePwReturnTo='home';
+    hideAll();
+    document.getElementById('changepw-screen').classList.add('active');
+    document.getElementById('changepw-user-label').textContent='Logado como: '+USERS[currentUser].nome;
+    document.getElementById('changepw-current').value='';
+    document.getElementById('changepw-new').value='';
+    document.getElementById('changepw-confirm').value='';
+    document.getElementById('changepw-msg').textContent='';
+    document.getElementById('changepw-msg').className='changepw-msg';
+    setTimeout(()=>document.getElementById('changepw-current').focus(),100);
+}
+function doChangePw(){
+    const msg=document.getElementById('changepw-msg');
+    const curr=document.getElementById('changepw-current').value;
+    const newP=document.getElementById('changepw-new').value;
+    const conf=document.getElementById('changepw-confirm').value;
+    msg.textContent='';msg.className='changepw-msg';
+    if(!curr||!newP||!conf){msg.textContent='Preencha todos os campos';msg.classList.add('error');return}
+    if(USERS[currentUser].pw!==curr){msg.textContent='Senha atual incorreta';msg.classList.add('error');document.getElementById('changepw-current').value='';return}
+    if(newP.length<3){msg.textContent='Nova senha deve ter pelo menos 3 caracteres';msg.classList.add('error');return}
+    if(newP!==conf){msg.textContent='As senhas não conferem';msg.classList.add('error');document.getElementById('changepw-confirm').value='';return}
+    if(newP===curr){msg.textContent='A nova senha deve ser diferente da atual';msg.classList.add('error');return}
+    // salvar
+    USERS[currentUser].pw=newP;
+    savePasswords();
+    msg.textContent='✓ Senha alterada com sucesso!';msg.classList.add('success');
+    document.getElementById('changepw-current').value='';
+    document.getElementById('changepw-new').value='';
+    document.getElementById('changepw-confirm').value='';
+    // voltar automaticamente após 1.5s
+    setTimeout(()=>backFromChangePw(),1500);
+}
+function backFromChangePw(){
+    hideAll();
+    if(changePwReturnTo && changePwReturnTo!=='home'){
+        document.getElementById(changePwReturnTo).classList.add('active');
+    }else{goHome()}
+    changePwReturnTo=null;
+}
 let currentMod=null, currentUser=null;
-const allScreens='.app-screen,.dev-screen,.login-screen,.submenu-screen';
+const allScreens='.app-screen,.dev-screen,.login-screen,.submenu-screen,.changepw-screen';
 function hideAll(){document.querySelectorAll(allScreens).forEach(s=>s.classList.remove('active'))}
 const modIcons={comercial:'📊',compras:'🛒',financeiro:'💰'};
 const modNames={comercial:'Comercial',compras:'Compras',financeiro:'Financeiro'};
