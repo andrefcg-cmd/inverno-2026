@@ -177,12 +177,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-address-input{width:100%;padding:12px 14px;background:var(--card2);border:1px solid var(--brd);border-radius:12px;color:var(--txt);font-size:14px}
 .geo-address-input::placeholder{color:var(--txt2)}
 .geo-address-input:focus{outline:none;border-color:var(--accent)}
-.geo-suggestions{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--brd);border-radius:10px;margin-top:4px;max-height:200px;overflow-y:auto;z-index:100;display:none}
-.geo-suggestions.active{display:block}
-.geo-suggestion-item{padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--brd);transition:background .2s}
-.geo-suggestion-item:last-child{border-bottom:none}
-.geo-suggestion-item:hover,.geo-suggestion-item.selected{background:var(--card2)}
-.geo-suggestion-item strong{color:var(--accent)}
 .geo-locs-section{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
 .geo-locs-header{display:flex;align-items:center;justify-content:space-between}
 .geo-locs-title{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
@@ -211,6 +205,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-clear-btn:active{background:rgba(255,71,87,.1)}
 .geo-map-section{flex:1;position:relative;min-height:400px;height:100%}
 #geoMap{width:100%;height:100%;min-height:400px;background:#1a1a1a}
+.geo-fullscreen-btn{position:absolute;top:10px;right:10px;width:40px;height:40px;background:rgba(0,0,0,.7);border:none;border-radius:8px;color:#fff;font-size:20px;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.geo-fullscreen-btn:hover{background:rgba(0,0,0,.9)}
+.geo-map-section.fullscreen{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2000;min-height:100vh}
+.geo-map-section.fullscreen #geoMap{min-height:100vh}
+.geo-map-section.fullscreen .geo-fullscreen-btn{top:20px;right:20px}
+.geo-map-section.fullscreen .geo-legend{bottom:20px}
+.geo-map-section.fullscreen .geo-stats{top:20px;left:50%;transform:translateX(-50%)}
 .geo-stats{position:absolute;top:12px;left:12px;right:12px;display:flex;gap:8px;z-index:10;flex-wrap:wrap}
 .geo-stat{background:rgba(0,0,0,.85);backdrop-filter:blur(8px);border:1px solid var(--brd);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px}
 .geo-stat-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
@@ -344,43 +345,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <h1>📍 GeoLocalizador</h1>
     </div>
     <div class="geo-body">
-        <aside class="geo-sidebar">
-            <div class="geo-settings">
-                <div class="geo-settings-title">⚙️ Configurações</div>
-                <div class="geo-settings-row">
-                    <label>Distância mínima:</label>
-                    <div class="geo-dist-group">
-                        <input type="number" class="geo-dist-input" id="geoMinDistance" value="0.5" min="0.1" step="0.1">
-                        <span class="geo-unit">km</span>
-                    </div>
-                </div>
-                <div class="geo-toggle-row">
-                    <span class="geo-toggle-label">Mostrar raios</span>
-                    <div class="geo-toggle active" id="geoShowRadius" onclick="geoToggleRadius()">
-                        <div class="geo-toggle-knob"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="geo-input-section">
-                <div class="geo-input-wrap">
-                    <input type="text" class="geo-address-input" id="geoSearchInput" placeholder="🔍 Buscar por nome, bairro, cidade, estado ou CEP..." oninput="geoFilterLocations()" autocomplete="off">
-                    <div class="geo-suggestions" id="geoSuggestions"></div>
-                </div>
-            </div>
-            <div class="geo-locs-section">
-                <div class="geo-locs-header">
-                    <span class="geo-locs-title">📍 Locais</span>
-                    <span class="geo-locs-count" id="geoLocsCount">0 locais</span>
-                </div>
-                <div class="geo-locs-list" id="geoLocsList">
-                    <div class="geo-empty">
-                        <div class="geo-empty-icon">🗺️</div>
-                        <p>Adicione endereços para começar</p>
-                    </div>
-                </div>
-            </div>
-            <button class="geo-clear-btn" onclick="geoClearAll()">🗑️ Limpar Todos</button>
-        </aside>
         <main class="geo-map-section">
             <div class="geo-stats">
                 <div class="geo-stat">
@@ -397,6 +361,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
                 </div>
             </div>
             <div id="geoMap"></div>
+            <button class="geo-fullscreen-btn" id="geoFullscreenBtn" onclick="geoToggleFullscreen()">⛶</button>
             <div class="geo-legend">
                 <div class="geo-legend-item"><div class="geo-legend-dot valid"></div><span>Válido</span></div>
                 <div class="geo-legend-item"><div class="geo-legend-dot conflict"></div><span>Conflito</span></div>
@@ -404,6 +369,44 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
                 <div class="geo-legend-item"><div class="geo-legend-dot radius"></div><span>Raio</span></div>
             </div>
         </main>
+        <aside class="geo-sidebar">
+            <div class="geo-input-section">
+                <div class="geo-input-wrap">
+                    <input type="text" class="geo-address-input" id="geoSearchInput" placeholder="🔍 Buscar por nome, bairro, cidade, estado ou CEP..." oninput="geoFilterLocations()">
+                </div>
+            </div>
+            <div class="geo-sidebar-row">
+                <div class="geo-settings">
+                    <div class="geo-settings-title">⚙️ Configurações</div>
+                    <div class="geo-settings-row">
+                        <label>Distância mínima:</label>
+                        <div class="geo-dist-group">
+                            <input type="number" class="geo-dist-input" id="geoMinDistance" value="0.5" min="0.1" step="0.1">
+                            <span class="geo-unit">km</span>
+                        </div>
+                    </div>
+                    <div class="geo-toggle-row">
+                        <span class="geo-toggle-label">Mostrar raios</span>
+                        <div class="geo-toggle active" id="geoShowRadius" onclick="geoToggleRadius()">
+                            <div class="geo-toggle-knob"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="geo-locs-section">
+                    <div class="geo-locs-header">
+                        <span class="geo-locs-title">📍 Locais</span>
+                        <span class="geo-locs-count" id="geoLocsCount">0 locais</span>
+                    </div>
+                    <div class="geo-locs-list" id="geoLocsList">
+                        <div class="geo-empty">
+                            <div class="geo-empty-icon">🗺️</div>
+                            <p>Adicione endereços para começar</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="geo-clear-btn" onclick="geoClearAll()">🗑️ Limpar Todos</button>
+        </aside>
     </div>
 </div>
 <div class="geo-toast-container" id="geoToastContainer"></div>
@@ -938,46 +941,21 @@ const GEO_BASE_LOCATIONS = [
     {id: 3, nome: 'Outlet ISA|PAES', address: 'R. Cuiabá, 586 - Prado, Belo Horizonte - MG, 30411-213, Brasil', bairro: 'Prado', cidade: 'Belo Horizonte', estado: 'MG', cep: '30411-213', lat: -19.928356, lng: -43.963672, bypass: false, conflicts: []}
 ];
 
-// Filtrar locais com autocomplete
+// Filtrar locais
 function geoFilterLocations() {
-    const input = document.getElementById('geoSearchInput');
-    const search = input.value.toLowerCase().trim();
-    const suggestions = document.getElementById('geoSuggestions');
+    const search = document.getElementById('geoSearchInput').value.toLowerCase().trim();
     
     if (!search) {
-        // Mostrar todos e esconder sugestões
-        suggestions.classList.remove('active');
         geoLocations = JSON.parse(JSON.stringify(GEO_BASE_LOCATIONS));
     } else {
-        // Filtrar por nome, bairro, cidade, estado ou CEP
-        const filtered = GEO_BASE_LOCATIONS.filter(loc => 
+        geoLocations = GEO_BASE_LOCATIONS.filter(loc => 
             loc.nome.toLowerCase().includes(search) ||
             loc.bairro.toLowerCase().includes(search) ||
             loc.cidade.toLowerCase().includes(search) ||
             loc.estado.toLowerCase().includes(search) ||
             loc.cep.includes(search) ||
             loc.address.toLowerCase().includes(search)
-        );
-        
-        geoLocations = filtered.map(loc => JSON.parse(JSON.stringify(loc)));
-        
-        // Mostrar sugestões de nomes
-        const nameMatches = GEO_BASE_LOCATIONS.filter(loc => 
-            loc.nome.toLowerCase().includes(search)
-        );
-        
-        if (nameMatches.length > 0 && search.length >= 1) {
-            suggestions.innerHTML = nameMatches.map(loc => {
-                const highlighted = loc.nome.replace(
-                    new RegExp(`(${search})`, 'gi'), 
-                    '<strong>$1</strong>'
-                );
-                return `<div class="geo-suggestion-item" onclick="geoSelectSuggestion('${loc.nome}')">${highlighted}<br><small style="color:var(--txt2)">${loc.bairro}, ${loc.cidade}</small></div>`;
-            }).join('');
-            suggestions.classList.add('active');
-        } else {
-            suggestions.classList.remove('active');
-        }
+        ).map(loc => JSON.parse(JSON.stringify(loc)));
     }
     
     // Recalcular conflitos
@@ -999,21 +977,37 @@ function geoFilterLocations() {
     }
 }
 
-// Selecionar sugestão
-function geoSelectSuggestion(nome) {
-    const input = document.getElementById('geoSearchInput');
-    const suggestions = document.getElementById('geoSuggestions');
-    input.value = nome;
-    suggestions.classList.remove('active');
-    geoFilterLocations();
+// Toggle tela cheia do mapa
+function geoToggleFullscreen() {
+    const mapSection = document.querySelector('.geo-map-section');
+    const btn = document.getElementById('geoFullscreenBtn');
+    
+    mapSection.classList.toggle('fullscreen');
+    
+    if (mapSection.classList.contains('fullscreen')) {
+        btn.textContent = '✕';
+        btn.title = 'Sair da tela cheia';
+    } else {
+        btn.textContent = '⛶';
+        btn.title = 'Tela cheia';
+    }
+    
+    // Redimensionar mapa
+    setTimeout(() => {
+        if (geoMap) {
+            google.maps.event.trigger(geoMap, 'resize');
+            if (geoMarkers.length > 0) geoFitBounds();
+        }
+    }, 100);
 }
 
-// Fechar sugestões ao clicar fora
-document.addEventListener('click', function(e) {
-    const suggestions = document.getElementById('geoSuggestions');
-    const input = document.getElementById('geoSearchInput');
-    if (suggestions && !suggestions.contains(e.target) && e.target !== input) {
-        suggestions.classList.remove('active');
+// Sair da tela cheia com ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const mapSection = document.querySelector('.geo-map-section');
+        if (mapSection && mapSection.classList.contains('fullscreen')) {
+            geoToggleFullscreen();
+        }
     }
 });
 </script></body></html>
