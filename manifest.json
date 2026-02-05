@@ -2,20 +2,20 @@
     "name": "Isa Paes - Comercial",
     "short_name": "Comercial",
     "description": "Aplicativo de análise de vendas - Isa Paes",
-    "start_url": "/index.html",
+    "start_url": "/inverno-2026/index.html",
     "display": "standalone",
     "background_color": "#000000",
     "theme_color": "#000000",
     "orientation": "portrait",
     "icons": [
         {
-            "src": "icon-192.png",
+            "src": "/inverno-2026/icon-192.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "icon-512.png",
+            "src": "/inverno-2026/icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"

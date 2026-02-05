@@ -1,10 +1,11 @@
-const CACHE_NAME = 'capsula-2026-v1';
+const CACHE_NAME = 'capsula-2026-v3';
+const BASE = '/inverno-2026/';
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/manifest.json',
-    '/icon-192.png',
-    '/icon-512.png'
+    BASE,
+    BASE + 'index.html',
+    BASE + 'manifest.json',
+    BASE + 'icon-192.png',
+    BASE + 'icon-512.png'
 ];
 
 // Install
