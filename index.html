@@ -221,6 +221,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-locs-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;max-height:300px}
 @media(min-width:768px){.geo-locs-list{max-height:none}}
 .geo-loc-card{background:var(--card2);border-radius:12px;padding:12px;display:flex;align-items:flex-start;gap:10px;animation:geoSlide .3s ease;border:1px solid transparent}
+.geo-loc-card.valid{border-color:#00d9a5;background:rgba(0,217,165,.05)}
+.geo-loc-card.valid .geo-loc-name{color:#00d9a5}
+.geo-loc-card.valid .geo-loc-marker{background:#00d9a5}
+.geo-loc-card.valid .geo-loc-status{color:#00d9a5}
 .geo-loc-card.warning{border-color:var(--warn);background:rgba(255,193,7,.05)}
 .geo-loc-card.conflict{border-color:var(--red);background:rgba(255,71,87,.05)}
 @keyframes geoSlide{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
@@ -901,7 +905,7 @@ function geoUpdateUI(){
         let cardClass='',statusHtml='';
         if(isBypassed){cardClass='warning';statusHtml=`<span class="geo-loc-status bypassed">⚡ Bypass (${loc.conflicts.length})</span>`}
         else if(hasConflict){cardClass='conflict';const dets=loc.conflicts.map(c=>c.distance+'km').join(', ');statusHtml=`<span class="geo-loc-status conflict">⚠️ ${loc.conflicts.length}: ${dets}</span>`}
-        else{statusHtml='<span class="geo-loc-status ok">✓ OK</span>'}
+        else{cardClass='valid';statusHtml='<span class="geo-loc-status ok">✓ OK</span>'}
         const displayName = loc.nome ? `<div class="geo-loc-name">${loc.nome}</div>` : '';
         return`<div class="geo-loc-card ${cardClass}"><div class="geo-loc-marker">${i+1}</div><div class="geo-loc-info">${displayName}<div class="geo-loc-address">${loc.address}</div><div class="geo-loc-coords">${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}</div>${statusHtml}</div><div class="geo-loc-actions"><button class="geo-action-btn" onclick="geoFocus(${loc.id})" title="Focar">🎯</button>${hasConflict?`<button class="geo-action-btn bypass ${loc.bypass?'active':''}" onclick="geoToggleBypass(${loc.id})" title="Bypass">⚡</button>`:''}<button class="geo-action-btn delete" onclick="geoRemove(${loc.id})" title="Remover">×</button></div></div>`;
     }).join('');
@@ -1221,9 +1225,18 @@ async function geoVerifyAddress() {
         // Mostrar botão de limpar
         document.getElementById('geoClearVerifyBtn').style.display = 'block';
         
-        // Centralizar mapa no endereço verificado
-        geoMap.setCenter({lat: geocodeResult.lat, lng: geocodeResult.lng});
-        geoMap.setZoom(14);
+        // Ajustar mapa para mostrar o endereço verificado e todos os locais
+        const bounds = new google.maps.LatLngBounds();
+        bounds.extend({lat: geocodeResult.lat, lng: geocodeResult.lng});
+        geoLocations.forEach(loc => {
+            bounds.extend({lat: loc.lat, lng: loc.lng});
+        });
+        geoMap.fitBounds(bounds);
+        
+        // Se zoom muito distante, ajustar
+        google.maps.event.addListenerOnce(geoMap, 'idle', function() {
+            if (geoMap.getZoom() > 16) geoMap.setZoom(16);
+        });
         
     } catch (err) {
         result.innerHTML = `<span class="error">❌ ${err.message}</span>`;
