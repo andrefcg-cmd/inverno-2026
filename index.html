@@ -184,6 +184,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-suggestion-item:hover{background:var(--card2)}
 .geo-suggestion-item strong{color:var(--accent)}
 .geo-suggestion-item small{color:var(--txt2)}
+.geo-verify-section{background:var(--card2);border-radius:12px;padding:14px;margin-top:10px}
+.geo-verify-title{font-size:12px;color:var(--txt2);margin-bottom:10px;font-weight:500}
+.geo-verify-section .geo-input-wrap{margin-bottom:10px}
+.geo-verify-btn{position:absolute;right:5px;top:50%;transform:translateY(-50%);padding:8px 14px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.geo-verify-btn:hover{opacity:.9}
+.geo-verify-btn:disabled{opacity:.5;cursor:not-allowed}
+.geo-verify-section .geo-address-input{padding-right:90px}
+.geo-verify-result{font-size:12px;line-height:1.5}
+.geo-verify-result.success{color:#00d9a5}
+.geo-verify-result.warning{color:#ffc107}
+.geo-verify-result.error{color:#ff4757}
+.geo-verify-result .nearby-list{margin-top:8px;padding:10px;background:var(--bg);border-radius:8px}
+.geo-verify-result .nearby-item{padding:6px 0;border-bottom:1px solid var(--brd)}
+.geo-verify-result .nearby-item:last-child{border-bottom:none}
 .geo-locs-section{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
 .geo-locs-header{display:flex;align-items:center;justify-content:space-between}
 .geo-locs-title{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
@@ -382,6 +396,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
                     <input type="text" class="geo-address-input" id="geoSearchInput" placeholder="🔍 Buscar por nome, bairro, cidade, estado ou CEP..." oninput="geoFilterLocations()" autocomplete="off">
                     <div class="geo-suggestions" id="geoSuggestions"></div>
                 </div>
+            </div>
+            <div class="geo-verify-section">
+                <div class="geo-verify-title">📍 Verificar Novo Endereço</div>
+                <div class="geo-input-wrap">
+                    <input type="text" class="geo-address-input" id="geoVerifyInput" placeholder="Digite um endereço para verificar proximidade..." onkeypress="if(event.key==='Enter')geoVerifyAddress()">
+                    <button class="geo-verify-btn" id="geoVerifyBtn" onclick="geoVerifyAddress()">Verificar</button>
+                </div>
+                <div class="geo-verify-result" id="geoVerifyResult"></div>
             </div>
             <div class="geo-sidebar-row">
                 <div class="geo-settings">
@@ -1016,6 +1038,117 @@ document.addEventListener('click', function(e) {
         suggestions.classList.remove('active');
     }
 });
+
+// Marcador temporário para verificação
+let geoVerifyMarker = null;
+
+// Verificar novo endereço
+async function geoVerifyAddress() {
+    const input = document.getElementById('geoVerifyInput');
+    const btn = document.getElementById('geoVerifyBtn');
+    const result = document.getElementById('geoVerifyResult');
+    const address = input.value.trim();
+    
+    if (!address) {
+        result.innerHTML = '<span class="error">Digite um endereço</span>';
+        result.className = 'geo-verify-result error';
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.textContent = '...';
+    result.innerHTML = 'Buscando endereço...';
+    result.className = 'geo-verify-result';
+    
+    try {
+        // Geocodificar o endereço
+        const geocodeResult = await new Promise((resolve, reject) => {
+            geoGeocoder.geocode({address: address}, (results, status) => {
+                if (status === 'OK' && results[0]) {
+                    resolve({
+                        address: results[0].formatted_address,
+                        lat: results[0].geometry.location.lat(),
+                        lng: results[0].geometry.location.lng()
+                    });
+                } else {
+                    reject(new Error('Endereço não encontrado'));
+                }
+            });
+        });
+        
+        // Remover marcador anterior
+        if (geoVerifyMarker) {
+            geoVerifyMarker.setMap(null);
+        }
+        
+        // Adicionar marcador azul para o endereço verificado
+        geoVerifyMarker = new google.maps.Marker({
+            position: {lat: geocodeResult.lat, lng: geocodeResult.lng},
+            map: geoMap,
+            title: 'Endereço verificado',
+            icon: {
+                path: 'M12 0C7.58 0 4 3.58 4 8c0 5.25 8 13 8 13s8-7.75 8-13c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z',
+                fillColor: '#3b82f6',
+                fillOpacity: 1,
+                strokeColor: '#fff',
+                strokeWeight: 2,
+                scale: 1.8,
+                anchor: new google.maps.Point(12, 21)
+            }
+        });
+        
+        // Verificar proximidade com locais da base
+        const minDist = parseFloat(document.getElementById('geoMinDistance').value) || 0.5;
+        const nearby = [];
+        
+        GEO_BASE_LOCATIONS.forEach(loc => {
+            const dist = geoCalcDistance(geocodeResult.lat, geocodeResult.lng, loc.lat, loc.lng);
+            if (dist <= minDist) {
+                nearby.push({nome: loc.nome, dist: dist});
+            }
+        });
+        
+        // Mostrar resultado
+        if (nearby.length > 0) {
+            nearby.sort((a, b) => a.dist - b.dist);
+            let html = `<strong>⚠️ ${nearby.length} local(is) próximo(s)!</strong>`;
+            html += '<div class="nearby-list">';
+            nearby.forEach(n => {
+                html += `<div class="nearby-item">📍 <strong>${n.nome}</strong> - ${(n.dist * 1000).toFixed(0)}m</div>`;
+            });
+            html += '</div>';
+            result.innerHTML = html;
+            result.className = 'geo-verify-result warning';
+        } else {
+            result.innerHTML = `<strong>✅ Nenhum local próximo!</strong><br>O endereço está a mais de ${minDist}km de todos os locais cadastrados.`;
+            result.className = 'geo-verify-result success';
+        }
+        
+        // Centralizar mapa no endereço verificado
+        geoMap.setCenter({lat: geocodeResult.lat, lng: geocodeResult.lng});
+        geoMap.setZoom(15);
+        
+    } catch (err) {
+        result.innerHTML = `<span class="error">❌ ${err.message}</span>`;
+        result.className = 'geo-verify-result error';
+    }
+    
+    btn.disabled = false;
+    btn.textContent = 'Verificar';
+}
+
+// Calcular distância entre dois pontos (Haversine)
+function geoCalcDistance(lat1, lng1, lat2, lng2) {
+    const toRad = x => x * Math.PI / 180;
+    const R = 6371; // km
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
 
 // Toggle tela cheia do mapa
 function geoToggleFullscreen() {
