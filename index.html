@@ -150,7 +150,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .settings-btn:active{background:var(--card2);transform:scale(0.98)}
 
 /* GEOLOCATOR */
-.geo-screen{display:none;min-height:100vh;flex-direction:column;background:var(--bg)}
+.geo-screen{display:none;height:100vh;flex-direction:column;background:#000}
 .geo-screen.active{display:flex}
 .geo-header{background:var(--card);padding:16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:12px}
 .geo-header h1{font-size:16px;font-weight:600;flex:1}
@@ -209,8 +209,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-action-btn.bypass.active{background:var(--warn);border-color:var(--warn);color:#000}
 .geo-clear-btn{width:100%;padding:10px;background:transparent;border:1px solid rgba(255,71,87,.3);border-radius:10px;color:var(--red);font-size:12px;cursor:pointer;transition:all .2s}
 .geo-clear-btn:active{background:rgba(255,71,87,.1)}
-.geo-map-section{flex:1;position:relative;min-height:400px}
-#geoMap{width:100%;height:100%;min-height:400px;background:var(--card2)}
+.geo-map-section{flex:1;position:relative;min-height:400px;height:100%}
+#geoMap{width:100%;height:100%;min-height:400px;background:#1a1a1a}
 .geo-stats{position:absolute;top:12px;left:12px;right:12px;display:flex;gap:8px;z-index:10;flex-wrap:wrap}
 .geo-stat{background:rgba(0,0,0,.85);backdrop-filter:blur(8px);border:1px solid var(--brd);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px}
 .geo-stat-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
@@ -756,14 +756,6 @@ function geoInitMap(){
     geoMap=new google.maps.Map(document.getElementById('geoMap'),{
         center:{lat:-19.9167,lng:-43.9345}, // Belo Horizonte
         zoom:12,
-        styles:[
-            {elementType:"geometry",stylers:[{color:"#1a1a1a"}]},
-            {elementType:"labels.text.stroke",stylers:[{color:"#1a1a1a"}]},
-            {elementType:"labels.text.fill",stylers:[{color:"#777"}]},
-            {featureType:"road",elementType:"geometry",stylers:[{color:"#2a2a2a"}]},
-            {featureType:"water",elementType:"geometry",stylers:[{color:"#0e1626"}]},
-            {featureType:"poi",elementType:"geometry",stylers:[{color:"#1e1e1e"}]},
-        ],
         disableDefaultUI:false,
         zoomControl:true,
         mapTypeControl:false,
@@ -776,14 +768,15 @@ function geoInitMap(){
     // Forçar redimensionamento após renderização
     setTimeout(()=>{
         google.maps.event.trigger(geoMap,'resize');
-    },200);
+        geoMap.setCenter({lat:-19.9167,lng:-43.9345});
+    },300);
     
     const saved=localStorage.getItem('geo_locations');
     if(saved){
         geoLocations=JSON.parse(saved);
         geoLocations.forEach((loc,i)=>geoCreateMarker(loc,i));
         geoUpdateUI();
-        setTimeout(()=>geoFitBounds(),300);
+        setTimeout(()=>geoFitBounds(),500);
     }
 }
 
