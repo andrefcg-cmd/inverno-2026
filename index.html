@@ -198,6 +198,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-verify-result .nearby-list{margin-top:8px;padding:10px;background:var(--bg);border-radius:8px}
 .geo-verify-result .nearby-item{padding:6px 0;border-bottom:1px solid var(--brd)}
 .geo-verify-result .nearby-item:last-child{border-bottom:none}
+.geo-clear-verify-btn{width:100%;padding:10px;background:var(--card);border:1px solid var(--brd);border-radius:8px;color:var(--txt2);font-size:12px;cursor:pointer;margin-top:10px;transition:all .2s}
+.geo-clear-verify-btn:hover{border-color:var(--accent);color:var(--accent)}
 .geo-locs-section{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
 .geo-locs-header{display:flex;align-items:center;justify-content:space-between}
 .geo-locs-title{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
@@ -404,6 +406,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
                     <button class="geo-verify-btn" id="geoVerifyBtn" onclick="geoVerifyAddress()">Verificar</button>
                 </div>
                 <div class="geo-verify-result" id="geoVerifyResult"></div>
+                <button class="geo-clear-verify-btn" id="geoClearVerifyBtn" onclick="geoClearVerify()" style="display:none">🔄 Limpar Verificação</button>
             </div>
             <div class="geo-sidebar-row">
                 <div class="geo-settings">
@@ -1041,6 +1044,7 @@ document.addEventListener('click', function(e) {
 
 // Marcador temporário para verificação
 let geoVerifyMarker = null;
+let geoVerifyMode = false;
 
 // Verificar novo endereço
 async function geoVerifyAddress() {
@@ -1101,32 +1105,44 @@ async function geoVerifyAddress() {
         const minDist = parseFloat(document.getElementById('geoMinDistance').value) || 0.5;
         const nearby = [];
         
-        GEO_BASE_LOCATIONS.forEach(loc => {
+        // Resetar locais e calcular distâncias
+        geoLocations = JSON.parse(JSON.stringify(GEO_BASE_LOCATIONS));
+        
+        geoLocations.forEach(loc => {
             const dist = geoCalcDistance(geocodeResult.lat, geocodeResult.lng, loc.lat, loc.lng);
-            if (dist <= minDist) {
+            loc.distToVerify = dist;
+            loc.isNearby = dist <= minDist;
+            if (loc.isNearby) {
                 nearby.push({nome: loc.nome, dist: dist});
             }
         });
         
+        geoVerifyMode = true;
+        
+        // Atualizar marcadores com cores baseadas na proximidade
+        geoMarkers.forEach(m => m.setMap(null));
+        geoCircles.forEach(c => c.setMap(null));
+        geoMarkers = [];
+        geoCircles = [];
+        geoLocations.forEach((loc, i) => geoCreateMarkerVerify(loc, i));
+        geoUpdateUIVerify();
+        
         // Mostrar resultado
         if (nearby.length > 0) {
             nearby.sort((a, b) => a.dist - b.dist);
-            let html = `<strong>⚠️ ${nearby.length} local(is) próximo(s)!</strong>`;
-            html += '<div class="nearby-list">';
-            nearby.forEach(n => {
-                html += `<div class="nearby-item">📍 <strong>${n.nome}</strong> - ${(n.dist * 1000).toFixed(0)}m</div>`;
-            });
-            html += '</div>';
-            result.innerHTML = html;
+            result.innerHTML = `<strong>⚠️ ${nearby.length} local(is) dentro de ${minDist}km!</strong>`;
             result.className = 'geo-verify-result warning';
         } else {
-            result.innerHTML = `<strong>✅ Nenhum local próximo!</strong><br>O endereço está a mais de ${minDist}km de todos os locais cadastrados.`;
+            result.innerHTML = `<strong>✅ Nenhum local dentro de ${minDist}km!</strong>`;
             result.className = 'geo-verify-result success';
         }
         
+        // Mostrar botão de limpar
+        document.getElementById('geoClearVerifyBtn').style.display = 'block';
+        
         // Centralizar mapa no endereço verificado
         geoMap.setCenter({lat: geocodeResult.lat, lng: geocodeResult.lng});
-        geoMap.setZoom(15);
+        geoMap.setZoom(14);
         
     } catch (err) {
         result.innerHTML = `<span class="error">❌ ${err.message}</span>`;
@@ -1135,6 +1151,122 @@ async function geoVerifyAddress() {
     
     btn.disabled = false;
     btn.textContent = 'Verificar';
+}
+
+// Criar marcador no modo verificação (verde = longe, vermelho = perto)
+function geoCreateMarkerVerify(loc, index) {
+    const isNearby = loc.isNearby;
+    const color = isNearby ? '#ff4757' : '#00d9a5';
+    
+    const pinSvg = {
+        path: 'M12 0C7.58 0 4 3.58 4 8c0 5.25 8 13 8 13s8-7.75 8-13c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z',
+        fillColor: color,
+        fillOpacity: 1,
+        strokeColor: '#fff',
+        strokeWeight: 2,
+        scale: 1.8,
+        anchor: new google.maps.Point(12, 21)
+    };
+    
+    const marker = new google.maps.Marker({
+        position: {lat: loc.lat, lng: loc.lng},
+        map: geoMap,
+        title: loc.nome || loc.address,
+        icon: pinSvg
+    });
+    marker.locationId = loc.id;
+    geoMarkers.push(marker);
+    
+    // Círculo de raio
+    const minDist = parseFloat(document.getElementById('geoMinDistance').value) || 0.5;
+    const circle = new google.maps.Circle({
+        map: geoShowRadius ? geoMap : null,
+        center: {lat: loc.lat, lng: loc.lng},
+        radius: minDist * 1000,
+        fillColor: color,
+        fillOpacity: 0.1,
+        strokeColor: color,
+        strokeOpacity: 0.4,
+        strokeWeight: 1
+    });
+    geoCircles.push(circle);
+}
+
+// Atualizar UI no modo verificação
+function geoUpdateUIVerify() {
+    const minDist = parseFloat(document.getElementById('geoMinDistance').value) || 0.5;
+    const nearby = geoLocations.filter(l => l.isNearby);
+    const far = geoLocations.filter(l => !l.isNearby);
+    
+    // Atualizar estatísticas
+    document.getElementById('geoTotalCount').textContent = geoLocations.length;
+    document.getElementById('geoValidCount').textContent = far.length;
+    document.getElementById('geoConflictCount').textContent = nearby.length;
+    
+    // Atualizar lista
+    const list = document.getElementById('geoLocsList');
+    const countEl = document.getElementById('geoLocsCount');
+    countEl.textContent = `${geoLocations.length} locais`;
+    
+    if (geoLocations.length === 0) {
+        list.innerHTML = '<div class="geo-empty"><div class="geo-empty-icon">🗺️</div><p>Nenhum local na base</p></div>';
+        return;
+    }
+    
+    // Ordenar: próximos primeiro
+    const sorted = [...geoLocations].sort((a, b) => {
+        if (a.isNearby && !b.isNearby) return -1;
+        if (!a.isNearby && b.isNearby) return 1;
+        return (a.distToVerify || 0) - (b.distToVerify || 0);
+    });
+    
+    list.innerHTML = sorted.map((loc, i) => {
+        const isNearby = loc.isNearby;
+        const distMeters = loc.distToVerify ? (loc.distToVerify * 1000).toFixed(0) : '?';
+        const statusClass = isNearby ? 'conflict' : 'valid';
+        const statusIcon = isNearby ? '⚠️' : '✓';
+        const statusText = isNearby ? `${distMeters}m - PRÓXIMO` : `${distMeters}m - OK`;
+        
+        return `<div class="geo-loc-card ${statusClass}">
+            <div class="geo-loc-header">
+                <div class="geo-loc-num" style="background:${isNearby ? '#ff4757' : '#00d9a5'}">${statusIcon}</div>
+                <div class="geo-loc-info">
+                    <div class="geo-loc-name">${loc.nome || 'Sem nome'}</div>
+                    <div class="geo-loc-addr">${loc.address}</div>
+                    <div class="geo-loc-coords">${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}</div>
+                </div>
+            </div>
+            <div class="geo-loc-status ${statusClass}">${statusText}</div>
+        </div>`;
+    }).join('');
+}
+
+// Limpar verificação
+function geoClearVerify() {
+    if (geoVerifyMarker) {
+        geoVerifyMarker.setMap(null);
+        geoVerifyMarker = null;
+    }
+    document.getElementById('geoVerifyInput').value = '';
+    document.getElementById('geoVerifyResult').innerHTML = '';
+    document.getElementById('geoVerifyResult').className = 'geo-verify-result';
+    document.getElementById('geoClearVerifyBtn').style.display = 'none';
+    geoVerifyMode = false;
+    
+    // Restaurar visualização normal
+    geoLocations = JSON.parse(JSON.stringify(GEO_BASE_LOCATIONS));
+    const minDist = parseFloat(document.getElementById('geoMinDistance').value) || 0.5;
+    geoLocations.forEach(loc => {
+        loc.conflicts = geoCheckConflictsLocal(loc.lat, loc.lng, minDist, loc.id);
+    });
+    
+    geoMarkers.forEach(m => m.setMap(null));
+    geoCircles.forEach(c => c.setMap(null));
+    geoMarkers = [];
+    geoCircles = [];
+    geoLocations.forEach((loc, i) => geoCreateMarker(loc, i));
+    geoUpdateUI();
+    if (geoLocations.length > 0) geoFitBounds();
 }
 
 // Calcular distância entre dois pontos (Haversine)
