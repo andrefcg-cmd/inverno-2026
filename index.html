@@ -251,11 +251,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-api-btn:active{opacity:.85}
 .geo-api-note{margin-top:12px;padding:10px;background:rgba(255,193,7,.1);border-radius:8px;font-size:11px;color:#ffc107}
 .geo-api-note a{color:#e94560;text-decoration:none}
-.geo-import-row{display:flex;gap:8px;margin-top:8px}
-.geo-import-btn{flex:1;padding:10px;background:var(--card2);border:1px dashed var(--brd);border-radius:10px;color:var(--txt2);font-size:12px;cursor:pointer;text-align:center;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
-.geo-import-btn:hover{border-color:var(--accent);color:var(--accent)}
-.geo-load-base-btn{flex:1;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
-.geo-load-base-btn:active{transform:scale(0.98);opacity:.9}
 .geo-progress-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1002;gap:16px}
 .geo-progress-overlay.hidden{display:none}
 .geo-progress-text{font-size:14px;color:var(--txt)}
@@ -375,13 +370,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
                 <div class="geo-input-wrap">
                     <input type="text" class="geo-address-input" id="geoAddressInput" placeholder="Digite um endereço..." onkeypress="geoHandleKey(event)">
                     <button class="geo-add-btn" id="geoAddBtn" onclick="geoAddLocation()">+</button>
-                </div>
-                <div class="geo-import-row">
-                    <label class="geo-import-btn" for="geoFileInput">
-                        <span>📥 Importar Excel</span>
-                        <input type="file" id="geoFileInput" accept=".xlsx,.xls" onchange="geoImportExcel(event)" style="display:none">
-                    </label>
-                    <button class="geo-load-base-btn" onclick="geoLoadBaseAddresses()">📋 Carregar Base</button>
                 </div>
             </div>
             <div class="geo-locs-section">
@@ -768,12 +756,16 @@ function geoInitMap(){
         geoMap.setCenter({lat:-19.9167,lng:-43.9345});
     },300);
     
+    // Carregar endereços salvos ou carregar da base automaticamente
     const saved=localStorage.getItem('geo_locations');
-    if(saved){
+    if(saved && JSON.parse(saved).length > 0){
         geoLocations=JSON.parse(saved);
         geoLocations.forEach((loc,i)=>geoCreateMarker(loc,i));
         geoUpdateUI();
         setTimeout(()=>geoFitBounds(),500);
+    } else {
+        // Carregar base automaticamente se não houver dados salvos
+        setTimeout(()=>geoLoadBaseAddresses(),500);
     }
 }
 
@@ -979,68 +971,6 @@ async function geoLoadBaseAddresses() {
         return;
     }
     await geoProcessAddressList(GEO_BASE_ADDRESSES);
-}
-
-async function geoImportExcel(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    if (!geoMapInitialized) {
-        geoShowToast('Aguarde o mapa carregar', 'warning');
-        event.target.value = '';
-        return;
-    }
-
-    // Carregar SheetJS dinamicamente se necessário
-    if (!window.XLSX) {
-        geoShowToast('Carregando leitor de Excel...', 'info');
-        await new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-    }
-
-    try {
-        const data = await file.arrayBuffer();
-        const workbook = XLSX.read(data);
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet);
-
-        if (rows.length === 0) {
-            geoShowToast('Planilha vazia', 'error');
-            return;
-        }
-
-        // Mapear colunas (flexível)
-        const addresses = rows.map(row => {
-            const logradouro = row['Logradouro'] || row['logradouro'] || row['Endereco'] || row['endereco'] || row['Rua'] || row['rua'] || '';
-            const numero = row['Número'] || row['numero'] || row['Numero'] || row['Num'] || row['num'] || '';
-            const bairro = row['Bairro'] || row['bairro'] || '';
-            const municipio = row['Município'] || row['municipio'] || row['Municipio'] || row['Cidade'] || row['cidade'] || '';
-            const estado = row['Estado'] || row['estado'] || row['UF'] || row['uf'] || '';
-            const cep = row['CEP'] || row['cep'] || row['Cep'] || '';
-            const nome = row['Nome'] || row['nome'] || row['Local'] || row['local'] || '';
-            const codigo = row['Codigo'] || row['codigo'] || row['Código'] || row['ID'] || row['id'] || '';
-            
-            return { codigo, nome, logradouro, numero, bairro, municipio, estado, cep };
-        }).filter(a => a.logradouro || a.municipio);
-
-        if (addresses.length === 0) {
-            geoShowToast('Nenhum endereço válido encontrado', 'error');
-            return;
-        }
-
-        await geoProcessAddressList(addresses);
-        
-    } catch (err) {
-        console.error(err);
-        geoShowToast('Erro ao ler planilha', 'error');
-    }
-    
-    event.target.value = '';
 }
 
 async function geoProcessAddressList(addresses) {
