@@ -62,6 +62,40 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .sunset-sun{position:absolute;bottom:20%;left:50%;transform:translateX(-50%);width:100px;height:100px;background:radial-gradient(circle,#FFD700 0%,#FF6347 60%,#FF4500 100%);border-radius:50%;box-shadow:0 0 80px rgba(255,99,71,0.8),0 0 150px rgba(255,69,0,0.4);animation:sunsetGlow 4s ease-in-out infinite}
 @keyframes sunsetGlow{0%,100%{box-shadow:0 0 80px rgba(255,99,71,0.8),0 0 150px rgba(255,69,0,0.4)}50%{box-shadow:0 0 100px rgba(255,99,71,0.9),0 0 180px rgba(255,69,0,0.5)}}
 
+/* Céu Nublado */
+.welcome-screen.cloudy-day{background:linear-gradient(to bottom,#6B7B8C 0%,#8A9BA8 50%,#A5B5C2 100%)}
+.welcome-screen.cloudy-night{background:linear-gradient(to bottom,#1a1a2e 0%,#2d2d44 50%,#3d3d5c 100%)}
+.heavy-clouds{position:absolute;top:0;left:0;width:200%;height:100%}
+.heavy-cloud{position:absolute;background:linear-gradient(to bottom,rgba(100,100,120,0.9),rgba(80,80,100,0.8));border-radius:50px;filter:blur(1px)}
+.heavy-cloud-1{width:180px;height:60px;top:10%;left:5%;animation:cloudsMove 35s linear infinite}
+.heavy-cloud-2{width:220px;height:70px;top:20%;left:40%;animation:cloudsMove 40s linear infinite;animation-delay:-10s}
+.heavy-cloud-3{width:160px;height:50px;top:35%;left:15%;animation:cloudsMove 38s linear infinite;animation-delay:-20s}
+.heavy-cloud-4{width:200px;height:65px;top:45%;left:60%;animation:cloudsMove 42s linear infinite;animation-delay:-5s}
+
+/* Chuva */
+.welcome-screen.rainy-day{background:linear-gradient(to bottom,#4A5568 0%,#5A6A7A 50%,#6B7B8C 100%)}
+.welcome-screen.rainy-night{background:linear-gradient(to bottom,#0d1117 0%,#1a1f2e 50%,#252d3d 100%)}
+.rain{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;pointer-events:none}
+.rain-drop{position:absolute;width:2px;background:linear-gradient(to bottom,transparent,rgba(174,194,224,0.6),rgba(174,194,224,0.3));animation:rainFall linear infinite}
+@keyframes rainFall{0%{transform:translateY(-100vh)}100%{transform:translateY(100vh)}}
+
+/* Tempestade */
+.welcome-screen.storm{background:linear-gradient(to bottom,#1a1a2e 0%,#2d2d44 30%,#1a1a2e 100%)}
+.lightning{position:absolute;top:0;left:0;width:100%;height:100%;background:transparent;animation:lightningFlash 4s infinite;pointer-events:none}
+@keyframes lightningFlash{0%,95%,100%{background:transparent}96%,98%{background:rgba(255,255,255,0.3)}}
+
+/* Neve */
+.welcome-screen.snowy-day{background:linear-gradient(to bottom,#B8C6D6 0%,#D4E0ED 50%,#E8F0F8 100%)}
+.welcome-screen.snowy-night{background:linear-gradient(to bottom,#1a2030 0%,#2a3040 50%,#3a4050 100%)}
+.snow{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;pointer-events:none}
+.snowflake{position:absolute;color:#fff;font-size:1em;animation:snowFall linear infinite}
+@keyframes snowFall{0%{transform:translateY(-10vh) rotate(0deg)}100%{transform:translateY(100vh) rotate(360deg)}}
+
+/* Neblina */
+.welcome-screen.foggy{background:linear-gradient(to bottom,#8a9aa8 0%,#a5b5c2 50%,#c0d0dd 100%)}
+.fog{position:absolute;top:0;left:0;width:200%;height:100%;background:linear-gradient(to right,rgba(255,255,255,0.1),rgba(255,255,255,0.4),rgba(255,255,255,0.1));animation:fogMove 20s linear infinite}
+@keyframes fogMove{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
 .welcome-greeting{font-size:28px;font-weight:400;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,0.3);opacity:0;transform:translateY(20px);animation:welcomeSlideUp 1s ease .2s forwards;z-index:1}
 .welcome-name{font-size:44px;font-weight:600;color:#fff;text-shadow:0 2px 15px rgba(0,0,0,0.4);margin-top:8px;opacity:0;transform:translateY(20px);animation:welcomeSlideUp 1s ease .5s forwards;z-index:1}
 @keyframes welcomeSlideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
@@ -73,6 +107,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .initial-login-logo{width:160px;margin-bottom:40px}
 .initial-login-box{width:100%;max-width:320px}
 .initial-login-title{font-size:14px;color:var(--txt2);text-align:center;margin-bottom:24px}
+
+/* PHOTO MODAL */
+.photo-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10000;padding:20px;opacity:0;transition:opacity .3s ease}
+.photo-modal.active{display:flex;opacity:1}
+.photo-modal-close{position:absolute;top:20px;right:20px;width:40px;height:40px;background:var(--card);border:1px solid var(--brd);border-radius:50%;color:var(--txt);font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10001}
+.photo-modal-img{max-width:100%;max-height:80vh;border-radius:12px;object-fit:contain}
+.photo-modal-info{margin-top:16px;text-align:center}
+.photo-modal-ref{font-size:18px;font-weight:600;color:var(--txt)}
+.photo-modal-desc{font-size:14px;color:var(--txt2);margin-top:4px}
+.photo-modal-noimg{color:var(--txt2);font-size:16px;text-align:center}
 
 /* HOME */
 .home{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
@@ -193,6 +237,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .metric-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--brd)}.metric-row:last-child{border-bottom:none}
 .metric-label{font-size:13px;color:var(--txt2)}.metric-value{font-size:14px;font-weight:600}
 .product-item{background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--brd)}
+.product-item.card-excelente{background:rgba(0,217,165,.12);border-color:rgba(0,217,165,.3)}
+.product-item.card-bom{background:rgba(255,193,7,.12);border-color:rgba(255,193,7,.3)}
+.product-item.card-regular{background:rgba(255,165,0,.12);border-color:rgba(255,165,0,.3)}
+.product-item.card-fraco{background:rgba(255,71,87,.12);border-color:rgba(255,71,87,.3)}
 .product-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
 .product-ref{font-size:11px;color:var(--accent);font-weight:600}.product-name{font-size:13px;margin-top:2px;line-height:1.3}
 .product-price{font-size:14px;font-weight:700;color:var(--green)}
@@ -420,22 +468,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <!-- WELCOME SCREEN -->
 <div class="welcome-screen" id="welcome-screen">
-    <!-- Estrelas (noite) -->
+    <!-- Estrelas (noite limpa) -->
     <div class="stars" id="welcome-stars"></div>
-    <!-- Nuvens e Sol (manhã) -->
+    <!-- Nuvens e Sol (manhã limpa) -->
     <div class="clouds" id="welcome-clouds">
         <div class="cloud cloud-1"></div>
         <div class="cloud cloud-2"></div>
         <div class="cloud cloud-3"></div>
     </div>
     <div class="sun" id="welcome-sun"></div>
-    <!-- Pôr do Sol (tarde) -->
+    <!-- Pôr do Sol (tarde limpa) -->
     <div class="sunset-clouds" id="welcome-sunset-clouds">
         <div class="sunset-cloud sunset-cloud-1"></div>
         <div class="sunset-cloud sunset-cloud-2"></div>
         <div class="sunset-cloud sunset-cloud-3"></div>
     </div>
     <div class="sunset-sun" id="welcome-sunset-sun"></div>
+    <!-- Nuvens pesadas (nublado) -->
+    <div class="heavy-clouds" id="welcome-heavy-clouds">
+        <div class="heavy-cloud heavy-cloud-1"></div>
+        <div class="heavy-cloud heavy-cloud-2"></div>
+        <div class="heavy-cloud heavy-cloud-3"></div>
+        <div class="heavy-cloud heavy-cloud-4"></div>
+    </div>
+    <!-- Chuva -->
+    <div class="rain" id="welcome-rain"></div>
+    <!-- Relâmpago (tempestade) -->
+    <div class="lightning" id="welcome-lightning"></div>
+    <!-- Neve -->
+    <div class="snow" id="welcome-snow"></div>
+    <!-- Neblina -->
+    <div class="fog" id="welcome-fog"></div>
     <!-- Texto -->
     <div class="welcome-greeting" id="welcome-greeting">Boa noite,</div>
     <div class="welcome-name" id="welcome-name">André</div>
@@ -794,7 +857,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <section id="dashboard" class="screen active">
 <div class="info-banner"><div class="info-banner-title">⏱ META ATIVA — Coleção (80%)</div><div class="info-banner-value">R$ 1.769.076,00 | até 31/05/2026</div></div>
 <div class="section-title">📊 Resumo do Dia — 05/02/2026</div>
-<div class="grid-2"><div class="card"><div class="card-title">🛒 Peças Vendidas</div><div class="card-value">103</div></div><div class="card"><div class="card-title">💰 Valor Vendido</div><div class="card-value sm">R$ 35.822</div></div></div>
+<div class="grid-2"><div class="card"><div class="card-title">🛒 Peças Vendidas</div><div class="card-value">103</div></div><div class="card"><div class="card-title">💰 Valor Vendido</div><div class="card-value sm">R$ 35.822,17</div></div></div>
 <div class="card"><div class="card-title">🎯 Ticket Médio Hoje</div><div class="card-value">R$ 347,79</div></div>
 <div class="section-title">🏆 Top Vendas do Dia</div><div id="topdia"></div></section>
 <section id="meta" class="screen"><div class="section-title">🎯 Meta 80% da Coleção</div>
@@ -820,6 +883,20 @@ const isFirstVisit = !sessionStorage.getItem('isa-paes-visited');
 const splashTime = isFirstVisit ? 3000 : 2000;
 sessionStorage.setItem('isa-paes-visited', 'true');
 document.documentElement.style.setProperty('--splash-duration', isFirstVisit ? '2.5s' : '1.6s');
+
+// Salvar estado da página antes de sair
+window.addEventListener('beforeunload', function(){
+    const activeScreens = document.querySelectorAll('.active');
+    const screenIds = [];
+    activeScreens.forEach(s => {
+        if(s.id) screenIds.push(s.id);
+    });
+    sessionStorage.setItem('last-screens', JSON.stringify(screenIds));
+    sessionStorage.setItem('last-scroll', window.scrollY);
+    // Salvar destino de expedição se estiver ativo
+    if(currentExpDestino) sessionStorage.setItem('last-exp-destino', currentExpDestino);
+});
+
 setTimeout(()=>{
     document.getElementById('splash').classList.add('fade-out');
     setTimeout(()=>{
@@ -827,7 +904,33 @@ setTimeout(()=>{
         // Verificar se já está logado (refresh)
         const savedUser = sessionStorage.getItem('logged-user');
         if(savedUser && USERS[savedUser]){
-            // Já logado - ir direto para home sem welcome
+            currentUser = savedUser;
+            // Já logado - restaurar última tela ou ir para home
+            const lastScreens = sessionStorage.getItem('last-screens');
+            const lastScroll = sessionStorage.getItem('last-scroll');
+            const lastExpDestino = sessionStorage.getItem('last-exp-destino');
+            if(lastScreens){
+                try{
+                    const screens = JSON.parse(lastScreens);
+                    if(screens.length > 0){
+                        hideAll();
+                        screens.forEach(id => {
+                            const el = document.getElementById(id);
+                            if(el) el.classList.add('active');
+                        });
+                        // Restaurar destino de expedição se necessário
+                        if(screens.includes('app-expedicao') && lastExpDestino){
+                            currentExpDestino = lastExpDestino;
+                            renderExpedicao(lastExpDestino);
+                        }
+                        // Restaurar scroll
+                        if(lastScroll){
+                            setTimeout(() => window.scrollTo(0, parseInt(lastScroll)), 100);
+                        }
+                        return;
+                    }
+                }catch(e){}
+            }
             document.getElementById('home').classList.add('visible');
             pushState('home');
         } else {
@@ -850,7 +953,7 @@ async function tryInitialBiometric(){
             }});
             if(a){
                 sessionStorage.setItem('logged-user', bioUser);
-                showWelcomeScreen(bioUser);
+                getWeatherAndShowWelcome(bioUser);
                 return;
             }
         }catch(e){console.log('Biometria cancelada/falhou')}
@@ -882,7 +985,7 @@ function doInitialLogin(){
         },100);
     }
     
-    showWelcomeScreen(user);
+    getWeatherAndShowWelcome(user);
 }
 
 async function registerInitialBiometric(user){
@@ -903,31 +1006,140 @@ async function registerInitialBiometric(user){
     }catch(e){console.log('Biometria cancelada')}
 }
 
-function showWelcomeScreen(user){
+// Função para criar gotas de chuva
+function createRainDrops(){
+    const rain = document.getElementById('welcome-rain');
+    rain.innerHTML = '';
+    for(let i = 0; i < 100; i++){
+        const drop = document.createElement('div');
+        drop.className = 'rain-drop';
+        drop.style.left = Math.random() * 100 + '%';
+        drop.style.height = Math.random() * 20 + 10 + 'px';
+        drop.style.animationDuration = Math.random() * 0.5 + 0.5 + 's';
+        drop.style.animationDelay = Math.random() * 2 + 's';
+        rain.appendChild(drop);
+    }
+}
+
+// Função para criar flocos de neve
+function createSnowflakes(){
+    const snow = document.getElementById('welcome-snow');
+    snow.innerHTML = '';
+    for(let i = 0; i < 50; i++){
+        const flake = document.createElement('div');
+        flake.className = 'snowflake';
+        flake.innerHTML = '❄';
+        flake.style.left = Math.random() * 100 + '%';
+        flake.style.fontSize = Math.random() * 10 + 10 + 'px';
+        flake.style.opacity = Math.random() * 0.5 + 0.5;
+        flake.style.animationDuration = Math.random() * 3 + 3 + 's';
+        flake.style.animationDelay = Math.random() * 5 + 's';
+        snow.appendChild(flake);
+    }
+}
+
+// Mapear código de clima Open-Meteo para tipo
+function getWeatherType(code){
+    // https://open-meteo.com/en/docs - WMO Weather interpretation codes
+    if(code === 0) return 'clear';           // Céu limpo
+    if(code === 1 || code === 2) return 'partly-cloudy'; // Parcialmente nublado
+    if(code === 3) return 'cloudy';          // Nublado
+    if(code >= 45 && code <= 48) return 'fog';    // Neblina
+    if(code >= 51 && code <= 57) return 'drizzle'; // Garoa
+    if(code >= 61 && code <= 67) return 'rain';   // Chuva
+    if(code >= 71 && code <= 77) return 'snow';   // Neve
+    if(code >= 80 && code <= 82) return 'rain';   // Aguaceiro
+    if(code >= 85 && code <= 86) return 'snow';   // Neve
+    if(code >= 95 && code <= 99) return 'storm';  // Tempestade
+    return 'clear';
+}
+
+// Buscar clima via Open-Meteo
+async function fetchWeather(lat, lon){
+    try{
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code,temperature_2m`;
+        const res = await fetch(url);
+        const data = await res.json();
+        return {
+            code: data.current.weather_code,
+            temp: data.current.temperature_2m,
+            type: getWeatherType(data.current.weather_code)
+        };
+    }catch(e){
+        console.log('Erro ao buscar clima:', e);
+        return null;
+    }
+}
+
+// Esconder todos os elementos climáticos
+function hideAllWeatherElements(){
+    const elements = ['welcome-stars','welcome-clouds','welcome-sun','welcome-sunset-clouds','welcome-sunset-sun','welcome-heavy-clouds','welcome-rain','welcome-lightning','welcome-snow','welcome-fog'];
+    elements.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.style.display = 'none';
+    });
+}
+
+function showWelcomeScreen(user, weather = null){
     const u = USERS[user];
     const hour = new Date().getHours();
     let greeting, skyClass;
+    const isNight = hour < 5 || hour >= 18;
+    const isMorning = hour >= 5 && hour < 12;
+    const isAfternoon = hour >= 12 && hour < 18;
     
-    if(hour >= 5 && hour < 12){
-        greeting = 'Bom dia,';
-        skyClass = 'morning';
-    } else if(hour >= 12 && hour < 18){
-        greeting = 'Boa tarde,';
-        skyClass = 'afternoon';
+    // Definir saudação
+    if(isMorning) greeting = 'Bom dia,';
+    else if(isAfternoon) greeting = 'Boa tarde,';
+    else greeting = 'Boa noite,';
+    
+    // Esconder todos os elementos climáticos
+    hideAllWeatherElements();
+    
+    const weatherType = weather ? weather.type : 'clear';
+    
+    // Definir classe do céu e elementos baseado no clima + período
+    if(weatherType === 'storm'){
+        skyClass = 'storm';
+        createRainDrops();
+        document.getElementById('welcome-rain').style.display = 'block';
+        document.getElementById('welcome-lightning').style.display = 'block';
+        document.getElementById('welcome-heavy-clouds').style.display = 'block';
+    } else if(weatherType === 'rain' || weatherType === 'drizzle'){
+        skyClass = isNight ? 'rainy-night' : 'rainy-day';
+        createRainDrops();
+        document.getElementById('welcome-rain').style.display = 'block';
+        document.getElementById('welcome-heavy-clouds').style.display = 'block';
+    } else if(weatherType === 'snow'){
+        skyClass = isNight ? 'snowy-night' : 'snowy-day';
+        createSnowflakes();
+        document.getElementById('welcome-snow').style.display = 'block';
+        document.getElementById('welcome-heavy-clouds').style.display = 'block';
+    } else if(weatherType === 'fog'){
+        skyClass = 'foggy';
+        document.getElementById('welcome-fog').style.display = 'block';
+    } else if(weatherType === 'cloudy' || weatherType === 'partly-cloudy'){
+        skyClass = isNight ? 'cloudy-night' : 'cloudy-day';
+        document.getElementById('welcome-heavy-clouds').style.display = 'block';
+        if(isNight) document.getElementById('welcome-stars').style.display = 'block';
     } else {
-        greeting = 'Boa noite,';
-        skyClass = 'night';
+        // Céu limpo
+        if(isMorning){
+            skyClass = 'morning';
+            document.getElementById('welcome-clouds').style.display = 'block';
+            document.getElementById('welcome-sun').style.display = 'block';
+        } else if(isAfternoon){
+            skyClass = 'afternoon';
+            document.getElementById('welcome-sunset-clouds').style.display = 'block';
+            document.getElementById('welcome-sunset-sun').style.display = 'block';
+        } else {
+            skyClass = 'night';
+            document.getElementById('welcome-stars').style.display = 'block';
+        }
     }
     
     const ws = document.getElementById('welcome-screen');
     ws.className = 'welcome-screen ' + skyClass;
-    
-    // Mostrar/esconder elementos conforme o período
-    document.getElementById('welcome-stars').style.display = skyClass === 'night' ? 'block' : 'none';
-    document.getElementById('welcome-clouds').style.display = skyClass === 'morning' ? 'block' : 'none';
-    document.getElementById('welcome-sun').style.display = skyClass === 'morning' ? 'block' : 'none';
-    document.getElementById('welcome-sunset-clouds').style.display = skyClass === 'afternoon' ? 'block' : 'none';
-    document.getElementById('welcome-sunset-sun').style.display = skyClass === 'afternoon' ? 'block' : 'none';
     
     document.getElementById('welcome-greeting').textContent = greeting;
     document.getElementById('welcome-name').textContent = u.nome;
@@ -944,6 +1156,29 @@ function showWelcomeScreen(user){
     },3500);
 }
 
+// Função para obter localização e clima
+async function getWeatherAndShowWelcome(user){
+    // Tentar obter localização GPS
+    if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                const weather = await fetchWeather(pos.coords.latitude, pos.coords.longitude);
+                showWelcomeScreen(user, weather);
+            },
+            (err) => {
+                console.log('GPS não disponível:', err);
+                // Fallback: usar localização padrão (Belo Horizonte)
+                fetchWeather(-19.9167, -43.9345).then(weather => {
+                    showWelcomeScreen(user, weather);
+                }).catch(() => showWelcomeScreen(user, null));
+            },
+            {timeout: 5000, enableHighAccuracy: false}
+        );
+    } else {
+        showWelcomeScreen(user, null);
+    }
+}
+
 // ===== NAVEGAÇÃO COM HISTORY API (BOTÃO VOLTAR NATIVO) =====
 let navHistory = ['home'];
 function pushState(screen) {
@@ -951,6 +1186,8 @@ function pushState(screen) {
         navHistory.push(screen);
         history.pushState({screen: screen}, '', '');
     }
+    // Salvar tela atual para persistência ao recarregar
+    sessionStorage.setItem('current-screen', screen);
 }
 function getCurrentScreen() {
     if (document.getElementById('home').classList.contains('visible')) return 'home';
@@ -1173,10 +1410,21 @@ function renderExpedicao(destino){
     
     document.getElementById('exp-header-title').textContent = titles[destino] || 'Expedição';
     
+    // Referências excluídas do showroom
+    const refsExcluidas = ['SHI26023', 'SAI26012'];
+    
+    // Filtrar dados baseado no destino
+    let dadosFiltrados = EXPEDICAO_INV1;
+    if(destino === 'showroom'){
+        dadosFiltrados = EXPEDICAO_INV1.filter(item => !refsExcluidas.includes(item.ref));
+    }
+    
     // Calcular totais
     let totalProd = 0, totalEnvShow = 0;
     const refsUnicas = new Set();
-    EXPEDICAO_INV1.forEach(item => {
+    
+    // Totais dos dados filtrados
+    dadosFiltrados.forEach(item => {
         const p = item.prod || {};
         totalProd += (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0);
         const e = item.envShow || {};
@@ -1184,16 +1432,40 @@ function renderExpedicao(destino){
         refsUnicas.add(item.ref);
     });
     
-    // E-commerce = 342 (1 por tamanho existente por cor)
-    const totalEcomm = 342;
-    // Isabella meta = 86 (1 P por cor)
-    const metaIsabella = 86;
-    // Resto após showroom e ecommerce
-    const resto = totalProd - totalEnvShow - totalEcomm;
-    // Isabella recebe no máximo 86, resto vai para showroom depois
+    // E-commerce = 1 por tamanho existente por cor (todos os dados)
+    let totalEcomm = 0;
+    EXPEDICAO_INV1.forEach(item => {
+        const p = item.prod || {};
+        totalEcomm += ['PP','P','M','G'].filter(t => p[t] > 0).length;
+    });
+    
+    // Isabella meta = 1 P por cor (todos os dados)
+    let metaIsabella = 0;
+    EXPEDICAO_INV1.forEach(item => {
+        if((item.prod?.P || 0) > 0) metaIsabella++;
+    });
+    
+    // Calcular quantidade excluída do showroom
+    let qtdExcluida = 0;
+    EXPEDICAO_INV1.filter(item => refsExcluidas.includes(item.ref)).forEach(item => {
+        const p = item.prod || {};
+        const ecommTams = ['PP','P','M','G'].filter(t => p[t] > 0).length;
+        const isabellaQty = p.P > 0 ? 1 : 0;
+        qtdExcluida += (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0) - ecommTams - isabellaQty;
+    });
+    
+    // Resto após showroom e ecommerce (baseado nos dados filtrados)
+    const resto = totalProd - totalEnvShow - totalEcomm + qtdExcluida;
     const envIsabella = Math.min(resto, metaIsabella);
-    // Meta showroom = produzido - ecommerce - isabella
-    const metaShowroom = totalProd - totalEcomm - metaIsabella;
+    
+    // Meta showroom = produzido (filtrado) - ecommerce(filtrado) - isabella(filtrado)
+    let ecommFiltrado = 0, isabellaFiltrado = 0;
+    dadosFiltrados.forEach(item => {
+        const p = item.prod || {};
+        ecommFiltrado += ['PP','P','M','G'].filter(t => p[t] > 0).length;
+        if((p.P || 0) > 0) isabellaFiltrado++;
+    });
+    const metaShowroom = totalProd - ecommFiltrado - isabellaFiltrado;
     
     let totalMeta, totalEnv, pctTotal;
     if(destino === 'showroom'){
@@ -1209,14 +1481,14 @@ function renderExpedicao(destino){
     pctTotal = totalMeta > 0 ? ((totalEnv / totalMeta) * 100).toFixed(1) : 0;
     const colorTotal = pctTotal >= 100 ? 'green' : 'blue';
     
-    // Stats resumo - mostrar 56 refs e 86 cores em todos
-    const totalCores = EXPEDICAO_INV1.length; // 86
+    // Stats resumo
+    const totalCores = dadosFiltrados.length;
     let statsHtml;
     if(destino === 'showroom'){
         statsHtml = `
             <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Total de Referências</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${totalCores}</div><div class="exp-stat-label">Variantes de Cores</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalProd.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Produzido</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalMeta.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças a Receber</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${totalEnv.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Recebidas</div></div>
         `;
     } else if(destino === 'ecommerce'){
@@ -1250,7 +1522,7 @@ function renderExpedicao(destino){
     `;
     
     // Lista de itens com barras por tamanho
-    const items = EXPEDICAO_INV1.map(item => {
+    const items = dadosFiltrados.map(item => {
         const p = item.prod || {};
         const e = item.envShow || {};
         const totalP = (p.PP||0)+(p.P||0)+(p.M||0)+(p.G||0);
@@ -1330,7 +1602,7 @@ function renderExpedicao(destino){
             <div class="exp-item">
                 <div class="exp-item-header">
                     <div>
-                        <div class="exp-item-ref">${item.ref}</div>
+                        <div class="exp-item-ref">${item.ref} <span style="font-weight:400;color:var(--txt2);font-size:11px">(${totalP} pçs)</span></div>
                         <div class="exp-item-name">${item.desc}</div>
                         <div class="exp-item-cor">🎨 ${item.cor}</div>
                     </div>
@@ -1440,19 +1712,26 @@ function fP(v){return(v*100).toFixed(1)+'%'}
 document.querySelectorAll('.nav-btn').forEach(b=>{b.addEventListener('click',()=>{
 document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');
 document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(b.dataset.screen).classList.add('active');})});
-document.getElementById('topdia').innerHTML=R.slice(0,10).map((t,i)=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="rank-number ${i<3?'rank-'+(i+1):'rank-default'}">${i+1}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Peças: </span><span class="product-stat-value">${t.pecas}</span></div><div class="product-stat"><span class="product-stat-label">Valor: </span><span class="product-stat-value">${fC(t.valor)}</span></div></div></div>`).join('');
+// Combinar P e F para buscar dados completos
+const allProducts = [...P, ...F];
+document.getElementById('topdia').innerHTML=R.slice(0,10).map((t,i)=>{
+    const prod = allProducts.find(p => p.referencia === t.referencia) || {};
+    const giroDia = prod.estoqueEnviado ? (t.pecas / prod.estoqueEnviado) : 0;
+    return `<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="rank-number ${i<3?'rank-'+(i+1):'rank-default'}">${i+1}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${prod.estoqueAtual || 0}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.pecas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Dia: </span><span class="product-stat-value">${fP(giroDia)}</span></div></div><div style="margin-top:8px"><span class="product-stat-label">Valor total: </span><span class="product-stat-value">${fCF(t.valor)}</span></div></div>`;
+}).join('');
 const tA=A.filter(x=>x.aceitacao>0).sort((a,b)=>b.aceitacao-a.aceitacao).slice(0,5);
-document.getElementById('topA').innerHTML=tA.map((t,i)=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="rank-number ${i<3?'rank-'+(i+1):'rank-default'}">${i+1}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Aceitação: </span><span class="product-stat-value" style="color:var(--green)">${fP(t.aceitacao)}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas}</span></div></div></div>`).join('');
+document.getElementById('topA').innerHTML=tA.map((t,i)=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge status-excelente">${fP(t.aceitacao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro || (t.vendasLiquidas/t.enviado))}</span></div></div><div class="product-stats" style="margin-top:4px"><div class="product-stat"><span class="product-stat-label">Devoluções: </span><span class="product-stat-value">${t.devolucoes || 0}</span></div></div></div>`).join('');
 const tR=A.filter(x=>x.rejeicao>0).sort((a,b)=>b.rejeicao-a.rejeicao).slice(0,5);
-document.getElementById('topR').innerHTML=tR.map((t,i)=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge status-fraco">${fP(t.rejeicao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Devoluções: </span><span class="product-stat-value">${t.devolucoes}</span></div><div class="product-stat"><span class="product-stat-label">Vendas Brutas: </span><span class="product-stat-value">${t.vendidoBruto}</span></div></div></div>`).join('');
+document.getElementById('topR').innerHTML=tR.map((t,i)=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge status-fraco">${fP(t.aceitacao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro || (t.vendasLiquidas/t.enviado))}</span></div></div><div class="product-stats" style="margin-top:4px"><div class="product-stat"><span class="product-stat-label">Devoluções: </span><span class="product-stat-value">${t.devolucoes || 0}</span></div></div></div>`).join('');
 function gS(s){if(s.includes('Excelente'))return'status-excelente';if(s.includes('Bom'))return'status-bom';if(s.includes('Fraco'))return'status-fraco';return'status-regular'}
 function gK(s){if(s.includes('Excelente'))return'excelente';if(s.includes('Bom'))return'bom';if(s.includes('Fraco'))return'fraco';return'regular'}
+function gC(s){if(s.includes('Excelente'))return'card-excelente';if(s.includes('Bom'))return'card-bom';if(s.includes('Fraco'))return'card-fraco';return'card-regular'}
 function rR(f='all'){let items=A;if(f!=='all')items=items.filter(x=>gK(x.status)===f);
-document.getElementById('rc').innerHTML=items.map(t=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge ${gS(t.status)}">${fP(t.aceitacao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Preço: </span><span class="product-stat-value">${fCF(t.preco)}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas}/${t.enviado}</span></div><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div></div></div>`).join('')}
+document.getElementById('rc').innerHTML=items.map(t=>`<div class="product-item ${gC(t.status)}"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge ${gS(t.status)}">${fP(t.aceitacao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro || (t.vendasLiquidas/t.enviado))}</span></div></div><div class="product-stats" style="margin-top:4px"><div class="product-stat"><span class="product-stat-label">Devoluções: </span><span class="product-stat-value">${t.devolucoes || 0}</span></div></div></div>`).join('')}
 document.querySelectorAll('#rf .filter-pill').forEach(p=>{p.addEventListener('click',()=>{document.querySelectorAll('#rf .filter-pill').forEach(x=>x.classList.remove('active'));p.classList.add('active');rR(p.dataset.filter)})});rR();
 function rP(s=''){let items=P;if(s){const q=s.toLowerCase();items=items.filter(x=>x.referencia.toLowerCase().includes(q)||x.descricao.toLowerCase().includes(q))}
-document.getElementById('lp').innerHTML=items.map(t=>{const sc=t.status==='Excelente'?'status-excelente':'status-bom';return`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="product-price">${fCF(t.preco)}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}/${t.estoqueEnviado}</span></div><div class="product-stat"><span class="product-stat-label">Giro: </span><span class="product-stat-value">${fP(t.giro)}</span></div><div class="product-stat"><span class="product-stat-label">Hoje: </span><span class="product-stat-value">${t.vendasHoje}</span></div></div><div style="margin-top:8px"><span class="status-badge ${sc}">${t.status}</span></div></div>`}).join('')}rP();
-document.getElementById('lf').innerHTML=F.map(t=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="product-price">${fCF(t.preco)}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}/${t.estoqueEnviado}</span></div><div class="product-stat"><span class="product-stat-label">Giro: </span><span class="product-stat-value">${fP(t.giro)}</span></div><div class="product-stat"><span class="product-stat-label">Hoje: </span><span class="product-stat-value">${t.vendasHoje}</span></div></div><div style="margin-top:8px"><span class="status-badge status-fotos">📷 Fotos ISA</span></div></div>`).join('');
+document.getElementById('lp').innerHTML=items.map(t=>{const sc=t.status==='Excelente'?'status-excelente':'status-bom';return`<div class="product-item" onclick="openPhoto('${t.referencia}','${t.descricao.replace(/'/g,"\\'")}')"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="product-price">${fCF(t.preco)}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro)}</span></div></div><div style="margin-top:8px"><span class="status-badge ${sc}">${t.status}</span></div></div>`}).join('')}rP();
+document.getElementById('lf').innerHTML=F.map(t=>`<div class="product-item" onclick="openPhoto('${t.referencia}','${t.descricao.replace(/'/g,"\\'")}')"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="product-price">${fCF(t.preco)}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro)}</span></div></div><div style="margin-top:8px"><span class="status-badge status-fotos">📷 Fotos ISA</span></div></div>`).join('');
 document.getElementById('sc')?.addEventListener('input',e=>rP(e.target.value));
 // PWA Install
 let deferredPrompt;
@@ -2268,4 +2547,57 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
-</script></body></html>
+
+// ========== PHOTO MODAL ==========
+const PRODUCT_PHOTOS = {
+    // Adicione as fotos aqui no formato: 'REFERENCIA': 'URL_DA_FOTO'
+    // Exemplo:
+    // 'CLI26008': 'https://exemplo.com/foto.jpg',
+    // 'BZI26002': 'fotos/blazer.jpg',
+};
+
+function openPhoto(ref, desc){
+    const modal = document.getElementById('photo-modal');
+    const img = document.getElementById('photo-modal-img');
+    const noimg = document.getElementById('photo-modal-noimg');
+    const refEl = document.getElementById('photo-modal-ref');
+    const descEl = document.getElementById('photo-modal-desc');
+    
+    refEl.textContent = ref;
+    descEl.textContent = desc;
+    
+    const photoUrl = PRODUCT_PHOTOS[ref];
+    if(photoUrl){
+        img.src = photoUrl;
+        img.style.display = 'block';
+        noimg.style.display = 'none';
+    } else {
+        img.style.display = 'none';
+        noimg.style.display = 'block';
+        noimg.textContent = '📷 Foto não cadastrada';
+    }
+    
+    modal.classList.add('active');
+}
+
+function closePhoto(){
+    document.getElementById('photo-modal').classList.remove('active');
+}
+
+document.getElementById('photo-modal')?.addEventListener('click', function(e){
+    if(e.target === this) closePhoto();
+});
+</script>
+
+<!-- PHOTO MODAL -->
+<div class="photo-modal" id="photo-modal">
+    <button class="photo-modal-close" onclick="closePhoto()">✕</button>
+    <img class="photo-modal-img" id="photo-modal-img" src="" alt="Foto do produto">
+    <div class="photo-modal-noimg" id="photo-modal-noimg" style="display:none"></div>
+    <div class="photo-modal-info">
+        <div class="photo-modal-ref" id="photo-modal-ref"></div>
+        <div class="photo-modal-desc" id="photo-modal-desc"></div>
+    </div>
+</div>
+
+</body></html>
