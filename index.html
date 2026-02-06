@@ -999,13 +999,33 @@ function renderExpedicao(destino){
     pctTotal = totalMeta > 0 ? ((totalEnv / totalMeta) * 100).toFixed(1) : 0;
     const colorTotal = pctTotal >= 100 ? 'green' : 'blue';
     
-    // Stats resumo
-    document.getElementById('exp-total-stats').innerHTML = `
-        <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Referências</div></div>
-        <div class="exp-stat"><div class="exp-stat-value">${totalProd.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Produzido</div></div>
-        <div class="exp-stat"><div class="exp-stat-value">${totalEnv.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Enviado</div></div>
-        <div class="exp-stat"><div class="exp-stat-value" style="color:var(--${colorTotal})">${pctTotal}%</div><div class="exp-stat-label">Progresso</div></div>
-    `;
+    // Stats resumo - mostrar valores apropriados para cada destino
+    let statsHtml;
+    if(destino === 'showroom'){
+        statsHtml = `
+            <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Referências</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalProd.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Produzido</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalEnv.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Enviado</div></div>
+            <div class="exp-stat"><div class="exp-stat-value" style="color:var(--${colorTotal})">${pctTotal}%</div><div class="exp-stat-label">Progresso</div></div>
+        `;
+    } else if(destino === 'ecommerce'){
+        statsHtml = `
+            <div class="exp-stat"><div class="exp-stat-value">${EXPEDICAO_INV1.length}</div><div class="exp-stat-label">Cores</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalMeta}</div><div class="exp-stat-label">Meta</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalEnv}</div><div class="exp-stat-label">Enviado</div></div>
+            <div class="exp-stat"><div class="exp-stat-value" style="color:var(--${colorTotal})">${pctTotal}%</div><div class="exp-stat-label">Progresso</div></div>
+        `;
+    } else {
+        // Isabella - contar quantas cores tem P
+        const coresComP = EXPEDICAO_INV1.filter(item => (item.prod?.P || 0) > 0).length;
+        statsHtml = `
+            <div class="exp-stat"><div class="exp-stat-value">${coresComP}</div><div class="exp-stat-label">Cores</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalMeta}</div><div class="exp-stat-label">Meta</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalEnv}</div><div class="exp-stat-label">Enviado</div></div>
+            <div class="exp-stat"><div class="exp-stat-value" style="color:var(--${colorTotal})">${pctTotal}%</div><div class="exp-stat-label">Progresso</div></div>
+        `;
+    }
+    document.getElementById('exp-total-stats').innerHTML = statsHtml;
     
     // Barra total
     document.getElementById('exp-total-progress').innerHTML = `
@@ -1028,23 +1048,83 @@ function renderExpedicao(destino){
         const totalE = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
         if(totalP === 0) return '';
         
-        const pctItem = totalP > 0 ? ((totalE / totalP) * 100).toFixed(0) : 0;
+        // Calcular meta e enviado baseado no destino
+        let metaItem, envItem;
+        if(destino === 'showroom'){
+            // Showroom: produzido - ecommerce(1 cada tam) - isabella(1 P)
+            const ecommTams = ['PP','P','M','G'].filter(t => p[t] > 0).length;
+            const isabellaQty = p.P > 0 ? 1 : 0;
+            metaItem = totalP - ecommTams - isabellaQty;
+            envItem = totalE;
+        } else if(destino === 'ecommerce'){
+            // E-commerce: 1 de cada tamanho existente
+            metaItem = ['PP','P','M','G'].filter(t => p[t] > 0).length;
+            envItem = metaItem; // 100% enviado
+        } else {
+            // Isabella: 1 peça P
+            metaItem = p.P > 0 ? 1 : 0;
+            envItem = metaItem; // 100% enviado
+        }
+        
+        const pctItem = metaItem > 0 ? ((envItem / metaItem) * 100).toFixed(0) : 0;
         const colorItem = pctItem >= 100 ? 'green' : 'blue';
         
         // Barras por tamanho
-        const tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
-            const prod = p[t] || 0;
-            const env = e[t] || 0;
-            const pct = prod > 0 ? Math.min((env/prod)*100, 100) : 0;
-            const col = pct >= 100 ? 'green' : 'blue';
-            return `
-                <div class="exp-tam-row">
-                    <span class="exp-tam-label">${t}</span>
-                    <div class="exp-tam-bar"><div class="exp-tam-fill ${col}" style="width:${pct}%"></div></div>
-                    <span class="exp-tam-val">${env}/${prod}</span>
-                </div>
-            `;
-        }).join('');
+        let tamanhos;
+        if(destino === 'showroom'){
+            // Showroom: meta = produzido - ecommerce(1 cada) - isabella(1 P)
+            tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
+                const prod = p[t] || 0;
+                const env = e[t] || 0;
+                // Descontar 1 do ecommerce de cada tamanho
+                // Descontar 1 da isabella só do P
+                const descEcomm = 1;
+                const descIsabella = (t === 'P') ? 1 : 0;
+                const meta = prod - descEcomm - descIsabella;
+                const pct = meta > 0 ? Math.min((env/meta)*100, 100) : 0;
+                const col = env >= meta ? 'green' : 'blue';
+                return `
+                    <div class="exp-tam-row">
+                        <span class="exp-tam-label">${t}</span>
+                        <div class="exp-tam-bar"><div class="exp-tam-fill ${col}" style="width:${pct}%"></div></div>
+                        <span class="exp-tam-val">${env}/${meta}</span>
+                    </div>
+                `;
+            }).join('');
+        } else if(destino === 'ecommerce'){
+            // Showroom: meta = produzido - ecommerce(1 cada) - isabella(1 P)
+            tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
+                const prod = p[t] || 0;
+                const env = e[t] || 0;
+                // Descontar 1 do ecommerce de cada tamanho
+                // Descontar 1 da isabella só do P
+                const descEcomm = 1;
+                const descIsabella = (t === 'P') ? 1 : 0;
+                const meta = prod - descEcomm - descIsabella;
+                const pct = meta > 0 ? Math.min((env/meta)*100, 100) : 0;
+                const col = env >= meta ? 'green' : 'blue';
+                return `
+                    <div class="exp-tam-row">
+                        <span class="exp-tam-label">${t}</span>
+                        <div class="exp-tam-bar"><div class="exp-tam-fill ${col}" style="width:${pct}%"></div></div>
+                        <span class="exp-tam-val">${env}/${meta}</span>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            // Isabella: só P com 1/1
+            if(p.P > 0){
+                tamanhos = `
+                    <div class="exp-tam-row">
+                        <span class="exp-tam-label">P</span>
+                        <div class="exp-tam-bar"><div class="exp-tam-fill green" style="width:100%"></div></div>
+                        <span class="exp-tam-val">1/1</span>
+                    </div>
+                `;
+            } else {
+                tamanhos = '<div class="exp-tam-row"><span class="exp-tam-label" style="color:var(--txt2)">Sem tamanho P</span></div>';
+            }
+        }
         
         return `
             <div class="exp-item">
