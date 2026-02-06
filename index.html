@@ -930,54 +930,44 @@ setTimeout(()=>{
             const lastScroll = sessionStorage.getItem('last-scroll');
             const lastExpDestino = sessionStorage.getItem('last-exp-destino');
             
-            // Se estava na tela de boas-vindas ou sem telas salvas, ir para home
-            if(!lastScreens || lastScreens === '[]' || lastScreens.includes('welcome-screen')){
+            let screens = [];
+            try {
+                screens = lastScreens ? JSON.parse(lastScreens) : [];
+            } catch(e) {
+                screens = [];
+            }
+            
+            // Se estava na tela de boas-vindas, sem telas salvas, ou home
+            const goToHome = screens.length === 0 || 
+                             screens.includes('welcome-screen') || 
+                             (screens.length === 1 && screens[0] === 'home');
+            
+            if(goToHome){
                 document.getElementById('home').classList.remove('hidden');
                 document.getElementById('home').classList.add('visible');
                 pushState('home');
                 return;
             }
             
-            try{
-                const screens = JSON.parse(lastScreens);
-                if(screens.length > 0){
-                    // Verificar se é apenas home
-                    if(screens.length === 1 && screens[0] === 'home'){
-                        document.getElementById('home').classList.remove('hidden');
-                        document.getElementById('home').classList.add('visible');
-                        pushState('home');
-                        return;
-                    }
-                    
-                    // Esconder home e restaurar telas
-                    document.getElementById('home').classList.add('hidden');
-                    document.getElementById('home').classList.remove('visible');
-                    
-                    screens.forEach(id => {
-                        if(id === 'home') return; // Home usa visible, não active
-                        const el = document.getElementById(id);
-                        if(el) el.classList.add('active');
-                    });
-                    
-                    // Restaurar destino de expedição se necessário
-                    if(screens.includes('app-expedicao') && lastExpDestino){
-                        currentExpDestino = lastExpDestino;
-                        renderExpedicao(lastExpDestino);
-                    }
-                    // Restaurar scroll
-                    if(lastScroll){
-                        setTimeout(() => window.scrollTo(0, parseInt(lastScroll)), 100);
-                    }
-                    return;
-                }
-            }catch(e){
-                console.log('Erro ao restaurar telas:', e);
-            }
+            // Esconder home e restaurar telas
+            document.getElementById('home').classList.add('hidden');
+            document.getElementById('home').classList.remove('visible');
             
-            // Fallback: ir para home
-            document.getElementById('home').classList.remove('hidden');
-            document.getElementById('home').classList.add('visible');
-            pushState('home');
+            screens.forEach(id => {
+                if(id === 'home') return; // Home usa visible, não active
+                const el = document.getElementById(id);
+                if(el) el.classList.add('active');
+            });
+            
+            // Restaurar destino de expedição se necessário
+            if(screens.includes('app-expedicao') && lastExpDestino){
+                currentExpDestino = lastExpDestino;
+                renderExpedicao(lastExpDestino);
+            }
+            // Restaurar scroll
+            if(lastScroll){
+                setTimeout(() => window.scrollTo(0, parseInt(lastScroll)), 100);
+            }
         } else {
             // Não logado - tentar biometria ou mostrar login
             tryInitialBiometric();
