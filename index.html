@@ -25,16 +25,45 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 @keyframes splashIcon{0%,100%{opacity:0.3;transform:scale(1)}20%{opacity:1;transform:scale(1.2)}40%{opacity:0.3;transform:scale(1)}}
 
 /* WELCOME SCREEN */
-.welcome-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9998;opacity:0;transition:opacity .5s ease}
+.welcome-screen{position:fixed;top:0;left:0;width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9998;opacity:0;transition:opacity .5s ease;overflow:hidden}
 .welcome-screen.active{display:flex;opacity:1}
 .welcome-screen.fade-out{opacity:0}
-.welcome-greeting{font-size:28px;font-weight:400;color:var(--txt2);opacity:0;transform:translateY(20px);animation:welcomeSlideUp 1s ease .2s forwards}
-.welcome-name{font-size:44px;font-weight:600;color:var(--txt);margin-top:8px;opacity:0;transform:translateY(20px);animation:welcomeSlideUp 1s ease .5s forwards}
-.welcome-sewing{margin-top:40px;opacity:0;animation:welcomeFadeIn 1s ease 1s forwards;position:relative;width:60px;height:60px}
-.welcome-needle{font-size:32px;position:absolute;animation:sewingNeedle 1.2s ease-in-out infinite}
-.welcome-thread{position:absolute;bottom:8px;left:50%;width:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent);animation:sewingThread 1.2s ease-in-out infinite}
-@keyframes sewingNeedle{0%{transform:translate(0,0) rotate(-45deg)}25%{transform:translate(10px,15px) rotate(-45deg)}50%{transform:translate(20px,0) rotate(-45deg)}75%{transform:translate(30px,15px) rotate(-45deg)}100%{transform:translate(40px,0) rotate(-45deg)}}
-@keyframes sewingThread{0%{width:0;left:10px}100%{width:40px;left:10px}}
+
+/* Céu Noturno - Estrelas */
+.welcome-screen.night{background:linear-gradient(to bottom,#0a0a1a 0%,#1a1a3a 50%,#2a2a4a 100%)}
+.stars{position:absolute;top:0;left:0;width:200%;height:100%;background-image:radial-gradient(2px 2px at 20px 30px,#fff,transparent),radial-gradient(2px 2px at 40px 70px,rgba(255,255,255,0.8),transparent),radial-gradient(1px 1px at 90px 40px,#fff,transparent),radial-gradient(2px 2px at 160px 120px,rgba(255,255,255,0.9),transparent),radial-gradient(1px 1px at 230px 80px,#fff,transparent),radial-gradient(2px 2px at 300px 150px,rgba(255,255,255,0.7),transparent),radial-gradient(1px 1px at 370px 50px,#fff,transparent),radial-gradient(2px 2px at 450px 180px,rgba(255,255,255,0.8),transparent),radial-gradient(1px 1px at 520px 90px,#fff,transparent),radial-gradient(2px 2px at 600px 130px,#fff,transparent),radial-gradient(1px 1px at 680px 60px,rgba(255,255,255,0.9),transparent),radial-gradient(2px 2px at 750px 170px,#fff,transparent);background-size:800px 200px;animation:starsMove 60s linear infinite}
+@keyframes starsMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* Céu Diurno - Sol e Nuvens */
+.welcome-screen.morning{background:linear-gradient(to bottom,#87CEEB 0%,#B0E0E6 50%,#E0F6FF 100%)}
+.clouds{position:absolute;top:0;left:0;width:200%;height:100%}
+.cloud{position:absolute;background:#fff;border-radius:50px;opacity:0.9;box-shadow:0 8px 16px rgba(0,0,0,0.1)}
+.cloud::before,.cloud::after{content:'';position:absolute;background:#fff;border-radius:50%}
+.cloud-1{width:100px;height:40px;top:15%;left:10%;animation:cloudsMove 40s linear infinite}
+.cloud-1::before{width:50px;height:50px;top:-25px;left:15px}
+.cloud-1::after{width:35px;height:35px;top:-15px;left:55px}
+.cloud-2{width:80px;height:32px;top:25%;left:60%;animation:cloudsMove 50s linear infinite;animation-delay:-20s}
+.cloud-2::before{width:40px;height:40px;top:-20px;left:12px}
+.cloud-2::after{width:28px;height:28px;top:-12px;left:44px}
+.cloud-3{width:120px;height:48px;top:35%;left:30%;animation:cloudsMove 45s linear infinite;animation-delay:-10s}
+.cloud-3::before{width:60px;height:60px;top:-30px;left:18px}
+.cloud-3::after{width:42px;height:42px;top:-18px;left:66px}
+.sun{position:absolute;top:10%;right:15%;width:80px;height:80px;background:radial-gradient(circle,#FFD700 0%,#FFA500 100%);border-radius:50%;box-shadow:0 0 60px #FFD700,0 0 100px rgba(255,215,0,0.5);animation:sunGlow 3s ease-in-out infinite}
+@keyframes cloudsMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes sunGlow{0%,100%{box-shadow:0 0 60px #FFD700,0 0 100px rgba(255,215,0,0.5)}50%{box-shadow:0 0 80px #FFD700,0 0 120px rgba(255,215,0,0.6)}}
+
+/* Céu Tarde - Pôr do Sol */
+.welcome-screen.afternoon{background:linear-gradient(to bottom,#FF6B6B 0%,#FF8E53 30%,#FFA07A 50%,#FFB347 70%,#9B59B6 100%)}
+.sunset-clouds{position:absolute;top:0;left:0;width:200%;height:100%}
+.sunset-cloud{position:absolute;background:linear-gradient(to bottom,rgba(255,150,100,0.8),rgba(255,100,100,0.6));border-radius:50px;filter:blur(2px)}
+.sunset-cloud-1{width:150px;height:30px;top:40%;left:5%;animation:cloudsMove 55s linear infinite}
+.sunset-cloud-2{width:200px;height:40px;top:50%;left:40%;animation:cloudsMove 45s linear infinite;animation-delay:-15s}
+.sunset-cloud-3{width:120px;height:25px;top:60%;left:70%;animation:cloudsMove 50s linear infinite;animation-delay:-25s}
+.sunset-sun{position:absolute;bottom:20%;left:50%;transform:translateX(-50%);width:100px;height:100px;background:radial-gradient(circle,#FFD700 0%,#FF6347 60%,#FF4500 100%);border-radius:50%;box-shadow:0 0 80px rgba(255,99,71,0.8),0 0 150px rgba(255,69,0,0.4);animation:sunsetGlow 4s ease-in-out infinite}
+@keyframes sunsetGlow{0%,100%{box-shadow:0 0 80px rgba(255,99,71,0.8),0 0 150px rgba(255,69,0,0.4)}50%{box-shadow:0 0 100px rgba(255,99,71,0.9),0 0 180px rgba(255,69,0,0.5)}}
+
+.welcome-greeting{font-size:28px;font-weight:400;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,0.3);opacity:0;transform:translateY(20px);animation:welcomeSlideUp 1s ease .2s forwards;z-index:1}
+.welcome-name{font-size:44px;font-weight:600;color:#fff;text-shadow:0 2px 15px rgba(0,0,0,0.4);margin-top:8px;opacity:0;transform:translateY(20px);animation:welcomeSlideUp 1s ease .5s forwards;z-index:1}
 @keyframes welcomeSlideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes welcomeFadeIn{from{opacity:0}to{opacity:1}}
 
@@ -391,12 +420,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <!-- WELCOME SCREEN -->
 <div class="welcome-screen" id="welcome-screen">
+    <!-- Estrelas (noite) -->
+    <div class="stars" id="welcome-stars"></div>
+    <!-- Nuvens e Sol (manhã) -->
+    <div class="clouds" id="welcome-clouds">
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+    </div>
+    <div class="sun" id="welcome-sun"></div>
+    <!-- Pôr do Sol (tarde) -->
+    <div class="sunset-clouds" id="welcome-sunset-clouds">
+        <div class="sunset-cloud sunset-cloud-1"></div>
+        <div class="sunset-cloud sunset-cloud-2"></div>
+        <div class="sunset-cloud sunset-cloud-3"></div>
+    </div>
+    <div class="sunset-sun" id="welcome-sunset-sun"></div>
+    <!-- Texto -->
     <div class="welcome-greeting" id="welcome-greeting">Boa noite,</div>
     <div class="welcome-name" id="welcome-name">André</div>
-    <div class="welcome-sewing">
-        <div class="welcome-needle">🪡</div>
-        <div class="welcome-thread"></div>
-    </div>
 </div>
 
 <!-- HOME -->
@@ -864,20 +906,38 @@ async function registerInitialBiometric(user){
 function showWelcomeScreen(user){
     const u = USERS[user];
     const hour = new Date().getHours();
-    let greeting;
-    if(hour >= 5 && hour < 12) greeting = 'Bom dia,';
-    else if(hour >= 12 && hour < 18) greeting = 'Boa tarde,';
-    else greeting = 'Boa noite,';
+    let greeting, skyClass;
+    
+    if(hour >= 5 && hour < 12){
+        greeting = 'Bom dia,';
+        skyClass = 'morning';
+    } else if(hour >= 12 && hour < 18){
+        greeting = 'Boa tarde,';
+        skyClass = 'afternoon';
+    } else {
+        greeting = 'Boa noite,';
+        skyClass = 'night';
+    }
+    
+    const ws = document.getElementById('welcome-screen');
+    ws.className = 'welcome-screen ' + skyClass;
+    
+    // Mostrar/esconder elementos conforme o período
+    document.getElementById('welcome-stars').style.display = skyClass === 'night' ? 'block' : 'none';
+    document.getElementById('welcome-clouds').style.display = skyClass === 'morning' ? 'block' : 'none';
+    document.getElementById('welcome-sun').style.display = skyClass === 'morning' ? 'block' : 'none';
+    document.getElementById('welcome-sunset-clouds').style.display = skyClass === 'afternoon' ? 'block' : 'none';
+    document.getElementById('welcome-sunset-sun').style.display = skyClass === 'afternoon' ? 'block' : 'none';
     
     document.getElementById('welcome-greeting').textContent = greeting;
     document.getElementById('welcome-name').textContent = u.nome;
-    document.getElementById('welcome-screen').classList.add('active');
+    ws.classList.add('active');
     
     setTimeout(()=>{
-        document.getElementById('welcome-screen').classList.add('fade-out');
+        ws.classList.add('fade-out');
         setTimeout(()=>{
-            document.getElementById('welcome-screen').classList.remove('active');
-            document.getElementById('welcome-screen').classList.remove('fade-out');
+            ws.classList.remove('active');
+            ws.classList.remove('fade-out');
             document.getElementById('home').classList.add('visible');
             pushState('home');
         },500);
