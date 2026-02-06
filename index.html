@@ -2,8 +2,14 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<meta name="theme-color" content="#000000"><meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Isa Paes"><link rel="manifest" href="/inverno-2026/manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Isa Paes">
+<link rel="manifest" href="/inverno-2026/manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="shortcut icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png"><title>Isa Paes</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -23,114 +29,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .splash-icon:nth-child(5){animation:splashIcon var(--splash-duration, 2.5s) ease-in-out calc(var(--splash-duration, 2.5s) * 0.8)}
 @keyframes splashPulse{0%,100%{opacity:.8}50%{opacity:1}}
 @keyframes splashIcon{0%,100%{opacity:0.3;transform:scale(1)}20%{opacity:1;transform:scale(1.2)}40%{opacity:0.3;transform:scale(1)}}
-
-/* WELCOME SCREEN */
-.welcome-screen{position:fixed;top:0;left:0;width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9998;opacity:0;transition:opacity .5s ease;overflow:hidden}
-.welcome-screen.active{display:flex;opacity:1}
-.welcome-screen.fade-out{opacity:0}
-
-/* Céu Noturno - Estrelas */
-.welcome-screen.night{background:linear-gradient(to bottom,#0a0a1a 0%,#1a1a3a 50%,#2a2a4a 100%)}
-.stars{position:absolute;top:0;left:0;width:200%;height:100%;background-image:radial-gradient(2px 2px at 20px 30px,#fff,transparent),radial-gradient(2px 2px at 40px 70px,rgba(255,255,255,0.8),transparent),radial-gradient(1px 1px at 90px 40px,#fff,transparent),radial-gradient(2px 2px at 160px 120px,rgba(255,255,255,0.9),transparent),radial-gradient(1px 1px at 230px 80px,#fff,transparent),radial-gradient(2px 2px at 300px 150px,rgba(255,255,255,0.7),transparent),radial-gradient(1px 1px at 370px 50px,#fff,transparent),radial-gradient(2px 2px at 450px 180px,rgba(255,255,255,0.8),transparent),radial-gradient(1px 1px at 520px 90px,#fff,transparent),radial-gradient(2px 2px at 600px 130px,#fff,transparent),radial-gradient(1px 1px at 680px 60px,rgba(255,255,255,0.9),transparent),radial-gradient(2px 2px at 750px 170px,#fff,transparent);background-size:800px 200px;animation:starsMove 60s linear infinite}
-@keyframes starsMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-
-/* Céu Diurno - Sol e Nuvens */
-.welcome-screen.morning{background:linear-gradient(to bottom,#87CEEB 0%,#B0E0E6 50%,#E0F6FF 100%)}
-.clouds{position:absolute;top:0;left:0;width:200%;height:100%}
-.cloud{position:absolute;background:#fff;border-radius:50px;opacity:0.9;box-shadow:0 8px 16px rgba(0,0,0,0.1)}
-.cloud::before,.cloud::after{content:'';position:absolute;background:#fff;border-radius:50%}
-.cloud-1{width:100px;height:40px;top:15%;left:10%;animation:cloudsMove 40s linear infinite}
-.cloud-1::before{width:50px;height:50px;top:-25px;left:15px}
-.cloud-1::after{width:35px;height:35px;top:-15px;left:55px}
-.cloud-2{width:80px;height:32px;top:25%;left:60%;animation:cloudsMove 50s linear infinite;animation-delay:-20s}
-.cloud-2::before{width:40px;height:40px;top:-20px;left:12px}
-.cloud-2::after{width:28px;height:28px;top:-12px;left:44px}
-.cloud-3{width:120px;height:48px;top:35%;left:30%;animation:cloudsMove 45s linear infinite;animation-delay:-10s}
-.cloud-3::before{width:60px;height:60px;top:-30px;left:18px}
-.cloud-3::after{width:42px;height:42px;top:-18px;left:66px}
-.sun{position:absolute;top:10%;right:15%;width:80px;height:80px;background:radial-gradient(circle,#FFD700 0%,#FFA500 100%);border-radius:50%;box-shadow:0 0 60px #FFD700,0 0 100px rgba(255,215,0,0.5);animation:sunGlow 3s ease-in-out infinite}
-@keyframes cloudsMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@keyframes sunGlow{0%,100%{box-shadow:0 0 60px #FFD700,0 0 100px rgba(255,215,0,0.5)}50%{box-shadow:0 0 80px #FFD700,0 0 120px rgba(255,215,0,0.6)}}
-
-/* Céu Tarde - Pôr do Sol */
-.welcome-screen.afternoon{background:linear-gradient(to bottom,#FF6B6B 0%,#FF8E53 30%,#FFA07A 50%,#FFB347 70%,#9B59B6 100%)}
-.sunset-clouds{position:absolute;top:0;left:0;width:200%;height:100%}
-.sunset-cloud{position:absolute;background:linear-gradient(to bottom,rgba(255,150,100,0.8),rgba(255,100,100,0.6));border-radius:50px;filter:blur(2px)}
-.sunset-cloud-1{width:150px;height:30px;top:40%;left:5%;animation:cloudsMove 55s linear infinite}
-.sunset-cloud-2{width:200px;height:40px;top:50%;left:40%;animation:cloudsMove 45s linear infinite;animation-delay:-15s}
-.sunset-cloud-3{width:120px;height:25px;top:60%;left:70%;animation:cloudsMove 50s linear infinite;animation-delay:-25s}
-.sunset-sun{position:absolute;bottom:20%;left:50%;transform:translateX(-50%);width:100px;height:100px;background:radial-gradient(circle,#FFD700 0%,#FF6347 60%,#FF4500 100%);border-radius:50%;box-shadow:0 0 80px rgba(255,99,71,0.8),0 0 150px rgba(255,69,0,0.4);animation:sunsetGlow 4s ease-in-out infinite}
-@keyframes sunsetGlow{0%,100%{box-shadow:0 0 80px rgba(255,99,71,0.8),0 0 150px rgba(255,69,0,0.4)}50%{box-shadow:0 0 100px rgba(255,99,71,0.9),0 0 180px rgba(255,69,0,0.5)}}
-
-/* Céu Nublado */
-.welcome-screen.cloudy-day{background:linear-gradient(to bottom,#87CEEB 0%,#B0C4DE 50%,#C5D5E5 100%)}
-.welcome-screen.cloudy-night{background:linear-gradient(to bottom,#1a1a2e 0%,#2d2d44 50%,#3d3d5c 100%)}
-.heavy-clouds{position:absolute;top:0;left:0;width:200%;height:100%}
-.heavy-cloud{position:absolute;background:#fff;border-radius:50px;opacity:0.95;box-shadow:0 8px 32px rgba(0,0,0,0.1)}
-.heavy-cloud::before,.heavy-cloud::after{content:'';position:absolute;background:#fff;border-radius:50%}
-.heavy-cloud-1{width:180px;height:70px;top:10%;left:5%;animation:cloudsMove 35s linear infinite}
-.heavy-cloud-1::before{width:90px;height:90px;top:-45px;left:30px}
-.heavy-cloud-1::after{width:70px;height:70px;top:-30px;left:100px}
-.heavy-cloud-2{width:220px;height:80px;top:22%;left:40%;animation:cloudsMove 40s linear infinite;animation-delay:-10s}
-.heavy-cloud-2::before{width:100px;height:100px;top:-50px;left:40px}
-.heavy-cloud-2::after{width:80px;height:80px;top:-35px;left:120px}
-.heavy-cloud-3{width:160px;height:60px;top:38%;left:15%;animation:cloudsMove 38s linear infinite;animation-delay:-20s}
-.heavy-cloud-3::before{width:80px;height:80px;top:-40px;left:25px}
-.heavy-cloud-3::after{width:60px;height:60px;top:-25px;left:85px}
-.heavy-cloud-4{width:200px;height:75px;top:50%;left:60%;animation:cloudsMove 42s linear infinite;animation-delay:-5s}
-.heavy-cloud-4::before{width:95px;height:95px;top:-48px;left:35px}
-.heavy-cloud-4::after{width:75px;height:75px;top:-32px;left:110px}
-.cloudy-night .heavy-cloud{background:rgba(60,60,80,0.8);box-shadow:none}
-.cloudy-night .heavy-cloud::before,.cloudy-night .heavy-cloud::after{background:rgba(60,60,80,0.8)}
-
-/* Chuva */
-.welcome-screen.rainy-day{background:linear-gradient(to bottom,#4A5568 0%,#5A6A7A 50%,#6B7B8C 100%)}
-.welcome-screen.rainy-night{background:linear-gradient(to bottom,#0d1117 0%,#1a1f2e 50%,#252d3d 100%)}
-.rain{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;pointer-events:none}
-.rain-drop{position:absolute;width:2px;background:linear-gradient(to bottom,transparent,rgba(174,194,224,0.6),rgba(174,194,224,0.3));animation:rainFall linear infinite}
-@keyframes rainFall{0%{transform:translateY(-100vh)}100%{transform:translateY(100vh)}}
-
-/* Tempestade */
-.welcome-screen.storm{background:linear-gradient(to bottom,#1a1a2e 0%,#2d2d44 30%,#1a1a2e 100%)}
-.lightning{position:absolute;top:0;left:0;width:100%;height:100%;background:transparent;animation:lightningFlash 4s infinite;pointer-events:none}
-@keyframes lightningFlash{0%,95%,100%{background:transparent}96%,98%{background:rgba(255,255,255,0.3)}}
-
-/* Neve */
-.welcome-screen.snowy-day{background:linear-gradient(to bottom,#B8C6D6 0%,#D4E0ED 50%,#E8F0F8 100%)}
-.welcome-screen.snowy-night{background:linear-gradient(to bottom,#1a2030 0%,#2a3040 50%,#3a4050 100%)}
-.snow{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;pointer-events:none}
-.snowflake{position:absolute;color:#fff;font-size:1em;animation:snowFall linear infinite}
-@keyframes snowFall{0%{transform:translateY(-10vh) rotate(0deg)}100%{transform:translateY(100vh) rotate(360deg)}}
-
-/* Neblina */
-.welcome-screen.foggy{background:linear-gradient(to bottom,#8a9aa8 0%,#a5b5c2 50%,#c0d0dd 100%)}
-.fog{position:absolute;top:0;left:0;width:200%;height:100%;background:linear-gradient(to right,rgba(255,255,255,0.1),rgba(255,255,255,0.4),rgba(255,255,255,0.1));animation:fogMove 20s linear infinite}
-@keyframes fogMove{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-
-.welcome-greeting{font-size:28px;font-weight:400;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,0.3);opacity:0;transform:translateY(20px);animation:welcomeSlideUp 1s ease .2s forwards;z-index:1}
-.welcome-name{font-size:44px;font-weight:600;color:#fff;text-shadow:0 2px 15px rgba(0,0,0,0.4);margin-top:8px;opacity:0;transform:translateY(20px);animation:welcomeSlideUp 1s ease .5s forwards;z-index:1}
-
-/* Esconder todos os elementos climáticos por padrão */
-.stars,.clouds,.sun,.sunset-clouds,.sunset-sun,.heavy-clouds,.rain,.lightning,.snow,.fog{display:none}
-@keyframes welcomeSlideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-@keyframes welcomeFadeIn{from{opacity:0}to{opacity:1}}
-
-/* INITIAL LOGIN */
-.initial-login{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9997;padding:24px}
-.initial-login.active{display:flex}
-.initial-login-logo{width:160px;margin-bottom:40px}
-.initial-login-box{width:100%;max-width:320px}
-.initial-login-title{font-size:14px;color:var(--txt2);text-align:center;margin-bottom:24px}
-
-/* PHOTO MODAL */
-.photo-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10000;padding:20px;opacity:0;transition:opacity .3s ease}
-.photo-modal.active{display:flex;opacity:1}
-.photo-modal-close{position:absolute;top:20px;right:20px;width:40px;height:40px;background:var(--card);border:1px solid var(--brd);border-radius:50%;color:var(--txt);font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10001}
-.photo-modal-img{max-width:100%;max-height:80vh;border-radius:12px;object-fit:contain}
-.photo-modal-info{margin-top:16px;text-align:center}
-.photo-modal-ref{font-size:18px;font-weight:600;color:var(--txt)}
-.photo-modal-desc{font-size:14px;color:var(--txt2);margin-top:4px}
-.photo-modal-noimg{color:var(--txt2);font-size:16px;text-align:center}
 
 /* HOME */
 .home{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
@@ -183,8 +81,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .submenu-screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
 .submenu-screen.active{display:flex}
 .submenu-title{font-size:20px;font-weight:600;margin-bottom:6px}
-.submenu-desc{font-size:12px;color:var(--txt2);margin-bottom:16px}
-.exp-update-date{font-size:11px;color:var(--accent);margin-bottom:24px;padding:8px 16px;background:var(--card);border-radius:8px;display:inline-block}
+.submenu-desc{font-size:12px;color:var(--txt2);margin-bottom:32px}
 .submenu-grid{display:flex;flex-direction:column;gap:14px;width:100%;max-width:360px}
 .sub-btn{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all .15s}
 .sub-btn:active{transform:scale(0.98);background:var(--card2)}
@@ -197,39 +94,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .sub-arrow{color:var(--txt2);font-size:18px}
 .sub-soon{font-size:10px;color:var(--txt2);background:var(--card2);border:1px solid var(--brd);padding:4px 10px;border-radius:10px;white-space:nowrap}
 .submenu-back{margin-top:32px;background:none;border:none;color:var(--txt2);font-size:13px;cursor:pointer}
-.submenu-year-note{font-size:10px;color:#444;letter-spacing:1px;text-transform:uppercase;margin-top:-8px;margin-bottom:24px}
-
-/* EXPEDIÇÃO */
-.exp-total-stats{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
-.exp-stat{flex:1;min-width:80px;text-align:center;padding:10px;background:var(--card2);border-radius:10px}
-.exp-stat-value{font-size:18px;font-weight:700}
-.exp-stat-label{font-size:10px;color:var(--txt2);margin-top:2px}
-.exp-progress-section{margin-top:12px}
-.exp-progress-row{margin-bottom:12px}
-.exp-progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.exp-progress-label{font-size:12px;color:var(--txt2)}
-.exp-progress-value{font-size:12px;font-weight:600}
-.exp-progress-bar{height:10px;background:#1a1a1a;border-radius:5px;overflow:hidden}
-.exp-progress-fill{height:100%;border-radius:5px;transition:width .3s ease}
-.exp-progress-fill.green{background:linear-gradient(90deg,#00d9a5,#00f5b8)}
-.exp-progress-fill.blue{background:linear-gradient(90deg,#3b82f6,#60a5fa)}
-.exp-progress-fill.purple{background:linear-gradient(90deg,#8b5cf6,#a78bfa)}
-.exp-progress-fill.pink{background:linear-gradient(90deg,#ec4899,#f472b6)}
-.exp-item{background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--brd)}
-.exp-item-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
-.exp-item-ref{font-size:11px;color:var(--accent);font-weight:600}
-.exp-item-name{font-size:13px;margin-top:2px;line-height:1.3}
-.exp-item-cor{font-size:11px;color:var(--txt);margin-top:4px;font-weight:500}
-.exp-item-badge{font-size:12px;font-weight:700}
-.exp-tamanhos-grid{display:flex;flex-direction:column;gap:6px;margin-top:10px}
-.exp-tam-row{display:flex;align-items:center;gap:8px}
-.exp-tam-label{font-size:11px;font-weight:600;width:20px;color:var(--txt2)}
-.exp-tam-bar{flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden}
-.exp-tam-fill{height:100%;border-radius:4px;transition:width 0.3s}
-.exp-tam-fill.green{background:var(--green)}
-.exp-tam-fill.blue{background:var(--accent)}
-.exp-tam-val{font-size:10px;color:var(--txt2);width:50px;text-align:right;font-family:monospace}
-.exp-item-progress{margin-top:8px}
 
 /* APP */
 .app-screen{display:none}.app-screen.active{display:block}
@@ -251,10 +115,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .metric-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--brd)}.metric-row:last-child{border-bottom:none}
 .metric-label{font-size:13px;color:var(--txt2)}.metric-value{font-size:14px;font-weight:600}
 .product-item{background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--brd)}
-.product-item.card-excelente{background:rgba(0,217,165,.12);border-color:rgba(0,217,165,.3)}
-.product-item.card-bom{background:rgba(255,193,7,.12);border-color:rgba(255,193,7,.3)}
-.product-item.card-regular{background:rgba(255,165,0,.12);border-color:rgba(255,165,0,.3)}
-.product-item.card-fraco{background:rgba(255,71,87,.12);border-color:rgba(255,71,87,.3)}
 .product-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
 .product-ref{font-size:11px;color:var(--accent);font-weight:600}.product-name{font-size:13px;margin-top:2px;line-height:1.3}
 .product-price{font-size:14px;font-weight:700;color:var(--green)}
@@ -325,9 +185,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-toggle.active .geo-toggle-knob{transform:translateX(18px)}
 .geo-input-section{display:flex;flex-direction:column;gap:10px}
 .geo-input-wrap{position:relative}
-.geo-address-input{width:100%;padding:14px 16px;background:#1a1a1a;border:2px solid #444;border-radius:12px;color:#fff;font-size:14px;font-weight:500}
-.geo-address-input::placeholder{color:#888;font-weight:400}
-.geo-address-input:focus{outline:none;border-color:var(--accent);background:#222}
+.geo-address-input{width:100%;padding:12px 14px;background:var(--card2);border:1px solid var(--brd);border-radius:12px;color:var(--txt);font-size:14px}
+.geo-address-input::placeholder{color:var(--txt2)}
+.geo-address-input:focus{outline:none;border-color:var(--accent)}
 .geo-input-section .geo-address-input{padding-right:75px}
 .geo-search-btn{position:absolute;right:5px;top:50%;transform:translateY(-50%);padding:8px 14px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
 .geo-search-btn:hover{opacity:.9}
@@ -338,8 +198,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .geo-suggestion-item:hover{background:var(--card2)}
 .geo-suggestion-item strong{color:var(--accent)}
 .geo-suggestion-item small{color:var(--txt2)}
-.geo-verify-section{background:#0d0d0d;border:1px solid #333;border-radius:12px;padding:16px;margin-top:12px}
-.geo-verify-title{font-size:13px;color:var(--accent);margin-bottom:12px;font-weight:600}
+.geo-verify-section{background:var(--card2);border-radius:12px;padding:14px;margin-top:10px}
+.geo-verify-title{font-size:12px;color:var(--txt2);margin-bottom:10px;font-weight:500}
 .geo-verify-section .geo-input-wrap{margin-bottom:10px}
 .geo-verify-btn{position:absolute;right:5px;top:50%;transform:translateY(-50%);padding:8px 14px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
 .geo-verify-btn:hover{opacity:.9}
@@ -462,62 +322,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </div>
 </div>
 
-<!-- INITIAL LOGIN -->
-<div class="initial-login" id="initial-login">
-    <img src="data:image/png;base64,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" class="initial-login-logo" alt="Isa Paes">
-    <div class="initial-login-box">
-        <div class="initial-login-title">Faça login para continuar</div>
-        <div class="login-field">
-            <label class="login-label">Usuário</label>
-            <input type="text" class="login-input" id="initial-user" placeholder="Digite seu usuário" autocomplete="username" autocapitalize="none">
-        </div>
-        <div class="login-field">
-            <label class="login-label">Senha</label>
-            <input type="password" class="login-input" id="initial-pw" placeholder="••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doInitialLogin()">
-        </div>
-        <button class="login-btn" onclick="doInitialLogin()">Entrar</button>
-        <div class="login-error" id="initial-error"></div>
-    </div>
-</div>
-
-<!-- WELCOME SCREEN -->
-<div class="welcome-screen" id="welcome-screen">
-    <!-- Estrelas (noite limpa) -->
-    <div class="stars" id="welcome-stars"></div>
-    <!-- Nuvens e Sol (manhã limpa) -->
-    <div class="clouds" id="welcome-clouds">
-        <div class="cloud cloud-1"></div>
-        <div class="cloud cloud-2"></div>
-        <div class="cloud cloud-3"></div>
-    </div>
-    <div class="sun" id="welcome-sun"></div>
-    <!-- Pôr do Sol (tarde limpa) -->
-    <div class="sunset-clouds" id="welcome-sunset-clouds">
-        <div class="sunset-cloud sunset-cloud-1"></div>
-        <div class="sunset-cloud sunset-cloud-2"></div>
-        <div class="sunset-cloud sunset-cloud-3"></div>
-    </div>
-    <div class="sunset-sun" id="welcome-sunset-sun"></div>
-    <!-- Nuvens pesadas (nublado) -->
-    <div class="heavy-clouds" id="welcome-heavy-clouds">
-        <div class="heavy-cloud heavy-cloud-1"></div>
-        <div class="heavy-cloud heavy-cloud-2"></div>
-        <div class="heavy-cloud heavy-cloud-3"></div>
-        <div class="heavy-cloud heavy-cloud-4"></div>
-    </div>
-    <!-- Chuva -->
-    <div class="rain" id="welcome-rain"></div>
-    <!-- Relâmpago (tempestade) -->
-    <div class="lightning" id="welcome-lightning"></div>
-    <!-- Neve -->
-    <div class="snow" id="welcome-snow"></div>
-    <!-- Neblina -->
-    <div class="fog" id="welcome-fog"></div>
-    <!-- Texto -->
-    <div class="welcome-greeting" id="welcome-greeting">Boa noite,</div>
-    <div class="welcome-name" id="welcome-name">André</div>
-</div>
-
 <!-- HOME -->
 <div class="home" id="home">
     <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAELCAIAAAB4fEcbAAAdz0lEQVR42u3daVQUV9oH8Kre2BQwgAsqICjuERU1CA7u+zYa4xqdRJnJRHEZ3EaNYxb1zDGjx+jE6KAJRkVcJsYkeogOalAZdnVcIkYgogZFWbrZu6vq/fC8c996G0Torm7B/H8fcox2V9+6Vfe5S917i+MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGh+e51UqFfIBAAAAQDlubm6dO3dGPgA06n4Q86vNBOoJTp48OTk5mfLh15wb0NDio1Kp1Gq1RkatVqtUqhdbrDS2LjNUbEwmk62zWK1WcxwniqIoipIk1ZoM+tcXG0QoJZIkCYJgh180Go2lpaUK5rAFX6z1otit7NWabDvfCWq1WtlCbosCRXklCAJdqbqvF+Wqfe5h+wUsW98WrBklCAK7hDzPOzg4sEBZXV0tT4ZarZYk6UWFLftHTKUG3SVJsrKQUM4Tu52+9clWhP0LtgU3CStELVq0aNWqlb+/f9euXX18fFQqlSRJxcXFd+/e/fHHH3Nzc4uKiqqrq19IadLYLgskSerZs+fAgQMLCgq+++67qqoqW/wE3f1eXl5Dhw719vb28/MLCAjw9fV1dnamXM7Pz7979+7PP/9cUFCQkJDw4MEDaunYP3CwDOE4LjMzMyUlpal0ECRJcnV1nTx5spOTkyRJ8sYCdRPqKKhGozE3NzclJUWv17Nmph0ynyV7xowZ8u4wpT8pKenatWv0GTskIzQ0tEePHmZZZ1n85Xn+yZMnJ0+eNBqNCqZQEAQPD49JkyaNGDFi0qRJOp2u1papJElGo/H69etHjhxJSEhITU2le6CRR+R6Vaccx61evVqSpOzs7FdeeUXZMRQ6vlqtHjZs2PHjx+/cuSPVQ05OTmxsbPfu3W3RSn9uDabT6TIzMykl9+7ds3UCKI6MHz/+3Llz1oxh0XECAwOps2CZ27dvnz17du7cuc2aNWOXz9a9b57nZ82aVWt6rl27xk7NDgVh3759knKys7Pd3NwUKVCUAzqdbtWqVTULEbW5iCAI1K9nSktLDx8+3LFjR3uWJtt2CcvKyoxGY0FBgbL1GEV0Hx+f6OjoESNGsL83GAwXL168d++ewWD439PTaJo3bx4YGDhgwACdTufn5+fn5zd27NjIyMj9+/dTW9c+Q1eCIEyZMiUoKIh+0dvbe8KECSdOnGgqtZPJZMrPz/fy8hJFsaHlXKvVBgYGBgYGDhs2LCoqKiIiIiUlxdbtLCpUS5YsMRqNgiDIQ6QkSYGBgeHh4RcuXLBP/peUlBiNRguyruaQgkqlUqpA0fCiu7v74cOHR40aRVeZjfpJkvSs1NLIhouLy/Tp00eNGrVo0aKDBw827Uc6dM5LliyRJCk9Pb1FixZKtbAoE0NDQx88eEA3ZUFBwaFDhwYPHuzn56fR1BKCnZycAgICRowYERsbW1JSQlXHxo0bWT1s6+YVz/POzs63bt0SBCE5Ofn06dOSJJ08eVKr1dquraFsCysgIODRo0eUdQ1tEYiiSHU1fbesrGzRokU2rZYpVwcPHlxVVcWG/Bmj0ShJ0v79+9Vqta3benT8Tz75xLKsq9nkoQLl6upqZYGi77q7u1+6dIlG+ljy6GLVmgD5x0RRZB9bsWKFfRrOTSxgUeEJCgoqKiqinNq/f3+PHj3Mflr+LNaslujfv//58+fpux9++KEd+gUUQ+fPn0/FJiQkZMSIEYIgVFRUhISEWPz0rTEELBqiqkPNrgS7xdesWWOjzKcOOM/zx48fZ+GpZgAtLS3t3r277fL/uQFL3uGqp+rqakEQUlNTrQxYlEUajSYuLk6SpOrq6poXqGaXUB7x2TUVBIE+9tvf/tY+vewmE7CoqaLRaKhOKC0tnTdvnnzo91nNJbo8NK+EIghdJ0mSJk+ebNOagdLs5OSUmpoqiuLFixddXFxUKlVaWpokSXFxcZzNpkc1nhZWzWJAB5k5c6YtMp8abn379qXOoDxOmTVVoqOjbV3GlG1hkZs3b1o5hkWpGjNmDEUrefSRJCkrK+vTTz8dMWKEj49Py5Ytvby8vLy8vL29w8PDd+3adf36dfmHBUGgeCeKor+/P2fj6X6aJhQEqcs9cODAgQMHSpL05ZdfxsTE1Gc+iPxRukajMZlMc+fOdXZ2Tk9PT09Pp8PaNM2jR48ODg7mOC4mJqasrIzu4JiYmClTpvTu3fvKlSv2f2pp/QgRz/NxcXGpqakODg61DqlIkuTl5TV8+PAuXbrodDo2gkMnK0nStm3bLl68eP/+fWVPnw7+pz/9SaPRyA9Lj8NY7JYkacaMGZs2bcrJybF//guCEB8fr9fraWZA/bNdo9H89NNPNKvAmiziOI714yhP6ALt27dv9erVBQUFNb/18OHDCxcuuLu7v/XWW2vXrvXw8DAajVqtVqVSlZSU7Nmzp6qqqqmOZNmihUXH/OKLL0RR1Ov17dq1s2zSrT3zlFp2KSkpoijeunXLwcGBft3R0fHGjRuiKO7fv99GTTybtrConxUeHl6fr/fu3fvUqVNmTQyqlqlXXuvIozVn3b1794qKCrNWFY1Vm/VrPvnkE2UT8NwWFiVJr9c3b978BZZQFxeX4uJilh5K2/fff0//SmGI//+oF0kf6NKly9WrVyVJ+s9//rN58+a2bdtyTZotAhZl1oULFyRJysvLs6YlTymx9Yg7JXjy5MlVVVVGo3HcuHGUM5Q5CxcuFEWxuLi4W7duthhJsUPAGjNmjFqtpjk7tWLXiOf53bt3y2MWjW3l5OR4eHgoWItQnn/22Wdmo1dGo3Ho0KGJiYmsf0oJKCgo8PX1td2eFnUELHd3dzbc1lBWtvo5jvP396cHUJQe+u/w4cNp1KXur9MHAgIC3njjDZqxxNnl+RXHcU1phIxaztSaZbMQrTyUTac1iKKo0+nefvttnU733XffnTp1iuY3UMfk6NGjNKEmIiLCzvO/FTxBoU50sajTsWzZsvPnz1MO0P0tSZKfn5+CAx80RyEgIGDKlCmsB0qzt48fP56QkLBp0ybqttAze1EUPT09582b96Iy3+JhLOt/utapoffu3XvuCAlFfJ7n7969e+TIkcLCQo1GQ9+yQzY2pYBF9zRVjy1btmTr8honKpB9+vQZN26cIAh79+5lE1uoLD1+/Dg2NpbjuAULFnh7e4ui+LIuThYEQaVSlZeXr1q1qqKiQj79jWb/K1v+f//733t5eVFuS5KkVquNRuOePXtUKtXp06czMzPZBHe6HJGRke7u7tZPQ29aiouL5XPlKUMGDhxIN2fdCxjYICZVRVQk7VSsmlZ9znHcN998w/O8m5vbW2+9RU0Y+7RFLSs/7733Hs/zGRkZlGy2ro3C044dO4qLi5s1a7Zs2TKuSU9jeR6qkzMyMvR6vfxi8Tyv1O43FIZatmz5hz/8gdUNVJCSkpISEhLodzdu3MgSQKtQPT093333XQptv4ZQRXny5MmTmk8ktmzZ8tprr7HJKDRDSP4IXn7tWCfXru2AJpfRBw4cKCgo0Gq1mzdvnjBhAnsoS7OuGknkUqvV9EAzPDyc5/m//vWvZr0eKlGPHz/evXs3x3HTpk3z8fExm5D98pWTWqtimlKkVJN28eLFrq6u8uYqz/ObN29mo3jnzp1LS0tjPVNK2Lx58zw8PKglaM82uNoiisxnNJlMX331FWsHUDDy9PS8cOHCli1bRo4c2apVKzbdVz75lsaw7LmyrQkHLJVKVVhYSPOkPTw84uLiDh482K9fP51OR9Pb6DOsTnghjS/2+DwiIsLFxSUjIyM+Pr7WdbY8z+/fv//x48e+vr7Tp09visNYDcqWWu9yWo5ufQkURbFNmzazZ89mDQEKQMnJyefOnaOSqVary8rK9u7dywZcqGoJDAycOnWqnfPfYDCwiNAg1qeT8oceTbCYRUVMp9MtX748Pj4+MTHx9OnTR48eXbt27aRJk1599dXWrVu7urrK57s/t+eoOE3Tuumpg33kyBFRFP/2t7/5+PjMmjVr1qxZFy9ePHHixE8//XTx4sWnT5/WWpWxMWD7BKzOnTu/8cYboiju27evtLSU5n+Zjeyo1eqbN2/Gx8fPmTNn2bJlu3btUmTvqkaI8n/AgAFubm5m5e3GjRtK1WdTp0718/MzmUzsOZckSbt3766qqqL8pxB26NChP//5z+3bt6fbia7XihUr9u3bZ7e9aBwdHbds2VJYWFj/Ak+1oMlkOnjwoJVzx+jeS0tLe//99zds2MAeBFFW0GE7derUqVMnjuNef/111gEsLCyMj4+/cuXKjRs3zpw5Q63Ul2e3BlusJWTHadu27caNG7OysuRzbbKyspKSkuLi4ubPnz9gwICOHTvKZ7uwKe+2buqz6isnJ6dZs2bPehRNpaVnz570AH758uUKjmTZYVoDrZh9boLZFIfvv/9ePuudqpCuXbtyVk83p03Q8vLyWOeF0nn79m0nJyd5Q5tSu3LlyppzLObPn88pPSfLFjPd65nt9eyTbt26lS0MrHXdlclkMluMSa5cufLRRx+1b99eXioRsOo6PmX6mDFj/v73v9MsuJrS09M/++yzdevW9e7d+/8aljYb7aLY1K5dO5qmuHbt2rpLIyWDVr3RolaltqC1Q8AaO3asRqNxcHDQ1ImOQ1ussGhFf0hMTHRycrLy3qCfoIFzeQySJGn16tVmZZt+qE2bNiUlJawc0ulcuHDB0dFR2WGEOgKWsYGqq6tp/9ghQ4YoErDYab755ptlZWXsutQRpCiuydcelpWVbdmypcnHLFsHLE623TBp3759aGjomjVrEhIS0tLS8vLyzPJar9dfvnw5IiIiMDDQLOop2cfWaDiOW7NmjSAIBoMhICCg7oBFn586dSrdJePHj1eqkrdpwKJwExoaWp8jtG3b9uOPPzZbUUg3Pa0OseZ8qdXs4OBAa9op9FA7q6ysjOp/s/yn5t4//vEP+eRSKqiDBg1SdhKvgi0siiCVlZXDhg1T6u5lJ9upU6e9e/fevn37WbtEUNCUb9XABtQkSTpw4ABN7LJ1zNJwTZZ812OO4/Ly8vLy8i5durRp0yaO43x9fYODg729vQMCAkaNGtWhQ4fmzZuHhISEhIQUFxcfOHBg8+bNDx8+VLb7Tc+eWrRo8eabb6pUqtjY2Lt379Y91kCjKjQuEBwcvHTp0m+//bbxjwjQfTlv3rygoKBnrYaTJMnb27t169bDhw9v3769/BmoKIparTYnJ+fzzz+XP7CzOM9DQ0PDwsIEQaDYR3+IiYm5f/9+rZdYFMUvvvhi5syZbA9VKrrLli1LTEy0z1hnQ8fLKJ3KDsVSMFKr1Xfu3Jk/f76rq+uYMWM6duzYr1+/0NBQd3d3ikHyxoHJZJI/zqJYP3v2bLVaPXPmTLvtMdf0Wli1Nrhqfe7r7Ozs5+e3YMGCr776ivUcf/7555EjR3KKLtanQ82fP5+ayv3796/nEA/Hce+88w4lbPDgwYqkqjHv1iCKYmVlpSJnSl+Xr1WklkhFRUX//v15ntdqtTWXtlCex8fHs7RRo8xoNNLQgVJ3RWMew6o5niX/G1dX1zZt2vTq1WvixIlr1qw5evRofHz8w4cP5T1usy3G5s6dy9l4OmETbmE9q8FlNrguimJ5eXlubm50dHR0dHSvXr2WL18+e/ZsHx+fEydODBkyJDk5WanF+jQdbMWKFaIonjt3LiUlharE56ac5/mYmJiVK1f6+vpGRUWdP3++SQwHPDfTKBCw5ZPsfzmOo5U6NR+eNrSYiaLYr18/2imFXXG1Wh0fH0+75te69zldlA8++GDkyJH0LXoAp9FooqKi5syZY7v8p4ZSZWXlwoULCwsLG7RbA51dRkZGfTLfgktJoZzikV6v1+v1v/zyy9WrV0+ePEkf8/f379+//8KFC8PCwsw2UJUkKTIy8tChQ4Ig2GGz/CbfwnruQDhN26W/iYqKonr10qVLdTzFs2D0au7cuVT5DBkyRKfTOTg4aOvB0dFRq9VGRUVJkmQwGH7zm99YX1M1nhYWjYCwRtb9+/enTp1q/QnSNXVxcUlISJDvfkktrIkTJzZv3rxFixZutXF3d3dzc2vVqtW1a9fkTTNBEJ4+fdq9e/eaLQ6lWliUvJKSkkZeJ7EdGtgLCuUZYvaYlf5cXl5OreamN/+5UQUss4RRZNm1axdlNEUH6x+rq1QqJycn2g/g8OHDloU8Kj/p6ek6nc7K7LJDwBLrh30+Pz9/z5497dq1U+RmoHts5syZZl1Okpube/v27TvPI99ihR1n+/btSvUK69itwcPDQ6PRaLVaTQMpWI4o6Nf/TGmHGTqpnTt3yp9aVFVVSZL0u9/9jrPldj0vT5ewnmiQm+f5bdu2TZs27ZVXXgkJCfnhhx8UGW4fOnRoWFiYyWRq0aLF+vXrNRoNNY/r001QqVRGo5G6kH369Jk5cyZtT9iYB+DrWXJu3ryZmJh469atY8eO0bx2Rc6L8pa2Wq6ZEl9fXwtOhDpEf/zjH2NjY//973/bdGM/mub+AntPdBUadCGoBqKdx48dO7ZgwQKtVkudXIp6Li4u3PNewvorCliUL1a+u5HGjLKysvLz8z08PF599VWlhgDWrVtHl3PkyJE0om/x0SIjI+Pi4qqrqxvncAA9Wlq6dOmpU6ecnZ2fdTmqq6tNJtOTJ09KSkrk7TXroxUVtmnTptH7/mq2Eep5h9QcDaAnmB9++CFts/FSVtsUiAVBcHBwmDJlyrhx4yIiIqiJVJ+bjT5WXFxcWVnp4OAgX7mp0+lsmvImFrBs8YZ365uvVHjGjBkTHBysUqkyMzPpjT6WjRp0797dz88vKCho9OjRJ06csHJY2nYXguO4q1ev3rlzp54lRK1W03REReotWvVGYw5sNgPX8D3O6MPyDfxoYXB4eHhYWFhCQoLtGrnW7MZnZR1G4+Vz5syJiIgICwvjOC4rK+uDDz7QarX12SuG0tyhQwc3Nzc2W4W9rNCmgz9NJmBRFqjV6ilTprRq1WrHjh3U4bIsLnAc17x5c0dHR0mSrFx8S4VHq9W+8847Go0mJydn7Nix+fn5FkxIoSI9aNCg06dPu7i4LF269Ouvv26E0YqheeHPLdJstEvBvozJZBo2bNiAAQOoSSvvWSsSRzQazdKlS2k430a5V1lZaf+NG+l2DQ8P3759e69evbj/7vzz/vvvFxYW7ty5k/vvhou1Fi663PTg9e233zb7J57ni4qK0ML6v0GiyMjIrVu3chxXUFBw+PDhelYINZtURqNx1KhR7du353n+8uXL1reu+/btO2rUKHoRS35+vmXVMk3Jo1Xyr7/+enh4+LBhw86ePdtoX1FBkcimb/F4VoeU47ioqCjaa4Elhuf59PT069ev63S6Br3ZwdHRcdy4cVSBsUf7EyZMCA4OTk9Pt0X+q9Xqbt26PXr0SKPRNPQGrq6ufvTokWVJonLk7+/fq1ev6upqegZF13HHjh1du3b9y1/+8uTJE3kMMhvAEkXRyclp69at48ePZ5NUaGg4Ly8vKSmJU3rKhZ3G8zhFnxJS3vXp0+fx48c0LXDixIkW9OkoYQ4ODpcvX5YkqbCw0M/Pj7PikZB8MeCDBw/atm3LpoBZsFE3fdHf37+wsFAQhDNnzlictsaz+FnxqovjuEGDBtV8w+jDhw99fHwsOyyt1GHPQKn3euzYMc66x4V1TxxlW03VE6UqLS3N4vcSsndJnDlzRv6Mj4a06EnuRx99NGHCBE9Pz5pfDwoKWrJkCb3pS75lPrUbPv30U86WjwibUsBi982QIUPohSiVlZXr1q1r2bIl+8VnLWWii8SmLzo5OR0+fJgyesOGDdYUOQqjQUFBlZWVtOMNp9D8qffee4/i8tChQy27CV7WgEVX+euvvzbb+EGSpI8//pj778r2+qOL2KFDB3kJZKsR+/bta805KjvTnUboMjIyrHmRKl3Qzp07UzPNbHkg+62cnJyMjIyUlJTk5OTk5OTU1NSrV6+yhSLyT9JVePToUZs2bZRauv8yBCxO9h6a8vJytsImMjLS7KfZhEyz2W4cx7322mvUtpIkKSkpid67ZXHCKD3R0dF0sf39/a1//woVyMDAQAoQe/futeyYL2XAot8aMGCAwWCouaMA9fEbmlfsK59//rk8CNI5UiVk8TVtnK+qp9OZNGlSzYVTtD6p1q0a2Kr1mm+BFkVx7NixXNPd5pvSvXjxYmrBKjhxlI48ceLEnJwclmtJSUlz5szp06cP7VVSM6x069Zt6NChO3fuLC0tpa+kpaV17NjRmnuRvujt7Z2dnU2vca6577U15xgbG0uVfJs2bSzIPcUDVn5+PuuV0M7ULypgbd68mWYqUlGhjR8OHDhgceZTxTN27NjKykrak4DtRlBSUmJNdKAEb9++nWWdNazvEpqd8qJFi2js3yxO0embapC/I5o1SKurqxcvXsw16ZcSUNKXLl0qSVJmZqayM93p4K1bt964caP87ZiiKP7www8HDhyIjo7es2fPnj179u7de/DgwbNnzxoMBvaxoqKiDRs20Mu+rX+54ZdffkmFhyZeKbgzTEhICN0T27Zts+BuUDxgybOa6tjRo0fb8zal9Ht5een1erOOUkVFBe11Y1n+s5VbrPUtt379eotPk761Y8cOSTmZmZnWByx2ZUNDQy9duiRvMbFdm2tGTLbPDPv8iRMnBg0axDV1dJ3effddk8mUmJhI0UHBzi0LNK6urjNmzPjnP/9JA4F1yMrK+uabb1auXMmGvayJVvTd4ODgkpKS8vLyU6dOcYpu/EB5dezYsYqKiqysLFrO0qDj04fHjRv3r3/9y/qA1aFDh+zs7LKyMr1eX1paSpMGhw8fbs+ART+0fv36qqoqSkZpaWlJSUlFRcXRo0cVuaATJkwwGAwGg4Ed3GAwXL16lV4XakEGUpq3bNlSXl7O0mwxutkSExNpH12l2vIajWb69OnffvttUVFRPYNmbm5ubGwse/W3/Sot21WGkiR5enr6+/sXFRXdvXtX8Sed1P9iswe8vLx69epFK1pbtWrVrFkzo9Go1+sfPXr09OlTvV7/448/Pnz4kH3XyikwdILt2rXz9PTkeT4/P/+XX35RcFY63YvNmjXr1KmTKIp5eXlPnz5t0PHpYfzEiRNXrVoVFhZGD+wtTp5Op+vYsaNOp6PrSFPP7ty5YzAY7DYXn36oS5cuzs7OtIyJlZb79+8XFBQokpKePXuazaFTqVS5ubnFxcUWHJ++4u3tTS+hUeS2Lysry87OVmo6q3wKTrdu3bp06RIYGBgcHNyjRw/WMaKzLikpSU1NTUlJyc7OzszMvH//fs0jQH0b8/W8Ni/q9UT2R02GwYMHx8TEWNPCgl8D9gzd7BbSarU6na7W10TTikJ7l3dbRxPrl/7Vv3yyilFeDbJ3gdgiGewBk43OkR3f4veA63Q6R0dHvV6vVJNW/jf2eTv5c5OhbEpq7d1YeXzrnx3L2a5AUSFiI+vPOhGaKtz0ZocCAAAo3ExDJgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC8QP8Db74nKL68RsQAAAAASUVORK5CYII=" class="home-logo" alt="Isa Paes">
@@ -531,11 +335,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
             <div class="mod-icon">🛒</div>
             <div class="mod-info"><div class="mod-name">Compras</div><div class="mod-desc">Pedidos e fornecedores</div></div>
             <span class="mod-soon">Em breve</span>
-        </div>
-        <div class="mod-btn" onclick="openExpedicao()">
-            <div class="mod-icon">📦</div>
-            <div class="mod-info"><div class="mod-name">Expedição</div><div class="mod-desc">Controle de envios</div></div>
-            <div class="mod-arrow">›</div>
         </div>
         <div class="mod-btn" onclick="openModule('financeiro')">
             <div class="mod-icon">💰</div>
@@ -599,140 +398,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </div>
     <button class="submenu-back" onclick="goHome()">← Voltar ao menu</button>
     <button class="settings-btn" onclick="openChangePw()">⚙️ Alterar Senha</button>
-</div>
-
-<!-- SUBMENU: EXPEDIÇÃO - ESTAÇÕES -->
-<div class="submenu-screen" id="sub-expedicao">
-    <div class="login-icon">📦</div>
-    <div class="submenu-title">Expedição</div>
-    <div class="submenu-desc">Selecione a estação</div>
-    <div class="submenu-year-note">Ano 2026</div>
-    <div class="submenu-grid">
-        <div class="sub-btn" onclick="openExpedicaoEstacao('inverno')">
-            <div class="sub-icon">❄️</div>
-            <div class="sub-info"><div class="sub-name">Inverno</div><div class="sub-desc">Coleção de inverno</div></div>
-            <div class="sub-arrow">›</div>
-        </div>
-        <div class="sub-btn" onclick="openExpedicaoEstacao('verao')">
-            <div class="sub-icon">☀️</div>
-            <div class="sub-info"><div class="sub-name">Verão</div><div class="sub-desc">Coleção de verão</div></div>
-            <span class="sub-soon">Em breve</span>
-        </div>
-    </div>
-    <button class="submenu-back" onclick="goHome()">← Voltar ao menu</button>
-</div>
-
-<!-- SUBMENU: EXPEDIÇÃO - CÁPSULAS INVERNO -->
-<div class="submenu-screen" id="sub-expedicao-inverno">
-    <div class="login-icon">❄️</div>
-    <div class="submenu-title">Inverno 2026</div>
-    <div class="submenu-desc">Selecione a cápsula</div>
-    <div class="submenu-grid">
-        <div class="sub-btn" onclick="openExpedicaoCapsula('inverno', 1)">
-            <div class="sub-icon">1️⃣</div>
-            <div class="sub-info"><div class="sub-name">1ª Cápsula</div><div class="sub-desc">Primeira entrega</div></div>
-            <div class="sub-arrow">›</div>
-        </div>
-        <div class="sub-btn disabled">
-            <div class="sub-icon">2️⃣</div>
-            <div class="sub-info"><div class="sub-name">2ª Cápsula</div><div class="sub-desc">Segunda entrega</div></div>
-            <span class="sub-soon">Em breve</span>
-        </div>
-        <div class="sub-btn disabled">
-            <div class="sub-icon">3️⃣</div>
-            <div class="sub-info"><div class="sub-name">3ª Cápsula</div><div class="sub-desc">Terceira entrega</div></div>
-            <span class="sub-soon">Em breve</span>
-        </div>
-        <div class="sub-btn disabled">
-            <div class="sub-icon">4️⃣</div>
-            <div class="sub-info"><div class="sub-name">4ª Cápsula</div><div class="sub-desc">Quarta entrega</div></div>
-            <span class="sub-soon">Em breve</span>
-        </div>
-        <div class="sub-btn disabled">
-            <div class="sub-icon">5️⃣</div>
-            <div class="sub-info"><div class="sub-name">5ª Cápsula</div><div class="sub-desc">Quinta entrega</div></div>
-            <span class="sub-soon">Em breve</span>
-        </div>
-    </div>
-    <button class="submenu-back" onclick="backToExpedicao()">← Voltar</button>
-</div>
-
-<!-- SUBMENU: EXPEDIÇÃO - CÁPSULAS VERÃO -->
-<div class="submenu-screen" id="sub-expedicao-verao">
-    <div class="login-icon">☀️</div>
-    <div class="submenu-title">Verão 2026</div>
-    <div class="submenu-desc">Selecione a cápsula</div>
-    <div class="submenu-grid">
-        <div class="sub-btn disabled">
-            <div class="sub-icon">1️⃣</div>
-            <div class="sub-info"><div class="sub-name">1ª Cápsula</div><div class="sub-desc">Primeira entrega</div></div>
-            <span class="sub-soon">Em breve</span>
-        </div>
-        <div class="sub-btn disabled">
-            <div class="sub-icon">2️⃣</div>
-            <div class="sub-info"><div class="sub-name">2ª Cápsula</div><div class="sub-desc">Segunda entrega</div></div>
-            <span class="sub-soon">Em breve</span>
-        </div>
-        <div class="sub-btn disabled">
-            <div class="sub-icon">3️⃣</div>
-            <div class="sub-info"><div class="sub-name">3ª Cápsula</div><div class="sub-desc">Terceira entrega</div></div>
-            <span class="sub-soon">Em breve</span>
-        </div>
-        <div class="sub-btn disabled">
-            <div class="sub-icon">4️⃣</div>
-            <div class="sub-info"><div class="sub-name">4ª Cápsula</div><div class="sub-desc">Quarta entrega</div></div>
-            <span class="sub-soon">Em breve</span>
-        </div>
-        <div class="sub-btn disabled">
-            <div class="sub-icon">5️⃣</div>
-            <div class="sub-info"><div class="sub-name">5ª Cápsula</div><div class="sub-desc">Quinta entrega</div></div>
-            <span class="sub-soon">Em breve</span>
-        </div>
-    </div>
-    <button class="submenu-back" onclick="backToExpedicao()">← Voltar</button>
-</div>
-
-<!-- SUBMENU: EXPEDIÇÃO - DESTINOS (1ª Cápsula Inverno) -->
-<div class="submenu-screen" id="sub-expedicao-destinos">
-    <div class="login-icon">📦</div>
-    <div class="submenu-title">1ª Cápsula Inverno</div>
-    <div class="submenu-desc">Selecione o destino</div>
-    <div class="exp-update-date">📅 Atualizado em 05/02/2026</div>
-    <div class="submenu-grid">
-        <div class="sub-btn" onclick="openExpedicaoDestino('showroom')">
-            <div class="sub-icon">🏬</div>
-            <div class="sub-info"><div class="sub-name">Showroom</div><div class="sub-desc">Envios para loja física</div></div>
-            <div class="sub-arrow">›</div>
-        </div>
-        <div class="sub-btn" onclick="openExpedicaoDestino('ecommerce')">
-            <div class="sub-icon">🌐</div>
-            <div class="sub-info"><div class="sub-name">E-commerce</div><div class="sub-desc">Envios para loja online</div></div>
-            <div class="sub-arrow">›</div>
-        </div>
-        <div class="sub-btn" onclick="openExpedicaoDestino('mostruario')">
-            <div class="sub-icon">👗</div>
-            <div class="sub-info"><div class="sub-name">Mostruário Isabella</div><div class="sub-desc">Peças de mostruário</div></div>
-            <div class="sub-arrow">›</div>
-        </div>
-    </div>
-    <button class="submenu-back" onclick="backToExpedicaoInverno()">← Voltar</button>
-</div>
-
-<!-- TELA: EXPEDIÇÃO - DETALHES -->
-<div class="app-screen" id="app-expedicao">
-    <div class="header">
-        <button class="back-btn" onclick="backToExpedicaoDestinos()">←</button>
-        <div class="header-info" style="flex:1"><h1 id="exp-header-title">Expedição</h1><div class="sub" id="exp-header-sub">1ª Cápsula Inverno 2026</div></div>
-    </div>
-    <main class="content">
-        <div class="card" id="exp-total-card">
-            <div class="card-title">📊 Resumo Geral</div>
-            <div class="exp-total-stats" id="exp-total-stats"></div>
-            <div class="exp-progress-section" id="exp-total-progress"></div>
-        </div>
-        <div class="section-title">📦 Referências</div>
-        <div id="exp-items-list"></div>
-    </main>
 </div>
 
 <!-- GEOLOCALIZADOR -->
@@ -871,7 +536,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <section id="dashboard" class="screen active">
 <div class="info-banner"><div class="info-banner-title">⏱ META ATIVA — Coleção (80%)</div><div class="info-banner-value">R$ 1.769.076,00 | até 31/05/2026</div></div>
 <div class="section-title">📊 Resumo do Dia — 05/02/2026</div>
-<div class="grid-2"><div class="card"><div class="card-title">🛒 Peças Vendidas</div><div class="card-value">103</div></div><div class="card"><div class="card-title">💰 Valor Vendido</div><div class="card-value sm">R$ 35.822,17</div></div></div>
+<div class="grid-2"><div class="card"><div class="card-title">🛒 Peças Vendidas</div><div class="card-value">103</div></div><div class="card"><div class="card-title">💰 Valor Vendido</div><div class="card-value sm">R$ 35.822</div></div></div>
 <div class="card"><div class="card-title">🎯 Ticket Médio Hoje</div><div class="card-value">R$ 347,79</div></div>
 <div class="section-title">🏆 Top Vendas do Dia</div><div id="topdia"></div></section>
 <section id="meta" class="screen"><div class="section-title">🎯 Meta 80% da Coleção</div>
@@ -892,480 +557,22 @@ const A=[{"referencia": "BDI26003", "descricao": "BODY BASIC RENDA", "preco": 23
 const P=[{"referencia": "CLI26008", "descricao": "CALCA JEANS PAETE", "preco": 599.9, "estoqueEnviado": 66, "estoqueAtual": 12, "vendasLiquidas": 54, "giro": 0.818182, "ranking": 9, "status": "Excelente", "vendasHoje": 1}, {"referencia": "BZI26002", "descricao": "BLAZER ALFAIATARIA VIES", "preco": 579.9, "estoqueEnviado": 148, "estoqueAtual": 28, "vendasLiquidas": 120, "giro": 0.810811, "ranking": 10, "status": "Excelente", "vendasHoje": 4}, {"referencia": "CLI26006", "descricao": "CALCA STREET ALFAIATARIA MESCLA", "preco": 469.9, "estoqueEnviado": 91, "estoqueAtual": 15, "vendasLiquidas": 76, "giro": 0.835165, "ranking": 8, "status": "Excelente", "vendasHoje": 2}, {"referencia": "CLI26003", "descricao": "CALCA ALFAIATARIA VIES", "preco": 399.9, "estoqueEnviado": 109, "estoqueAtual": -2, "vendasLiquidas": 111, "giro": 1.018349, "ranking": 3, "status": "Excelente", "vendasHoje": 5}, {"referencia": "CAI26006", "descricao": "CAMISA ALFAIATARIA ESTAMPADA", "preco": 299.9, "estoqueEnviado": 80, "estoqueAtual": 7, "vendasLiquidas": 73, "giro": 0.9125, "ranking": 7, "status": "Excelente", "vendasHoje": 1}, {"referencia": "BDI26003", "descricao": "BODY BASIC RENDA", "preco": 239.9, "estoqueEnviado": 65, "estoqueAtual": 1, "vendasLiquidas": 64, "giro": 0.984615, "ranking": 1, "status": "Excelente", "vendasHoje": 0}, {"referencia": "BLI26010", "descricao": "BLUSA BASIC MANGA RENDA", "preco": 149.9, "estoqueEnviado": 80, "estoqueAtual": 0, "vendasLiquidas": 80, "giro": 1.0, "ranking": 2, "status": "Excelente", "vendasHoje": 2}, {"referencia": "BLI26019", "descricao": "BLUSA BASIC MANGA RENDA", "preco": 149.9, "estoqueEnviado": 55, "estoqueAtual": 6, "vendasLiquidas": 49, "giro": 0.890909, "ranking": 6, "status": "Excelente", "vendasHoje": 1}, {"referencia": "BLI26029", "descricao": "BLUSA BASIC MANGA RENDA", "preco": 149.9, "estoqueEnviado": 51, "estoqueAtual": -1, "vendasLiquidas": 52, "giro": 1.019608, "ranking": 4, "status": "Excelente", "vendasHoje": 0}, {"referencia": "BLI26013", "descricao": "BLUSA BASIC REGATA ISA PAES", "preco": 99.9, "estoqueEnviado": 259, "estoqueAtual": 7, "vendasLiquidas": 252, "giro": 0.972973, "ranking": 5, "status": "Excelente", "vendasHoje": 5}, {"referencia": "BZI26001", "descricao": "BLAZER ALFAIATARIA TELA BORDADA", "preco": 659.9, "estoqueEnviado": 70, "estoqueAtual": 28, "vendasLiquidas": 42, "giro": 0.6, "ranking": 16, "status": "Bom", "vendasHoje": 0}, {"referencia": "CJI26013", "descricao": "CONJUNTO ALFAIATARIA BLUSA CAPA", "preco": 649.9, "estoqueEnviado": 87, "estoqueAtual": 27, "vendasLiquidas": 60, "giro": 0.689655, "ranking": 18, "status": "Bom", "vendasHoje": 5}, {"referencia": "VEI26025", "descricao": "VESTIDO LONGO ESTAMPADO PALA LASTEX", "preco": 639.9, "estoqueEnviado": 100, "estoqueAtual": 46, "vendasLiquidas": 54, "giro": 0.54, "ranking": 19, "status": "Bom", "vendasHoje": 0}, {"referencia": "JAI26002", "descricao": "JAQUETA ALFAIATARIA MESCLA", "preco": 639.9, "estoqueEnviado": 117, "estoqueAtual": 33, "vendasLiquidas": 84, "giro": 0.717949, "ranking": 13, "status": "Bom", "vendasHoje": 4}, {"referencia": "BLI26011", "descricao": "BLUSA TOP PEPLUM JEANS PAETE", "preco": 369.9, "estoqueEnviado": 64, "estoqueAtual": 26, "vendasLiquidas": 38, "giro": 0.59375, "ranking": 17, "status": "Bom", "vendasHoje": 0}, {"referencia": "CLI26004", "descricao": "CALCA ALFAIATARIA NERVURA", "preco": 259.9, "estoqueEnviado": 94, "estoqueAtual": 68, "vendasLiquidas": 26, "giro": 0.276596, "ranking": 15, "status": "Bom", "vendasHoje": 0}, {"referencia": "BLI26003", "descricao": "BLUSA CROPPED ALFAIATARIA CORSELET", "preco": 219.9, "estoqueEnviado": 104, "estoqueAtual": 32, "vendasLiquidas": 72, "giro": 0.692308, "ranking": 14, "status": "Bom", "vendasHoje": 3}, {"referencia": "BDI26004", "descricao": "BODY BASIC TULE MANGA", "preco": 169.9, "estoqueEnviado": 194, "estoqueAtual": 49, "vendasLiquidas": 145, "giro": 0.747423, "ranking": 12, "status": "Bom", "vendasHoje": 5}, {"referencia": "JAI26003", "descricao": "JAQUETA JEANS PAETE", "preco": 619.9, "estoqueEnviado": 65, "estoqueAtual": 18, "vendasLiquidas": 47, "giro": 0.723077, "ranking": 20, "status": "Bom", "vendasHoje": 0}];
 const F=[{"referencia": "BLI26028", "descricao": "BLUSA TOP PAETE PEPLUM DETALHE DECOTE", "preco": 359.9, "estoqueEnviado": 54, "estoqueAtual": 52, "vendasLiquidas": 2, "giro": 0.037037, "ranking": 1, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "BLI26027", "descricao": "BLUSA REGATA BASIC ISA PAES", "preco": 99.9, "estoqueEnviado": 137, "estoqueAtual": 123, "vendasLiquidas": 14, "giro": 0.10219, "ranking": 2, "status": "Fotos ISA", "vendasHoje": 7}, {"referencia": "VEI26010", "descricao": "VESTIDO LONGO DETALHE CUT-OUT", "preco": 629.9, "estoqueEnviado": 63, "estoqueAtual": 58, "vendasLiquidas": 5, "giro": 0.079365, "ranking": 3, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "BDI26011", "descricao": "BODY TRICOT DECOTE V", "preco": 219.9, "estoqueEnviado": 131, "estoqueAtual": 109, "vendasLiquidas": 22, "giro": 0.167939, "ranking": 4, "status": "Fotos ISA", "vendasHoje": 3}, {"referencia": "VEI26022", "descricao": "VESTIDO LONGUETE CINTO FLORES", "preco": 589.9, "estoqueEnviado": 95, "estoqueAtual": 77, "vendasLiquidas": 18, "giro": 0.189474, "ranking": 5, "status": "Fotos ISA", "vendasHoje": 2}, {"referencia": "VEI26009", "descricao": "VESTIDO LONGO BABADOS RENDA", "preco": 699.9, "estoqueEnviado": 73, "estoqueAtual": 58, "vendasLiquidas": 15, "giro": 0.205479, "ranking": 6, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "SAI26005", "descricao": "SAIA MIDI TULE PAETE", "preco": 349.9, "estoqueEnviado": 57, "estoqueAtual": 46, "vendasLiquidas": 11, "giro": 0.192982, "ranking": 7, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "SAI26009", "descricao": "SAIA MIDI TRICOT TRANSPARENCIA", "preco": 599.9, "estoqueEnviado": 92, "estoqueAtual": 69, "vendasLiquidas": 23, "giro": 0.25, "ranking": 8, "status": "Fotos ISA", "vendasHoje": 1}, {"referencia": "VEI26006", "descricao": "VESTIDO CURTO DETALHE SOBREPOSICAO", "preco": 799.9, "estoqueEnviado": 77, "estoqueAtual": 60, "vendasLiquidas": 17, "giro": 0.220779, "ranking": 9, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "JAI26001", "descricao": "JAQUETA BOMBER DETALHE TRICOT", "preco": 499.9, "estoqueEnviado": 63, "estoqueAtual": 48, "vendasLiquidas": 15, "giro": 0.238095, "ranking": 10, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "SAI26002", "descricao": "SAIA CURTA ALFAIATARIA VIES", "preco": 369.9, "estoqueEnviado": 113, "estoqueAtual": 82, "vendasLiquidas": 31, "giro": 0.274336, "ranking": 11, "status": "Fotos ISA", "vendasHoje": 1}, {"referencia": "CJI26002", "descricao": "CONJUNTO BASIC REGATA DETALHE CHANTILLY", "preco": 639.9, "estoqueEnviado": 136, "estoqueAtual": 90, "vendasLiquidas": 46, "giro": 0.338235, "ranking": 12, "status": "Fotos ISA", "vendasHoje": 3}, {"referencia": "VEI26008", "descricao": "VESTIDO CURTO APLICACAO RENDA", "preco": 599.9, "estoqueEnviado": 78, "estoqueAtual": 55, "vendasLiquidas": 23, "giro": 0.294872, "ranking": 13, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "SAI26001", "descricao": "SAIA MIDI MEIO GODE", "preco": 499.9, "estoqueEnviado": 70, "estoqueAtual": 47, "vendasLiquidas": 23, "giro": 0.328571, "ranking": 14, "status": "Fotos ISA", "vendasHoje": 1}, {"referencia": "BLI26026", "descricao": "BLUSA BASIC CAVADA MARTINGALES", "preco": 269.9, "estoqueEnviado": 51, "estoqueAtual": 35, "vendasLiquidas": 16, "giro": 0.313725, "ranking": 15, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "VEI26023", "descricao": "VESTIDO CURTO ESTAMPADO SAIA BABADOS", "preco": 599.9, "estoqueEnviado": 80, "estoqueAtual": 48, "vendasLiquidas": 32, "giro": 0.4, "ranking": 16, "status": "Fotos ISA", "vendasHoje": 1}, {"referencia": "SAI26004", "descricao": "SAIA CURTA ALFAIATARIA MESCLA", "preco": 369.9, "estoqueEnviado": 116, "estoqueAtual": 68, "vendasLiquidas": 48, "giro": 0.413793, "ranking": 17, "status": "Fotos ISA", "vendasHoje": 2}, {"referencia": "CLI26002", "descricao": "CALCA ALFAIATARIA TIRA LATERAL", "preco": 429.9, "estoqueEnviado": 130, "estoqueAtual": 82, "vendasLiquidas": 48, "giro": 0.369231, "ranking": 18, "status": "Fotos ISA", "vendasHoje": 1}, {"referencia": "BLI26001", "descricao": "BLUSA TOP DETALHE DECOTE", "preco": 299.9, "estoqueEnviado": 65, "estoqueAtual": 39, "vendasLiquidas": 26, "giro": 0.4, "ranking": 19, "status": "Fotos ISA", "vendasHoje": 1}, {"referencia": "CLI26001", "descricao": "CALCA ALFAIATARIA BARRA ITALIANA", "preco": 289.9, "estoqueEnviado": 189, "estoqueAtual": 102, "vendasLiquidas": 87, "giro": 0.460317, "ranking": 20, "status": "Fotos ISA", "vendasHoje": 7}, {"referencia": "BLI26004", "descricao": "BLUSA CROPPED ALFAIATARIA MESCLA", "preco": 219.9, "estoqueEnviado": 129, "estoqueAtual": 77, "vendasLiquidas": 52, "giro": 0.403101, "ranking": 21, "status": "Fotos ISA", "vendasHoje": 1}, {"referencia": "BZI26003", "descricao": "BLAZER ALFAIATARIA BASIC ISA PAES", "preco": 469.9, "estoqueEnviado": 277, "estoqueAtual": 158, "vendasLiquidas": 119, "giro": 0.429603, "ranking": 22, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "SHI26002", "descricao": "SHORT CURTO ALFAIATARIA BASIC", "preco": 219.9, "estoqueEnviado": 236, "estoqueAtual": 134, "vendasLiquidas": 102, "giro": 0.432203, "ranking": 23, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "VEI26001", "descricao": "VESTIDO LONGO SAIA CAMADAS", "preco": 799.9, "estoqueEnviado": 58, "estoqueAtual": 35, "vendasLiquidas": 23, "giro": 0.396552, "ranking": 24, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "VEI26012", "descricao": "VESTIDO CURTO SAIA ASSIMETRICA", "preco": 579.9, "estoqueEnviado": 84, "estoqueAtual": 45, "vendasLiquidas": 39, "giro": 0.464286, "ranking": 25, "status": "Fotos ISA", "vendasHoje": 2}, {"referencia": "CLI26005", "descricao": "CALCA ALFAIATARIA NERVURA", "preco": 289.9, "estoqueEnviado": 183, "estoqueAtual": 68, "vendasLiquidas": 115, "giro": 0.628415, "ranking": 26, "status": "Fotos ISA", "vendasHoje": 4}, {"referencia": "BLI26006", "descricao": "BLUSA TOP PEPLUM DETALHE DECOTE", "preco": 309.9, "estoqueEnviado": 114, "estoqueAtual": 52, "vendasLiquidas": 62, "giro": 0.54386, "ranking": 27, "status": "Fotos ISA", "vendasHoje": 6}, {"referencia": "CAI26009", "descricao": "CAMISA ALFAIATARIA COM PONTEIRA", "preco": 249.9, "estoqueEnviado": 88, "estoqueAtual": 46, "vendasLiquidas": 42, "giro": 0.477273, "ranking": 28, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "MCI26001", "descricao": "MACACAO LONGO ALFAIATARIA DUO COLOR", "preco": 669.9, "estoqueEnviado": 91, "estoqueAtual": 47, "vendasLiquidas": 44, "giro": 0.483516, "ranking": 29, "status": "Fotos ISA", "vendasHoje": 1}, {"referencia": "CAI26007", "descricao": "CAMISA ALFAIATARIA PAETE", "preco": 299.9, "estoqueEnviado": 76, "estoqueAtual": 39, "vendasLiquidas": 37, "giro": 0.486842, "ranking": 30, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "SHI26001", "descricao": "SHORT CURTO DETALHE PREGA", "preco": 299.9, "estoqueEnviado": 71, "estoqueAtual": 37, "vendasLiquidas": 34, "giro": 0.478873, "ranking": 31, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "BLI26002", "descricao": "BLUSA CROPPED ALFAIATARIA DUO COLOR", "preco": 269.9, "estoqueEnviado": 134, "estoqueAtual": 68, "vendasLiquidas": 66, "giro": 0.492537, "ranking": 32, "status": "Fotos ISA", "vendasHoje": 2}, {"referencia": "VEI26045", "descricao": "VESTIDO CURTO MOULAGE", "preco": 499.9, "estoqueEnviado": 29, "estoqueAtual": 10, "vendasLiquidas": 19, "giro": 0.655172, "ranking": 33, "status": "Fotos ISA", "vendasHoje": 0}, {"referencia": "BDI26005", "descricao": "BODY BASIC ISA PAES", "preco": 239.9, "estoqueEnviado": 291, "estoqueAtual": 126, "vendasLiquidas": 165, "giro": 0.56701, "ranking": 34, "status": "Fotos ISA", "vendasHoje": 6}, {"referencia": "SAI26003", "descricao": "SAIA MIDI PEPLUM", "preco": 289.9, "estoqueEnviado": 195, "estoqueAtual": 76, "vendasLiquidas": 119, "giro": 0.610256, "ranking": 35, "status": "Fotos ISA", "vendasHoje": 8}];
 
-// Splash -> Login Inicial -> Welcome -> Home
+// Splash -> Home
 const isFirstVisit = !sessionStorage.getItem('isa-paes-visited');
 const splashTime = isFirstVisit ? 3000 : 2000;
 sessionStorage.setItem('isa-paes-visited', 'true');
 document.documentElement.style.setProperty('--splash-duration', isFirstVisit ? '2.5s' : '1.6s');
-
-// Histórico de navegação para botão voltar
-let navHistory = ['home'];
-
-// Salvar estado da página antes de sair
-window.addEventListener('beforeunload', function(){
-    const activeScreens = document.querySelectorAll('.active');
-    const screenIds = [];
-    
-    // Verificar se home está visível
-    if(document.getElementById('home').classList.contains('visible')){
-        screenIds.push('home');
-    }
-    
-    activeScreens.forEach(s => {
-        if(s.id) screenIds.push(s.id);
-    });
-    sessionStorage.setItem('last-screens', JSON.stringify(screenIds));
-    sessionStorage.setItem('last-scroll', window.scrollY);
-    // Salvar histórico de navegação completo
-    sessionStorage.setItem('nav-history', JSON.stringify(navHistory));
-    // Salvar destino de expedição se estiver ativo
-    if(currentExpDestino) sessionStorage.setItem('last-exp-destino', currentExpDestino);
-});
-
 setTimeout(()=>{
     document.getElementById('splash').classList.add('fade-out');
-    setTimeout(()=>{
-        document.getElementById('splash').style.display='none';
-        // Verificar se já está logado (refresh)
-        const savedUser = sessionStorage.getItem('logged-user');
-        if(savedUser && USERS[savedUser]){
-            currentUser = savedUser;
-            // Já logado - restaurar última tela ou ir para home
-            const lastScreens = sessionStorage.getItem('last-screens');
-            const lastScroll = sessionStorage.getItem('last-scroll');
-            const lastExpDestino = sessionStorage.getItem('last-exp-destino');
-            const savedNavHistory = sessionStorage.getItem('nav-history');
-            
-            let screens = [];
-            try {
-                screens = lastScreens ? JSON.parse(lastScreens) : [];
-            } catch(e) {
-                screens = [];
-            }
-            
-            // Restaurar histórico de navegação
-            try {
-                const restoredHistory = savedNavHistory ? JSON.parse(savedNavHistory) : ['home'];
-                navHistory = restoredHistory.length > 0 ? restoredHistory : ['home'];
-            } catch(e) {
-                navHistory = ['home'];
-            }
-            
-            // Recriar estados no history do navegador
-            navHistory.forEach(screen => {
-                history.pushState({screen: screen}, '', '');
-            });
-            
-            // Função para mostrar home
-            function showHome(){
-                const home = document.getElementById('home');
-                home.classList.remove('hidden');
-                home.classList.add('visible');
-            }
-            
-            // Filtrar telas válidas (remover home e welcome-screen)
-            const telasParaRestaurar = screens.filter(id => id !== 'home' && id !== 'welcome-screen');
-            
-            // Se não tem telas para restaurar, mostrar home
-            if(telasParaRestaurar.length === 0){
-                showHome();
-                return;
-            }
-            
-            // Tem outras telas para restaurar
-            // Primeiro esconde home
-            const home = document.getElementById('home');
-            home.classList.add('hidden');
-            home.classList.remove('visible');
-            
-            // Restaurar cada tela visualmente
-            telasParaRestaurar.forEach(id => {
-                const el = document.getElementById(id);
-                if(el) {
-                    el.classList.add('active');
-                }
-            });
-            
-            // Restaurar destino de expedição se necessário
-            if(screens.includes('app-expedicao') && lastExpDestino){
-                currentExpDestino = lastExpDestino;
-                renderExpedicao(lastExpDestino);
-            }
-            // Restaurar scroll
-            if(lastScroll){
-                setTimeout(() => window.scrollTo(0, parseInt(lastScroll)), 100);
-            }
-        } else {
-            // Não logado - tentar biometria ou mostrar login
-            tryInitialBiometric();
-        }
-    },500);
+    setTimeout(()=>{document.getElementById('splash').style.display='none';document.getElementById('home').classList.add('visible')},500);
 },splashTime);
-
-async function tryInitialBiometric(){
-    const bioUser = localStorage.getItem('bio-user');
-    const credId = localStorage.getItem('bio-cred-id');
-    if(bioUser && credId && USERS[bioUser] && window.PublicKeyCredential){
-        try{
-            const rawId = Uint8Array.from(atob(credId), c=>c.charCodeAt(0));
-            const a = await navigator.credentials.get({publicKey:{
-                challenge: crypto.getRandomValues(new Uint8Array(32)),
-                allowCredentials:[{id:rawId, type:'public-key', transports:['internal']}],
-                userVerification:'required', timeout:60000
-            }});
-            if(a){
-                sessionStorage.setItem('logged-user', bioUser);
-                getWeatherAndShowWelcome(bioUser);
-                return;
-            }
-        }catch(e){console.log('Biometria cancelada/falhou')}
-    }
-    // Sem biometria - mostrar login
-    document.getElementById('initial-login').classList.add('active');
-    setTimeout(()=>document.getElementById('initial-user').focus(),100);
-}
-
-function doInitialLogin(){
-    const user = document.getElementById('initial-user').value.trim().toLowerCase();
-    const pw = document.getElementById('initial-pw').value;
-    const u = USERS[user];
-    if(!u || u.pw !== pw){
-        document.getElementById('initial-error').textContent = 'Usuário ou senha incorretos';
-        document.getElementById('initial-pw').value = '';
-        return;
-    }
-    sessionStorage.setItem('logged-user', user);
-    document.getElementById('initial-error').textContent = '';
-    document.getElementById('initial-login').classList.remove('active');
-    
-    // Oferecer biometria se disponível e não cadastrada
-    if(!localStorage.getItem('bio-user') && window.PublicKeyCredential){
-        setTimeout(()=>{
-            if(confirm('Deseja ativar o login por biometria/Face ID?')){
-                registerInitialBiometric(user);
-            }
-        },100);
-    }
-    
-    getWeatherAndShowWelcome(user);
-}
-
-async function registerInitialBiometric(user){
-    try{
-        const id = new TextEncoder().encode(user);
-        const cred = await navigator.credentials.create({publicKey:{
-            challenge: crypto.getRandomValues(new Uint8Array(32)),
-            rp:{name:'Isa Paes', id:location.hostname},
-            user:{id, name:user, displayName:USERS[user].nome},
-            pubKeyCredParams:[{alg:-7, type:'public-key'}],
-            authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required'},
-            timeout:60000
-        }});
-        if(cred){
-            localStorage.setItem('bio-user', user);
-            localStorage.setItem('bio-cred-id', btoa(String.fromCharCode(...new Uint8Array(cred.rawId))));
-        }
-    }catch(e){console.log('Biometria cancelada')}
-}
-
-// Função para criar gotas de chuva
-function createRainDrops(){
-    const rain = document.getElementById('welcome-rain');
-    rain.innerHTML = '';
-    for(let i = 0; i < 100; i++){
-        const drop = document.createElement('div');
-        drop.className = 'rain-drop';
-        drop.style.left = Math.random() * 100 + '%';
-        drop.style.height = Math.random() * 20 + 10 + 'px';
-        drop.style.animationDuration = Math.random() * 0.5 + 0.5 + 's';
-        drop.style.animationDelay = Math.random() * 2 + 's';
-        rain.appendChild(drop);
-    }
-}
-
-// Função para criar flocos de neve
-function createSnowflakes(){
-    const snow = document.getElementById('welcome-snow');
-    snow.innerHTML = '';
-    for(let i = 0; i < 50; i++){
-        const flake = document.createElement('div');
-        flake.className = 'snowflake';
-        flake.innerHTML = '❄';
-        flake.style.left = Math.random() * 100 + '%';
-        flake.style.fontSize = Math.random() * 10 + 10 + 'px';
-        flake.style.opacity = Math.random() * 0.5 + 0.5;
-        flake.style.animationDuration = Math.random() * 3 + 3 + 's';
-        flake.style.animationDelay = Math.random() * 5 + 's';
-        snow.appendChild(flake);
-    }
-}
-
-// Mapear código de clima Open-Meteo para tipo
-function getWeatherType(code){
-    // https://open-meteo.com/en/docs - WMO Weather interpretation codes
-    if(code === 0) return 'clear';           // Céu limpo
-    if(code === 1 || code === 2) return 'partly-cloudy'; // Parcialmente nublado
-    if(code === 3) return 'cloudy';          // Nublado
-    if(code >= 45 && code <= 48) return 'fog';    // Neblina
-    if(code >= 51 && code <= 57) return 'drizzle'; // Garoa
-    if(code >= 61 && code <= 67) return 'rain';   // Chuva
-    if(code >= 71 && code <= 77) return 'snow';   // Neve
-    if(code >= 80 && code <= 82) return 'rain';   // Aguaceiro
-    if(code >= 85 && code <= 86) return 'snow';   // Neve
-    if(code >= 95 && code <= 99) return 'storm';  // Tempestade
-    return 'clear';
-}
-
-// Buscar clima via Open-Meteo
-async function fetchWeather(lat, lon){
-    try{
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code,temperature_2m`;
-        const res = await fetch(url);
-        const data = await res.json();
-        return {
-            code: data.current.weather_code,
-            temp: data.current.temperature_2m,
-            type: getWeatherType(data.current.weather_code)
-        };
-    }catch(e){
-        console.log('Erro ao buscar clima:', e);
-        return null;
-    }
-}
-
-// Esconder todos os elementos climáticos
-function hideAllWeatherElements(){
-    const elements = ['welcome-stars','welcome-clouds','welcome-sun','welcome-sunset-clouds','welcome-sunset-sun','welcome-heavy-clouds','welcome-rain','welcome-lightning','welcome-snow','welcome-fog'];
-    elements.forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.style.display = 'none';
-    });
-}
-
-function showWelcomeScreen(user, weather = null){
-    const u = USERS[user];
-    const hour = new Date().getHours();
-    let greeting, skyClass;
-    const isNight = hour < 5 || hour >= 18;
-    const isMorning = hour >= 5 && hour < 12;
-    const isAfternoon = hour >= 12 && hour < 18;
-    
-    // Definir saudação
-    if(isMorning) greeting = 'Bom dia,';
-    else if(isAfternoon) greeting = 'Boa tarde,';
-    else greeting = 'Boa noite,';
-    
-    // Esconder todos os elementos climáticos
-    hideAllWeatherElements();
-    
-    const weatherType = weather ? weather.type : 'clear';
-    
-    // Definir classe do céu e elementos baseado no clima + período
-    if(weatherType === 'storm'){
-        skyClass = 'storm';
-        createRainDrops();
-        document.getElementById('welcome-rain').style.display = 'block';
-        document.getElementById('welcome-lightning').style.display = 'block';
-        document.getElementById('welcome-heavy-clouds').style.display = 'block';
-    } else if(weatherType === 'rain' || weatherType === 'drizzle'){
-        skyClass = isNight ? 'rainy-night' : 'rainy-day';
-        createRainDrops();
-        document.getElementById('welcome-rain').style.display = 'block';
-        document.getElementById('welcome-heavy-clouds').style.display = 'block';
-    } else if(weatherType === 'snow'){
-        skyClass = isNight ? 'snowy-night' : 'snowy-day';
-        createSnowflakes();
-        document.getElementById('welcome-snow').style.display = 'block';
-        document.getElementById('welcome-heavy-clouds').style.display = 'block';
-    } else if(weatherType === 'fog'){
-        skyClass = 'foggy';
-        document.getElementById('welcome-fog').style.display = 'block';
-    } else if(weatherType === 'cloudy' || weatherType === 'partly-cloudy'){
-        skyClass = isNight ? 'cloudy-night' : 'cloudy-day';
-        document.getElementById('welcome-heavy-clouds').style.display = 'block';
-        if(isNight) document.getElementById('welcome-stars').style.display = 'block';
-    } else {
-        // Céu limpo
-        if(isMorning){
-            skyClass = 'morning';
-            document.getElementById('welcome-clouds').style.display = 'block';
-            document.getElementById('welcome-sun').style.display = 'block';
-        } else if(isAfternoon){
-            skyClass = 'afternoon';
-            document.getElementById('welcome-sunset-clouds').style.display = 'block';
-            document.getElementById('welcome-sunset-sun').style.display = 'block';
-        } else {
-            skyClass = 'night';
-            document.getElementById('welcome-stars').style.display = 'block';
-        }
-    }
-    
-    const ws = document.getElementById('welcome-screen');
-    ws.className = 'welcome-screen ' + skyClass;
-    
-    document.getElementById('welcome-greeting').textContent = greeting;
-    document.getElementById('welcome-name').textContent = u.nome;
-    ws.classList.add('active');
-    
-    setTimeout(()=>{
-        ws.classList.add('fade-out');
-        setTimeout(()=>{
-            ws.classList.remove('active');
-            ws.classList.remove('fade-out');
-            document.getElementById('home').classList.add('visible');
-            pushState('home');
-        },500);
-    },3500);
-}
-
-// Função para obter localização e clima
-async function getWeatherAndShowWelcome(user){
-    // Verificar se GPS foi negado anteriormente
-    const gpsNegado = localStorage.getItem('gps-negado');
-    
-    if(gpsNegado === 'true'){
-        // Usar BH direto sem perguntar
-        fetchWeather(-19.9167, -43.9345).then(weather => {
-            showWelcomeScreen(user, weather);
-        }).catch(() => showWelcomeScreen(user, null));
-        return;
-    }
-    
-    // Tentar obter localização GPS
-    if(navigator.geolocation){
-        navigator.geolocation.getCurrentPosition(
-            async (pos) => {
-                // GPS permitido - salvar e usar
-                localStorage.setItem('gps-negado', 'false');
-                const weather = await fetchWeather(pos.coords.latitude, pos.coords.longitude);
-                showWelcomeScreen(user, weather);
-            },
-            (err) => {
-                console.log('GPS não disponível:', err);
-                // Salvar que foi negado para não perguntar novamente
-                localStorage.setItem('gps-negado', 'true');
-                // Fallback: usar localização padrão (Belo Horizonte)
-                fetchWeather(-19.9167, -43.9345).then(weather => {
-                    showWelcomeScreen(user, weather);
-                }).catch(() => showWelcomeScreen(user, null));
-            },
-            {timeout: 5000, enableHighAccuracy: false}
-        );
-    } else {
-        // Sem suporte a GPS - usar BH
-        localStorage.setItem('gps-negado', 'true');
-        fetchWeather(-19.9167, -43.9345).then(weather => {
-            showWelcomeScreen(user, weather);
-        }).catch(() => showWelcomeScreen(user, null));
-    }
-}
-
-// ===== NAVEGAÇÃO COM HISTORY API (BOTÃO VOLTAR NATIVO) =====
-function pushState(screen) {
-    if (navHistory[navHistory.length - 1] !== screen) {
-        navHistory.push(screen);
-        history.pushState({screen: screen}, '', '');
-    }
-    // Salvar tela atual para persistência ao recarregar
-    sessionStorage.setItem('current-screen', screen);
-}
-function getCurrentScreen() {
-    if (document.getElementById('home').classList.contains('visible')) return 'home';
-    if (document.getElementById('login-screen').classList.contains('active')) return 'login';
-    if (document.getElementById('sub-comercial').classList.contains('active')) return 'sub-comercial';
-    if (document.getElementById('sub-expedicao').classList.contains('active')) return 'sub-expedicao';
-    if (document.getElementById('sub-expedicao-inverno').classList.contains('active')) return 'sub-expedicao-inverno';
-    if (document.getElementById('sub-expedicao-verao').classList.contains('active')) return 'sub-expedicao-verao';
-    if (document.getElementById('sub-expedicao-destinos').classList.contains('active')) return 'sub-expedicao-destinos';
-    if (document.getElementById('app-comercial').classList.contains('active')) return 'app-comercial';
-    if (document.getElementById('app-expedicao').classList.contains('active')) return 'app-expedicao';
-    if (document.getElementById('geo-screen').classList.contains('active')) return 'geo-screen';
-    if (document.getElementById('changepw-screen').classList.contains('active')) return 'changepw';
-    if (document.getElementById('dev-compras').classList.contains('active')) return 'dev-compras';
-    if (document.getElementById('dev-financeiro').classList.contains('active')) return 'dev-financeiro';
-    return 'home';
-}
-function navigateBack() {
-    if (navHistory.length > 1) {
-        navHistory.pop(); // Remove tela atual
-        const prevScreen = navHistory[navHistory.length - 1];
-        goToScreen(prevScreen, false);
-        return true;
-    }
-    return false;
-}
-function goToScreen(screen, addToHistory = true) {
-    hideAll();
-    switch(screen) {
-        case 'home':
-            document.getElementById('home').classList.remove('hidden');
-            document.getElementById('home').classList.add('visible');
-            currentMod = null;
-            break;
-        case 'login':
-            showLoginScreen(currentMod || 'comercial');
-            break;
-        case 'sub-comercial':
-            document.getElementById('sub-comercial').classList.add('active');
-            break;
-        case 'sub-expedicao':
-            document.getElementById('sub-expedicao').classList.add('active');
-            break;
-        case 'sub-expedicao-inverno':
-            document.getElementById('sub-expedicao-inverno').classList.add('active');
-            break;
-        case 'sub-expedicao-verao':
-            document.getElementById('sub-expedicao-verao').classList.add('active');
-            break;
-        case 'sub-expedicao-destinos':
-            document.getElementById('sub-expedicao-destinos').classList.add('active');
-            break;
-        case 'app-comercial':
-            document.getElementById('app-comercial').classList.add('active');
-            break;
-        case 'app-expedicao':
-            document.getElementById('app-expedicao').classList.add('active');
-            if(currentExpDestino) renderExpedicao(currentExpDestino);
-            break;
-        case 'geo-screen':
-            document.getElementById('geo-screen').classList.add('active');
-            geoInit();
-            break;
-        case 'changepw':
-            document.getElementById('changepw-screen').classList.add('active');
-            break;
-        case 'dev-compras':
-            document.getElementById('dev-compras').classList.add('active');
-            break;
-        case 'dev-financeiro':
-            document.getElementById('dev-financeiro').classList.add('active');
-            break;
-        default:
-            document.getElementById('home').classList.remove('hidden');
-            document.getElementById('home').classList.add('visible');
-    }
-    if (addToHistory) pushState(screen);
-}
-// Listener para o botão voltar do navegador/celular
-window.addEventListener('popstate', function(e) {
-    if (navHistory.length > 1) {
-        navHistory.pop();
-        const prevScreen = navHistory[navHistory.length - 1] || 'home';
-        goToScreen(prevScreen, false);
-    } else {
-        // Se não há histórico, volta pra home
-        goToScreen('home', false);
-    }
-});
-// Prevenir que o app feche ao apertar voltar na home
-history.pushState({screen: 'home'}, '', '');
 
 // ===== USUÁRIOS E PERMISSÕES =====
 const USERS = {
     'andre':   {pw:'736221', nome:'André',    role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce','geolocator']},
     'rafael':  {pw:'3022',   nome:'Rafael',   role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce','geolocator']},
     'isabella':{pw:'Isa',    nome:'Isabella', role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce','geolocator']},
-    'mariana.s':{pw:'1402',  nome:'Mariana',role:'user', access:['comercial'], channels:['showroom','geolocator']}
+    'mariana.s':{pw:'1402',  nome:'Mariana S.',role:'user', access:['comercial'], channels:['showroom','geolocator']}
 };
 
 // ===== SENHAS PERSISTENTES (localStorage) =====
@@ -1391,7 +598,6 @@ function openChangePw(){
     else changePwReturnTo='home';
     hideAll();
     document.getElementById('changepw-screen').classList.add('active');
-    pushState('changepw');
     document.getElementById('changepw-user-label').textContent='Logado como: '+USERS[currentUser].nome;
     document.getElementById('changepw-current').value='';
     document.getElementById('changepw-new').value='';
@@ -1431,280 +637,13 @@ function backFromChangePw(){
 let currentMod=null, currentUser=null;
 const allScreens='.app-screen,.dev-screen,.login-screen,.submenu-screen,.changepw-screen,.geo-screen';
 function hideAll(){document.querySelectorAll(allScreens).forEach(s=>s.classList.remove('active'));document.getElementById('home').classList.add('hidden');document.getElementById('home').classList.remove('visible')}
-const modIcons={comercial:'📊',compras:'🛒',financeiro:'💰',expedicao:'📦'};
-const modNames={comercial:'Comercial',compras:'Compras',financeiro:'Financeiro',expedicao:'Expedição'};
-
-// ===== EXPEDIÇÃO =====
-const EXPEDICAO_INV1 = [{"ref":"BDI26003","desc":"BODY BASIC RENDA","cor":"MARFIM","prod":{"PP":12,"P":24,"M":24,"G":12},"envShow":{"PP":11,"P":22,"M":22,"G":10}},{"ref":"BDI26004","desc":"BODY BASIC TULE MANGA","cor":"AREIA","prod":{"PP":18,"P":35,"M":35,"G":18},"envShow":{"PP":17,"P":32,"M":33,"G":18}},{"ref":"BDI26004","desc":"BODY BASIC TULE MANGA","cor":"PRETO","prod":{"PP":18,"P":32,"M":32,"G":18},"envShow":{"PP":16,"P":31,"M":31,"G":16}},{"ref":"BDI26005","desc":"BODY BASIC ISA PAES","cor":"MARFIM","prod":{"PP":16,"P":30,"M":30,"G":16},"envShow":{"PP":14,"P":29,"M":29,"G":15}},{"ref":"BDI26005","desc":"BODY BASIC ISA PAES","cor":"MARROM","prod":{"PP":16,"P":31,"M":31,"G":16},"envShow":{"PP":15,"P":29,"M":30,"G":15}},{"ref":"BDI26005","desc":"BODY BASIC ISA PAES","cor":"PRETO","prod":{"PP":22,"P":40,"M":40,"G":22},"envShow":{"PP":20,"P":38,"M":37,"G":20}},{"ref":"BDI26011","desc":"BODY TRICOT DECOTE V","cor":"MARROM","prod":{"PP":12,"P":24,"M":24,"G":12},"envShow":{"PP":10,"P":23,"M":22,"G":10}},{"ref":"BDI26011","desc":"BODY TRICOT DECOTE V","cor":"PRETO","prod":{"PP":12,"P":24,"M":24,"G":12},"envShow":{"PP":11,"P":18,"M":23,"G":11}},{"ref":"BLI26001","desc":"BLUSA TOP DETALHE DECOTE","cor":"MARROM","prod":{"PP":13,"P":24,"M":24,"G":13},"envShow":{"PP":11,"P":22,"M":21,"G":11}},{"ref":"BLI26002","desc":"BLUSA CROPPED ALFAIATARIA DUO COLOR","cor":"AMARELO CLARO","prod":{"PP":14,"P":28,"M":28,"G":14},"envShow":{"PP":13,"P":27,"M":26,"G":13}},{"ref":"BLI26002","desc":"BLUSA CROPPED ALFAIATARIA DUO COLOR","cor":"ROSA CLARO","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":18,"M":19,"G":9}},{"ref":"BLI26003","desc":"BLUSA CROPPED ALFAIATARIA CORSELET","cor":"AZUL CLARO","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":17,"M":18,"G":8}},{"ref":"BLI26003","desc":"BLUSA CROPPED ALFAIATARIA CORSELET","cor":"MARFIM","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":8,"P":18,"M":18,"G":8}},{"ref":"BLI26004","desc":"BLUSA CROPPED ALFAIATARIA MESCLA","cor":"AZUL","prod":{"PP":11,"P":22,"M":22,"G":11},"envShow":{"PP":10,"P":21,"M":21,"G":11}},{"ref":"BLI26004","desc":"BLUSA CROPPED ALFAIATARIA MESCLA","cor":"MARFIM","prod":{"PP":12,"P":24,"M":24,"G":12},"envShow":{"PP":10,"P":22,"M":23,"G":11}},{"ref":"BLI26006","desc":"BLUSA TOP PEPLUM DETALHE DECOTE","cor":"MARFIM","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":20,"M":20,"G":10}},{"ref":"BLI26006","desc":"BLUSA TOP PEPLUM DETALHE DECOTE","cor":"PRETO","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":18,"M":19,"G":9}},{"ref":"BLI26010","desc":"BLUSA BASIC MANGA RENDA","cor":"MARROM","prod":{"PP":16,"P":27,"M":27,"G":16},"envShow":{"PP":14,"P":25,"M":26,"G":15}},{"ref":"BLI26011","desc":"BLUSA TOP PEPLUM JEANS PAETE","cor":"OFF-WHITE","prod":{"PP":11,"P":23,"M":23,"G":11},"envShow":{"PP":10,"P":22,"M":22,"G":10}},{"ref":"BLI26013","desc":"BLUSA BASIC REGATA ISA PAES","cor":"MARFIM","prod":{"PP":16,"P":34,"M":34,"G":16},"envShow":{"PP":15,"P":31,"M":31,"G":15}},{"ref":"BLI26013","desc":"BLUSA BASIC REGATA ISA PAES","cor":"MARROM","prod":{"PP":17,"P":34,"M":34,"G":17},"envShow":{"PP":16,"P":31,"M":31,"G":16}},{"ref":"BLI26013","desc":"BLUSA BASIC REGATA ISA PAES","cor":"PRETO","prod":{"PP":12,"P":28,"M":28,"G":12},"envShow":{"PP":11,"P":25,"M":26,"G":11}},{"ref":"BLI26019","desc":"BLUSA BASIC MANGA RENDA","cor":"AREIA","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":18,"M":19,"G":9}},{"ref":"BLI26019","desc":"BLUSA BASIC MANGA RENDA","cor":"VERMELHO ESCURO","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":0,"P":0,"M":0,"G":0}},{"ref":"BLI26026","desc":"BLUSA BASIC CAVADA MARTINGALES","cor":"OFF-WHITE","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":8,"P":17,"M":18,"G":8}},{"ref":"BLI26027","desc":"BLUSA REGATA BASIC ISA PAES","cor":"PRETO","prod":{"PP":0,"P":60,"M":60,"G":30},"envShow":{"PP":0,"P":56,"M":58,"G":23}},{"ref":"BLI26028","desc":"BLUSA TOP PAETE PEPLUM DETALHE DECOTE","cor":"MARROM","prod":{"PP":12,"P":19,"M":19,"G":12},"envShow":{"PP":11,"P":16,"M":17,"G":10}},{"ref":"BLI26029","desc":"BLUSA BASIC MANGA RENDA","cor":"MARFIM","prod":{"PP":12,"P":18,"M":18,"G":12},"envShow":{"PP":10,"P":15,"M":16,"G":10}},{"ref":"BZI26001","desc":"BLAZER ALFAIATARIA TELA BORDADA","cor":"MARROM","prod":{"PP":13,"P":24,"M":24,"G":13},"envShow":{"PP":12,"P":23,"M":23,"G":12}},{"ref":"BZI26002","desc":"BLAZER ALFAIATARIA VIES","cor":"AZUL CLARO","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":17,"M":18,"G":11}},{"ref":"BZI26002","desc":"BLAZER ALFAIATARIA VIES","cor":"MARFIM","prod":{"PP":17,"P":33,"M":33,"G":17},"envShow":{"PP":15,"P":31,"M":32,"G":15}},{"ref":"BZI26003","desc":"BLAZER ALFAIATARIA BASIC ISA PAES","cor":"MARFIM","prod":{"PP":18,"P":32,"M":32,"G":18},"envShow":{"PP":17,"P":31,"M":30,"G":17}},{"ref":"BZI26003","desc":"BLAZER ALFAIATARIA BASIC ISA PAES","cor":"MARROM","prod":{"PP":18,"P":32,"M":32,"G":18},"envShow":{"PP":17,"P":30,"M":31,"G":17}},{"ref":"BZI26003","desc":"BLAZER ALFAIATARIA BASIC ISA PAES","cor":"PRETO","prod":{"PP":18,"P":31,"M":31,"G":18},"envShow":{"PP":16,"P":27,"M":29,"G":15}},{"ref":"CAI26006","desc":"CAMISA ALFAIATARIA ESTAMPADA","cor":"MARFIM","prod":{"PP":14,"P":40,"M":28,"G":14},"envShow":{"PP":13,"P":27,"M":27,"G":13}},{"ref":"CAI26007","desc":"CAMISA ALFAIATARIA PAETE","cor":"MARROM","prod":{"PP":18,"P":23,"M":23,"G":18},"envShow":{"PP":16,"P":21,"M":22,"G":17}},{"ref":"CAI26009","desc":"CAMISA ALFAIATARIA COM PONTEIRA","cor":"MARROM","prod":{"PP":10,"P":14,"M":14,"G":10},"envShow":{"PP":9,"P":12,"M":12,"G":9}},{"ref":"CAI26009","desc":"CAMISA ALFAIATARIA COM PONTEIRA","cor":"PRETO","prod":{"PP":10,"P":16,"M":16,"G":10},"envShow":{"PP":8,"P":14,"M":15,"G":9}},{"ref":"CJI26002","desc":"CONJUNTO BASIC REGATA DETALHE CHANTILLY","cor":"AREIA","prod":{"PP":14,"P":26,"M":26,"G":14},"envShow":{"PP":0,"P":22,"M":25,"G":13}},{"ref":"CJI26002","desc":"CONJUNTO BASIC REGATA DETALHE CHANTILLY","cor":"OFF-WHITE","prod":{"PP":15,"P":26,"M":26,"G":15},"envShow":{"PP":14,"P":23,"M":25,"G":14}},{"ref":"CJI26013","desc":"CONJUNTO ALFAIATARIA BLUSA CAPA","cor":"MARROM","prod":{"PP":10,"P":14,"M":14,"G":10},"envShow":{"PP":8,"P":12,"M":13,"G":9}},{"ref":"CJI26013","desc":"CONJUNTO ALFAIATARIA BLUSA CAPA","cor":"PRETO","prod":{"PP":10,"P":16,"M":16,"G":10},"envShow":{"PP":9,"P":12,"M":15,"G":9}},{"ref":"CLI26001","desc":"CALCA ALFAIATARIA BARRA ITALIANA","cor":"CAMEL","prod":{"PP":18,"P":32,"M":32,"G":18},"envShow":{"PP":17,"P":31,"M":30,"G":17}},{"ref":"CLI26001","desc":"CALCA ALFAIATARIA BARRA ITALIANA","cor":"MARROM","prod":{"PP":18,"P":32,"M":32,"G":18},"envShow":{"PP":17,"P":30,"M":31,"G":16}},{"ref":"CLI26002","desc":"CALCA ALFAIATARIA TIRA LATERAL","cor":"AMARELO CLARO","prod":{"PP":14,"P":30,"M":30,"G":14},"envShow":{"PP":14,"P":25,"M":29,"G":12}},{"ref":"CLI26002","desc":"CALCA ALFAIATARIA TIRA LATERAL","cor":"ROSA CLARO","prod":{"PP":10,"P":19,"M":18,"G":10},"envShow":{"PP":8,"P":17,"M":16,"G":9}},{"ref":"CLI26003","desc":"CALCA ALFAIATARIA VIES","cor":"AZUL CLARO","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":10,"P":17,"M":18,"G":9}},{"ref":"CLI26003","desc":"CALCA ALFAIATARIA VIES","cor":"MARFIM","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":8,"P":19,"M":19,"G":9}},{"ref":"CLI26004","desc":"CALCA ALFAIATARIA NERVURA","cor":"MARROM","prod":{"PP":18,"P":32,"M":32,"G":18},"envShow":{"PP":16,"P":31,"M":30,"G":17}},{"ref":"CLI26005","desc":"CALCA ALFAIATARIA NERVURA","cor":"MARFIM","prod":{"PP":16,"P":32,"M":32,"G":16},"envShow":{"PP":15,"P":31,"M":31,"G":15}},{"ref":"CLI26005","desc":"CALCA ALFAIATARIA NERVURA","cor":"PRETO","prod":{"PP":16,"P":32,"M":32,"G":16},"envShow":{"PP":15,"P":30,"M":31,"G":15}},{"ref":"CLI26006","desc":"CALCA STREET ALFAIATARIA MESCLA","cor":"AZUL","prod":{"PP":8,"P":16,"M":16,"G":8},"envShow":{"PP":6,"P":15,"M":14,"G":7}},{"ref":"CLI26006","desc":"CALCA STREET ALFAIATARIA MESCLA","cor":"MARFIM","prod":{"PP":8,"P":20,"M":20,"G":8},"envShow":{"PP":6,"P":19,"M":17,"G":7}},{"ref":"CLI26008","desc":"CALCA JEANS PAETE","cor":"OFF-WHITE","prod":{"PP":12,"P":24,"M":24,"G":12},"envShow":{"PP":11,"P":22,"M":22,"G":11}},{"ref":"JAI26001","desc":"JAQUETA BOMBER DETALHE TRICOT","cor":"MARROM","prod":{"PP":12,"P":22,"M":22,"G":12},"envShow":{"PP":11,"P":20,"M":21,"G":11}},{"ref":"JAI26002","desc":"JAQUETA ALFAIATARIA MESCLA","cor":"AZUL","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":19,"M":18,"G":9}},{"ref":"JAI26002","desc":"JAQUETA ALFAIATARIA MESCLA","cor":"MARFIM","prod":{"PP":11,"P":22,"M":22,"G":11},"envShow":{"PP":10,"P":20,"M":21,"G":10}},{"ref":"JAI26003","desc":"JAQUETA JEANS PAETE","cor":"OFF-WHITE","prod":{"PP":12,"P":24,"M":24,"G":12},"envShow":{"PP":11,"P":21,"M":22,"G":11}},{"ref":"MCI26001","desc":"MACACAO LONGO ALFAIATARIA DUO COLOR","cor":"MARROM","prod":{"PP":16,"P":32,"M":32,"G":16},"envShow":{"PP":15,"P":30,"M":32,"G":14}},{"ref":"SAI26001","desc":"SAIA MIDI MEIO GODE","cor":"MARROM","prod":{"PP":13,"P":24,"M":24,"G":13},"envShow":{"PP":12,"P":23,"M":23,"G":12}},{"ref":"SAI26002","desc":"SAIA CURTA ALFAIATARIA VIES","cor":"AZUL CLARO","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":18,"M":19,"G":9}},{"ref":"SAI26002","desc":"SAIA CURTA ALFAIATARIA VIES","cor":"MARFIM","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":20,"M":20,"G":9}},{"ref":"SAI26003","desc":"SAIA MIDI PEPLUM","cor":"MARFIM","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":20,"M":18,"G":9}},{"ref":"SAI26003","desc":"SAIA MIDI PEPLUM","cor":"MARROM","prod":{"PP":15,"P":29,"M":29,"G":15},"envShow":{"PP":14,"P":27,"M":28,"G":14}},{"ref":"SAI26003","desc":"SAIA MIDI PEPLUM","cor":"PRETO","prod":{"PP":10,"P":21,"M":21,"G":10},"envShow":{"PP":9,"P":19,"M":19,"G":9}},{"ref":"SAI26004","desc":"SAIA CURTA ALFAIATARIA MESCLA","cor":"AZUL","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":19,"M":19,"G":9}},{"ref":"SAI26004","desc":"SAIA CURTA ALFAIATARIA MESCLA","cor":"MARFIM","prod":{"PP":11,"P":22,"M":22,"G":11},"envShow":{"PP":9,"P":20,"M":21,"G":10}},{"ref":"SAI26005","desc":"SAIA MIDI TULE PAETE","cor":"MARROM","prod":{"PP":12,"P":19,"M":19,"G":12},"envShow":{"PP":11,"P":17,"M":18,"G":11}},{"ref":"SAI26009","desc":"SAIA MIDI TRICOT TRANSPARENCIA","cor":"PRETO","prod":{"PP":20,"P":30,"M":50,"G":0},"envShow":{"PP":19,"P":26,"M":47,"G":0}},{"ref":"SAI26012","desc":"SAIA MIDI FORRO SAI26009","cor":"PRETO","prod":{"PP":20,"P":30,"M":30,"G":20},"envShow":{"PP":0,"P":0,"M":0,"G":0}},{"ref":"SHI26001","desc":"SHORT CURTO DETALHE PREGA","cor":"MARROM","prod":{"PP":13,"P":24,"M":24,"G":13},"envShow":{"PP":13,"P":23,"M":23,"G":12}},{"ref":"SHI26002","desc":"SHORT CURTO ALFAIATARIA BASIC","cor":"MARFIM","prod":{"PP":16,"P":32,"M":32,"G":16},"envShow":{"PP":15,"P":31,"M":31,"G":15}},{"ref":"SHI26002","desc":"SHORT CURTO ALFAIATARIA BASIC","cor":"MARROM","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":18,"M":19,"G":9}},{"ref":"SHI26002","desc":"SHORT CURTO ALFAIATARIA BASIC","cor":"PRETO","prod":{"PP":16,"P":32,"M":32,"G":16},"envShow":{"PP":14,"P":30,"M":29,"G":16}},{"ref":"SHI26023","desc":"SHORT CURTO FORRO SAI26009","cor":"PRETO","prod":{"PP":20,"P":30,"M":30,"G":20},"envShow":{"PP":0,"P":0,"M":0,"G":0}},{"ref":"VEI26001","desc":"VESTIDO LONGO SAIA CAMADAS","cor":"MARROM","prod":{"PP":10,"P":21,"M":21,"G":10},"envShow":{"PP":9,"P":20,"M":20,"G":9}},{"ref":"VEI26006","desc":"VESTIDO CURTO DETALHE SOBREPOSICAO","cor":"PRETO","prod":{"PP":14,"P":27,"M":27,"G":14},"envShow":{"PP":13,"P":25,"M":26,"G":13}},{"ref":"VEI26008","desc":"VESTIDO CURTO APLICACAO RENDA","cor":"AREIA","prod":{"PP":14,"P":28,"M":28,"G":14},"envShow":{"PP":13,"P":25,"M":27,"G":13}},{"ref":"VEI26009","desc":"VESTIDO LONGO BABADOS RENDA","cor":"AREIA","prod":{"PP":14,"P":26,"M":26,"G":14},"envShow":{"PP":12,"P":23,"M":25,"G":13}},{"ref":"VEI26010","desc":"VESTIDO LONGO DETALHE CUT-OUT","cor":"MARROM","prod":{"PP":12,"P":22,"M":22,"G":12},"envShow":{"PP":11,"P":20,"M":21,"G":11}},{"ref":"VEI26012","desc":"VESTIDO CURTO SAIA ASSIMETRICA","cor":"MARFIM","prod":{"PP":10,"P":11,"M":11,"G":10},"envShow":{"PP":9,"P":10,"M":11,"G":9}},{"ref":"VEI26012","desc":"VESTIDO CURTO SAIA ASSIMETRICA","cor":"MARROM","prod":{"PP":10,"P":15,"M":15,"G":10},"envShow":{"PP":9,"P":13,"M":14,"G":9}},{"ref":"VEI26022","desc":"VESTIDO LONGUETE CINTO FLORES","cor":"MARROM","prod":{"PP":18,"P":23,"M":41,"G":18},"envShow":{"PP":17,"P":21,"M":40,"G":17}},{"ref":"VEI26023","desc":"VESTIDO CURTO ESTAMPADO SAIA BABADOS","cor":"MARFIM","prod":{"PP":14,"P":28,"M":28,"G":14},"envShow":{"PP":13,"P":27,"M":27,"G":13}},{"ref":"VEI26025","desc":"VESTIDO LONGO ESTAMPADO PALA LASTEX","cor":"MARFIM","prod":{"PP":19,"P":39,"M":32,"G":19},"envShow":{"PP":17,"P":34,"M":31,"G":18}},{"ref":"VEI26045","desc":"VESTIDO CURTO MOULAGE","cor":"OFF-WHITE","prod":{"PP":6,"P":7,"M":13,"G":6},"envShow":{"PP":4,"P":8,"M":12,"G":5}}];
-
-let currentExpDestino = null;
-
-function openExpedicao(){
-    hideAll();
-    document.getElementById('sub-expedicao').classList.add('active');
-    pushState('sub-expedicao');
-}
-function openExpedicaoEstacao(estacao){
-    hideAll();
-    if(estacao==='inverno'){
-        document.getElementById('sub-expedicao-inverno').classList.add('active');
-        pushState('sub-expedicao-inverno');
-    }else if(estacao==='verao'){
-        document.getElementById('sub-expedicao-verao').classList.add('active');
-        pushState('sub-expedicao-verao');
-    }
-}
-function backToExpedicao(){
-    hideAll();
-    document.getElementById('sub-expedicao').classList.add('active');
-    pushState('sub-expedicao');
-}
-function openExpedicaoCapsula(estacao, num){
-    if(estacao==='inverno' && num===1){
-        hideAll();
-        document.getElementById('sub-expedicao-destinos').classList.add('active');
-        pushState('sub-expedicao-destinos');
-    }else{
-        alert('Em breve!');
-    }
-}
-function backToExpedicaoInverno(){
-    hideAll();
-    document.getElementById('sub-expedicao-inverno').classList.add('active');
-    pushState('sub-expedicao-inverno');
-}
-function backToExpedicaoDestinos(){
-    hideAll();
-    document.getElementById('sub-expedicao-destinos').classList.add('active');
-    pushState('sub-expedicao-destinos');
-}
-function openExpedicaoDestino(destino){
-    currentExpDestino = destino;
-    hideAll();
-    document.getElementById('app-expedicao').classList.add('active');
-    pushState('app-expedicao');
-    renderExpedicao(destino);
-}
-function renderExpedicao(destino){
-    const titles = {showroom:'🏬 Showroom', ecommerce:'🌐 E-commerce', mostruario:'👗 Mostruário Isabella'};
-    
-    document.getElementById('exp-header-title').textContent = titles[destino] || 'Expedição';
-    
-    // Referências excluídas do showroom
-    const refsExcluidas = ['SHI26023', 'SAI26012'];
-    
-    // Filtrar dados baseado no destino
-    let dadosFiltrados = EXPEDICAO_INV1;
-    if(destino === 'showroom'){
-        dadosFiltrados = EXPEDICAO_INV1.filter(item => !refsExcluidas.includes(item.ref));
-    }
-    
-    // Calcular totais
-    let totalProd = 0, totalEnvShow = 0;
-    const refsUnicas = new Set();
-    
-    // Totais dos dados filtrados
-    dadosFiltrados.forEach(item => {
-        const p = item.prod || {};
-        totalProd += (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0);
-        const e = item.envShow || {};
-        totalEnvShow += (e.PP||0) + (e.P||0) + (e.M||0) + (e.G||0);
-        refsUnicas.add(item.ref);
-    });
-    
-    // E-commerce = 1 por tamanho existente por cor (todos os dados)
-    let totalEcomm = 0;
-    EXPEDICAO_INV1.forEach(item => {
-        const p = item.prod || {};
-        totalEcomm += ['PP','P','M','G'].filter(t => p[t] > 0).length;
-    });
-    
-    // Isabella meta = 1 P por cor (todos os dados)
-    let metaIsabella = 0;
-    EXPEDICAO_INV1.forEach(item => {
-        if((item.prod?.P || 0) > 0) metaIsabella++;
-    });
-    
-    // Calcular quantidade excluída do showroom
-    let qtdExcluida = 0;
-    EXPEDICAO_INV1.filter(item => refsExcluidas.includes(item.ref)).forEach(item => {
-        const p = item.prod || {};
-        const ecommTams = ['PP','P','M','G'].filter(t => p[t] > 0).length;
-        const isabellaQty = p.P > 0 ? 1 : 0;
-        qtdExcluida += (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0) - ecommTams - isabellaQty;
-    });
-    
-    // Resto após showroom e ecommerce (baseado nos dados filtrados)
-    const resto = totalProd - totalEnvShow - totalEcomm + qtdExcluida;
-    const envIsabella = Math.min(resto, metaIsabella);
-    
-    // Meta showroom = produzido (filtrado) - ecommerce(filtrado) - isabella(filtrado)
-    let ecommFiltrado = 0, isabellaFiltrado = 0;
-    dadosFiltrados.forEach(item => {
-        const p = item.prod || {};
-        ecommFiltrado += ['PP','P','M','G'].filter(t => p[t] > 0).length;
-        if((p.P || 0) > 0) isabellaFiltrado++;
-    });
-    const metaShowroom = totalProd - ecommFiltrado - isabellaFiltrado;
-    
-    let totalMeta, totalEnv, pctTotal;
-    if(destino === 'showroom'){
-        totalMeta = metaShowroom;
-        totalEnv = totalEnvShow;
-    } else if(destino === 'ecommerce'){
-        totalMeta = totalEcomm;
-        totalEnv = totalEcomm;
-    } else {
-        totalMeta = metaIsabella;
-        totalEnv = envIsabella;
-    }
-    pctTotal = totalMeta > 0 ? ((totalEnv / totalMeta) * 100).toFixed(1) : 0;
-    const colorTotal = pctTotal >= 100 ? 'green' : 'blue';
-    
-    // Stats resumo
-    const totalCores = dadosFiltrados.length;
-    let statsHtml;
-    if(destino === 'showroom'){
-        statsHtml = `
-            <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Total de Referências</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalCores}</div><div class="exp-stat-label">Variantes de Cores</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalMeta.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças a Receber</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalEnv.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Recebidas</div></div>
-        `;
-    } else if(destino === 'ecommerce'){
-        statsHtml = `
-            <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Total de Referências</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalCores}</div><div class="exp-stat-label">Variantes de Cores</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalMeta}</div><div class="exp-stat-label">Peças a Receber</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalEnv}</div><div class="exp-stat-label">Peças Recebidas</div></div>
-        `;
-    } else {
-        statsHtml = `
-            <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Total de Referências</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalCores}</div><div class="exp-stat-label">Variantes de Cores</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalMeta}</div><div class="exp-stat-label">Peças a Receber</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalEnv}</div><div class="exp-stat-label">Peças Recebidas</div></div>
-        `;
-    }
-    document.getElementById('exp-total-stats').innerHTML = statsHtml;
-    
-    // Barra total
-    document.getElementById('exp-total-progress').innerHTML = `
-        <div class="exp-progress-row">
-            <div class="exp-progress-header">
-                <span class="exp-progress-label">Total Recebido</span>
-                <span class="exp-progress-value">${totalEnv.toLocaleString('pt-BR')} / ${totalMeta.toLocaleString('pt-BR')}</span>
-            </div>
-            <div class="exp-progress-bar">
-                <div class="exp-progress-fill ${colorTotal}" style="width:${Math.min(pctTotal,100)}%"></div>
-            </div>
-        </div>
-    `;
-    
-    // Lista de itens com barras por tamanho
-    const items = dadosFiltrados.map(item => {
-        const p = item.prod || {};
-        const e = item.envShow || {};
-        const totalP = (p.PP||0)+(p.P||0)+(p.M||0)+(p.G||0);
-        const totalE = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
-        if(totalP === 0) return '';
-        
-        // Calcular meta e enviado baseado no destino
-        let metaItem, envItem;
-        if(destino === 'showroom'){
-            // Showroom: produzido - ecommerce(1 cada tam) - isabella(1 P)
-            const ecommTams = ['PP','P','M','G'].filter(t => p[t] > 0).length;
-            const isabellaQty = p.P > 0 ? 1 : 0;
-            metaItem = totalP - ecommTams - isabellaQty;
-            envItem = totalE;
-        } else if(destino === 'ecommerce'){
-            // E-commerce: 1 de cada tamanho existente
-            metaItem = ['PP','P','M','G'].filter(t => p[t] > 0).length;
-            envItem = metaItem; // 100% enviado
-        } else {
-            // Isabella: 1 peça P
-            metaItem = p.P > 0 ? 1 : 0;
-            envItem = metaItem; // 100% enviado
-        }
-        
-        const pctItem = metaItem > 0 ? ((envItem / metaItem) * 100).toFixed(0) : 0;
-        const colorItem = pctItem >= 100 ? 'green' : 'blue';
-        
-        // Barras por tamanho
-        let tamanhos;
-        if(destino === 'showroom'){
-            // Showroom: meta = produzido - ecommerce(1 cada) - isabella(1 P)
-            tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
-                const prod = p[t] || 0;
-                const env = e[t] || 0;
-                // Descontar 1 do ecommerce de cada tamanho
-                // Descontar 1 da isabella só do P
-                const descEcomm = 1;
-                const descIsabella = (t === 'P') ? 1 : 0;
-                const meta = prod - descEcomm - descIsabella;
-                const pct = meta > 0 ? Math.min((env/meta)*100, 100) : 0;
-                const col = env >= meta ? 'green' : 'blue';
-                return `
-                    <div class="exp-tam-row">
-                        <span class="exp-tam-label">${t}</span>
-                        <div class="exp-tam-bar"><div class="exp-tam-fill ${col}" style="width:${pct}%"></div></div>
-                        <span class="exp-tam-val">${env}/${meta}</span>
-                    </div>
-                `;
-            }).join('');
-        } else if(destino === 'ecommerce'){
-            // E-commerce: 1/1 para cada tamanho existente
-            tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
-                return `
-                    <div class="exp-tam-row">
-                        <span class="exp-tam-label">${t}</span>
-                        <div class="exp-tam-bar"><div class="exp-tam-fill green" style="width:100%"></div></div>
-                        <span class="exp-tam-val">1/1</span>
-                    </div>
-                `;
-            }).join('');
-        } else {
-            // Isabella: só P com 1/1
-            if(p.P > 0){
-                tamanhos = `
-                    <div class="exp-tam-row">
-                        <span class="exp-tam-label">P</span>
-                        <div class="exp-tam-bar"><div class="exp-tam-fill green" style="width:100%"></div></div>
-                        <span class="exp-tam-val">1/1</span>
-                    </div>
-                `;
-            } else {
-                tamanhos = '<div class="exp-tam-row"><span class="exp-tam-label" style="color:var(--txt2)">Sem tamanho P</span></div>';
-            }
-        }
-        
-        return `
-            <div class="exp-item">
-                <div class="exp-item-header">
-                    <div>
-                        <div class="exp-item-ref">${item.ref} <span style="font-weight:400;color:var(--txt2);font-size:11px">(${totalP} pçs)</span></div>
-                        <div class="exp-item-name">${item.desc}</div>
-                        <div class="exp-item-cor">🎨 ${item.cor}</div>
-                    </div>
-                    <div class="exp-item-badge" style="color:var(--${colorItem})">${pctItem}%</div>
-                </div>
-                <div class="exp-tamanhos-grid">${tamanhos}</div>
-            </div>
-        `;
-    }).join('');
-    
-    document.getElementById('exp-items-list').innerHTML = items;
-}
+const modIcons={comercial:'📊',compras:'🛒',financeiro:'💰'};
+const modNames={comercial:'Comercial',compras:'Compras',financeiro:'Financeiro'};
 
 function openModule(mod){
     currentMod=mod;
     document.getElementById('home').classList.remove('visible');document.getElementById('home').classList.add('hidden');
     hideAll();
-    // Comercial não precisa de login
-    if(mod === 'comercial'){
-        afterLogin(mod, sessionStorage.getItem('logged-user') || 'andre');
-        return;
-    }
     const bioUser=localStorage.getItem('bio-user');
     if(bioUser && USERS[bioUser]){tryBiometric(mod,bioUser);return}
     if(sessionStorage.getItem('auth-'+mod)){afterLogin(mod,sessionStorage.getItem('auth-'+mod));return}
@@ -1718,7 +657,6 @@ function showLoginScreen(mod){
     document.getElementById('login-user').value='';
     document.getElementById('login-pw').value='';
     document.getElementById('login-error').textContent='';
-    pushState('login');
     setTimeout(()=>document.getElementById('login-user').focus(),100);
 }
 function doLogin(){
@@ -1769,67 +707,41 @@ async function tryBiometric(mod,user){
 }
 function afterLogin(mod,user){
     hideAll();currentUser=user;
-    if(mod==='comercial'){document.getElementById('sub-comercial').classList.add('active');pushState('sub-comercial')}
-    else if(mod==='compras'){document.getElementById('dev-compras').classList.add('active');pushState('dev-compras')}
-    else if(mod==='financeiro'){document.getElementById('dev-financeiro').classList.add('active');pushState('dev-financeiro')}
+    if(mod==='comercial'){document.getElementById('sub-comercial').classList.add('active')}
+    else if(mod==='compras'){document.getElementById('dev-compras').classList.add('active')}
+    else if(mod==='financeiro'){document.getElementById('dev-financeiro').classList.add('active')}
 }
 function openChannel(ch){
     if(currentUser){const u=USERS[currentUser];if(u&&!u.channels.includes(ch)){alert('Sem permissão para este canal');return}}
     hideAll();
-    if(ch==='showroom'){document.getElementById('app-comercial').classList.add('active');pushState('app-comercial')}
+    if(ch==='showroom'){document.getElementById('app-comercial').classList.add('active')}
 }
 function openGeolocator(){
     hideAll();
     document.getElementById('geo-screen').classList.add('active');
-    pushState('geo-screen');
     geoInit();
 }
-function backToSub(){hideAll();document.getElementById('sub-comercial').classList.add('active');pushState('sub-comercial')}
-function goHome(){hideAll();currentMod=null;document.getElementById('home').classList.remove('hidden');document.getElementById('home').classList.add('visible');pushState('home')}
+function backToSub(){hideAll();document.getElementById('sub-comercial').classList.add('active')}
+function goHome(){hideAll();currentMod=null;document.getElementById('home').classList.remove('hidden');document.getElementById('home').classList.add('visible')}
 function fC(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}).format(v)}
 function fCF(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v)}
 function fP(v){return(v*100).toFixed(1)+'%'}
 document.querySelectorAll('.nav-btn').forEach(b=>{b.addEventListener('click',()=>{
 document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');
-document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(b.dataset.screen).classList.add('active');
-// Salvar aba ativa
-sessionStorage.setItem('last-tab', b.dataset.screen);
-})});
-
-// Restaurar aba ativa ao carregar
-(function(){
-    const lastTab = sessionStorage.getItem('last-tab');
-    if(lastTab){
-        const btn = document.querySelector(`.nav-btn[data-screen="${lastTab}"]`);
-        const screen = document.getElementById(lastTab);
-        if(btn && screen){
-            document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
-            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-            btn.classList.add('active');
-            screen.classList.add('active');
-        }
-    }
-})();
-// Combinar P e F para buscar dados completos
-const allProducts = [...P, ...F];
-document.getElementById('topdia').innerHTML=R.slice(0,10).map((t,i)=>{
-    const prod = allProducts.find(p => p.referencia === t.referencia) || {};
-    const giroDia = prod.estoqueEnviado ? (t.pecas / prod.estoqueEnviado) : 0;
-    return `<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="rank-number ${i<3?'rank-'+(i+1):'rank-default'}">${i+1}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${prod.estoqueAtual || 0}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.pecas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Dia: </span><span class="product-stat-value">${fP(giroDia)}</span></div></div><div style="margin-top:8px"><span class="product-stat-label">Valor total: </span><span class="product-stat-value">${fCF(t.valor)}</span></div></div>`;
-}).join('');
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(b.dataset.screen).classList.add('active');})});
+document.getElementById('topdia').innerHTML=R.slice(0,10).map((t,i)=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="rank-number ${i<3?'rank-'+(i+1):'rank-default'}">${i+1}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Peças: </span><span class="product-stat-value">${t.pecas}</span></div><div class="product-stat"><span class="product-stat-label">Valor: </span><span class="product-stat-value">${fC(t.valor)}</span></div></div></div>`).join('');
 const tA=A.filter(x=>x.aceitacao>0).sort((a,b)=>b.aceitacao-a.aceitacao).slice(0,5);
-document.getElementById('topA').innerHTML=tA.map((t,i)=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge status-excelente">${fP(t.aceitacao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro || (t.vendasLiquidas/t.enviado))}</span></div></div><div class="product-stats" style="margin-top:4px"><div class="product-stat"><span class="product-stat-label">Devoluções: </span><span class="product-stat-value">${t.devolucoes || 0}</span></div></div></div>`).join('');
+document.getElementById('topA').innerHTML=tA.map((t,i)=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="rank-number ${i<3?'rank-'+(i+1):'rank-default'}">${i+1}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Aceitação: </span><span class="product-stat-value" style="color:var(--green)">${fP(t.aceitacao)}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas}</span></div></div></div>`).join('');
 const tR=A.filter(x=>x.rejeicao>0).sort((a,b)=>b.rejeicao-a.rejeicao).slice(0,5);
-document.getElementById('topR').innerHTML=tR.map((t,i)=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge status-fraco">${fP(t.aceitacao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro || (t.vendasLiquidas/t.enviado))}</span></div></div><div class="product-stats" style="margin-top:4px"><div class="product-stat"><span class="product-stat-label">Devoluções: </span><span class="product-stat-value">${t.devolucoes || 0}</span></div></div></div>`).join('');
+document.getElementById('topR').innerHTML=tR.map((t,i)=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge status-fraco">${fP(t.rejeicao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Devoluções: </span><span class="product-stat-value">${t.devolucoes}</span></div><div class="product-stat"><span class="product-stat-label">Vendas Brutas: </span><span class="product-stat-value">${t.vendidoBruto}</span></div></div></div>`).join('');
 function gS(s){if(s.includes('Excelente'))return'status-excelente';if(s.includes('Bom'))return'status-bom';if(s.includes('Fraco'))return'status-fraco';return'status-regular'}
 function gK(s){if(s.includes('Excelente'))return'excelente';if(s.includes('Bom'))return'bom';if(s.includes('Fraco'))return'fraco';return'regular'}
-function gC(s){if(s.includes('Excelente'))return'card-excelente';if(s.includes('Bom'))return'card-bom';if(s.includes('Fraco'))return'card-fraco';return'card-regular'}
 function rR(f='all'){let items=A;if(f!=='all')items=items.filter(x=>gK(x.status)===f);
-document.getElementById('rc').innerHTML=items.map(t=>`<div class="product-item ${gC(t.status)}"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge ${gS(t.status)}">${fP(t.aceitacao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro || (t.vendasLiquidas/t.enviado))}</span></div></div><div class="product-stats" style="margin-top:4px"><div class="product-stat"><span class="product-stat-label">Devoluções: </span><span class="product-stat-value">${t.devolucoes || 0}</span></div></div></div>`).join('')}
+document.getElementById('rc').innerHTML=items.map(t=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge ${gS(t.status)}">${fP(t.aceitacao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Preço: </span><span class="product-stat-value">${fCF(t.preco)}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas}/${t.enviado}</span></div><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div></div></div>`).join('')}
 document.querySelectorAll('#rf .filter-pill').forEach(p=>{p.addEventListener('click',()=>{document.querySelectorAll('#rf .filter-pill').forEach(x=>x.classList.remove('active'));p.classList.add('active');rR(p.dataset.filter)})});rR();
 function rP(s=''){let items=P;if(s){const q=s.toLowerCase();items=items.filter(x=>x.referencia.toLowerCase().includes(q)||x.descricao.toLowerCase().includes(q))}
-document.getElementById('lp').innerHTML=items.map(t=>{const sc=t.status==='Excelente'?'status-excelente':'status-bom';return`<div class="product-item" onclick="openPhoto('${t.referencia}','${t.descricao.replace(/'/g,"\\'")}')"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="product-price">${fCF(t.preco)}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro)}</span></div></div><div style="margin-top:8px"><span class="status-badge ${sc}">${t.status}</span></div></div>`}).join('')}rP();
-document.getElementById('lf').innerHTML=F.map(t=>`<div class="product-item" onclick="openPhoto('${t.referencia}','${t.descricao.replace(/'/g,"\\'")}')"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="product-price">${fCF(t.preco)}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro)}</span></div></div><div style="margin-top:8px"><span class="status-badge status-fotos">📷 Fotos ISA</span></div></div>`).join('');
+document.getElementById('lp').innerHTML=items.map(t=>{const sc=t.status==='Excelente'?'status-excelente':'status-bom';return`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="product-price">${fCF(t.preco)}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}/${t.estoqueEnviado}</span></div><div class="product-stat"><span class="product-stat-label">Giro: </span><span class="product-stat-value">${fP(t.giro)}</span></div><div class="product-stat"><span class="product-stat-label">Hoje: </span><span class="product-stat-value">${t.vendasHoje}</span></div></div><div style="margin-top:8px"><span class="status-badge ${sc}">${t.status}</span></div></div>`}).join('')}rP();
+document.getElementById('lf').innerHTML=F.map(t=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="product-price">${fCF(t.preco)}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}/${t.estoqueEnviado}</span></div><div class="product-stat"><span class="product-stat-label">Giro: </span><span class="product-stat-value">${fP(t.giro)}</span></div><div class="product-stat"><span class="product-stat-label">Hoje: </span><span class="product-stat-value">${t.vendasHoje}</span></div></div><div style="margin-top:8px"><span class="status-badge status-fotos">📷 Fotos ISA</span></div></div>`).join('');
 document.getElementById('sc')?.addEventListener('input',e=>rP(e.target.value));
 // PWA Install
 let deferredPrompt;
@@ -2645,57 +1557,4 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
-
-// ========== PHOTO MODAL ==========
-const PRODUCT_PHOTOS = {
-    // Adicione as fotos aqui no formato: 'REFERENCIA': 'URL_DA_FOTO'
-    // Exemplo:
-    // 'CLI26008': 'https://exemplo.com/foto.jpg',
-    // 'BZI26002': 'fotos/blazer.jpg',
-};
-
-function openPhoto(ref, desc){
-    const modal = document.getElementById('photo-modal');
-    const img = document.getElementById('photo-modal-img');
-    const noimg = document.getElementById('photo-modal-noimg');
-    const refEl = document.getElementById('photo-modal-ref');
-    const descEl = document.getElementById('photo-modal-desc');
-    
-    refEl.textContent = ref;
-    descEl.textContent = desc;
-    
-    const photoUrl = PRODUCT_PHOTOS[ref];
-    if(photoUrl){
-        img.src = photoUrl;
-        img.style.display = 'block';
-        noimg.style.display = 'none';
-    } else {
-        img.style.display = 'none';
-        noimg.style.display = 'block';
-        noimg.textContent = '📷 Foto não cadastrada';
-    }
-    
-    modal.classList.add('active');
-}
-
-function closePhoto(){
-    document.getElementById('photo-modal').classList.remove('active');
-}
-
-document.getElementById('photo-modal')?.addEventListener('click', function(e){
-    if(e.target === this) closePhoto();
-});
-</script>
-
-<!-- PHOTO MODAL -->
-<div class="photo-modal" id="photo-modal">
-    <button class="photo-modal-close" onclick="closePhoto()">✕</button>
-    <img class="photo-modal-img" id="photo-modal-img" src="" alt="Foto do produto">
-    <div class="photo-modal-noimg" id="photo-modal-noimg" style="display:none"></div>
-    <div class="photo-modal-info">
-        <div class="photo-modal-ref" id="photo-modal-ref"></div>
-        <div class="photo-modal-desc" id="photo-modal-desc"></div>
-    </div>
-</div>
-
-</body></html>
+</script></body></html>
