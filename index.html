@@ -30,7 +30,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .welcome-screen.fade-out{opacity:0}
 .welcome-greeting{font-size:28px;font-weight:400;color:var(--txt2);opacity:0;transform:translateY(20px);animation:welcomeSlideUp 1s ease .2s forwards}
 .welcome-name{font-size:44px;font-weight:600;color:var(--txt);margin-top:8px;opacity:0;transform:translateY(20px);animation:welcomeSlideUp 1s ease .5s forwards}
-.welcome-emoji{font-size:48px;margin-top:40px;opacity:0;animation:welcomeFadeIn 1s ease 1s forwards}
+.welcome-sewing{margin-top:40px;opacity:0;animation:welcomeFadeIn 1s ease 1s forwards;position:relative;width:60px;height:60px}
+.welcome-needle{font-size:32px;position:absolute;animation:sewingNeedle 1.2s ease-in-out infinite}
+.welcome-thread{position:absolute;bottom:8px;left:50%;width:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent);animation:sewingThread 1.2s ease-in-out infinite}
+@keyframes sewingNeedle{0%{transform:translate(0,0) rotate(-45deg)}25%{transform:translate(10px,15px) rotate(-45deg)}50%{transform:translate(20px,0) rotate(-45deg)}75%{transform:translate(30px,15px) rotate(-45deg)}100%{transform:translate(40px,0) rotate(-45deg)}}
+@keyframes sewingThread{0%{width:0;left:10px}100%{width:40px;left:10px}}
 @keyframes welcomeSlideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes welcomeFadeIn{from{opacity:0}to{opacity:1}}
 
@@ -389,7 +393,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="welcome-screen" id="welcome-screen">
     <div class="welcome-greeting" id="welcome-greeting">Boa noite,</div>
     <div class="welcome-name" id="welcome-name">André</div>
-    <div class="welcome-emoji">😊</div>
+    <div class="welcome-sewing">
+        <div class="welcome-needle">🪡</div>
+        <div class="welcome-thread"></div>
+    </div>
 </div>
 
 <!-- HOME -->
