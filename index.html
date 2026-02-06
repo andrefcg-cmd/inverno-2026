@@ -1369,11 +1369,15 @@ window.addEventListener('popstate', function(e) {
         navHistory.pop();
         const prevScreen = navHistory[navHistory.length - 1] || 'home';
         goToScreen(prevScreen, false);
+        // Se chegou na home, re-empurrar segurança
+        if (navHistory.length <= 1) {
+            history.pushState({screen: 'home'}, '', '');
+        }
     } else {
+        // Já na home - não fechar o app
         goToScreen('home', false);
+        history.pushState({screen: 'home'}, '', '');
     }
-    // Sempre re-empurrar um estado para impedir que o app feche
-    history.pushState({screen: navHistory[navHistory.length - 1] || 'home'}, '', '');
     
     setTimeout(function(){ _handlingPop = false; }, 100);
 });
