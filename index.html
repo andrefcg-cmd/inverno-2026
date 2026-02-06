@@ -75,7 +75,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .submenu-screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
 .submenu-screen.active{display:flex}
 .submenu-title{font-size:20px;font-weight:600;margin-bottom:6px}
-.submenu-desc{font-size:12px;color:var(--txt2);margin-bottom:32px}
+.submenu-desc{font-size:12px;color:var(--txt2);margin-bottom:16px}
+.exp-update-date{font-size:11px;color:var(--accent);margin-bottom:24px;padding:8px 16px;background:var(--card);border-radius:8px;display:inline-block}
 .submenu-grid{display:flex;flex-direction:column;gap:14px;width:100%;max-width:360px}
 .sub-btn{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all .15s}
 .sub-btn:active{transform:scale(0.98);background:var(--card2)}
@@ -88,6 +89,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .sub-arrow{color:var(--txt2);font-size:18px}
 .sub-soon{font-size:10px;color:var(--txt2);background:var(--card2);border:1px solid var(--brd);padding:4px 10px;border-radius:10px;white-space:nowrap}
 .submenu-back{margin-top:32px;background:none;border:none;color:var(--txt2);font-size:13px;cursor:pointer}
+.submenu-year-note{font-size:10px;color:#444;letter-spacing:1px;text-transform:uppercase;margin-top:-8px;margin-bottom:24px}
+
+/* EXPEDIÇÃO */
+.exp-total-stats{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.exp-stat{flex:1;min-width:80px;text-align:center;padding:10px;background:var(--card2);border-radius:10px}
+.exp-stat-value{font-size:18px;font-weight:700}
+.exp-stat-label{font-size:10px;color:var(--txt2);margin-top:2px}
+.exp-progress-section{margin-top:12px}
+.exp-progress-row{margin-bottom:12px}
+.exp-progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.exp-progress-label{font-size:12px;color:var(--txt2)}
+.exp-progress-value{font-size:12px;font-weight:600}
+.exp-progress-bar{height:10px;background:#1a1a1a;border-radius:5px;overflow:hidden}
+.exp-progress-fill{height:100%;border-radius:5px;transition:width .3s ease}
+.exp-progress-fill.green{background:linear-gradient(90deg,#00d9a5,#00f5b8)}
+.exp-progress-fill.blue{background:linear-gradient(90deg,#3b82f6,#60a5fa)}
+.exp-progress-fill.purple{background:linear-gradient(90deg,#8b5cf6,#a78bfa)}
+.exp-progress-fill.pink{background:linear-gradient(90deg,#ec4899,#f472b6)}
+.exp-item{background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--brd)}
+.exp-item-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.exp-item-ref{font-size:11px;color:var(--accent);font-weight:600}
+.exp-item-name{font-size:13px;margin-top:2px;line-height:1.3}
+.exp-item-cor{font-size:11px;color:var(--txt);margin-top:4px;font-weight:500}
+.exp-item-badge{font-size:12px;font-weight:700}
+.exp-tamanhos-grid{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.exp-tam-row{display:flex;align-items:center;gap:8px}
+.exp-tam-label{font-size:11px;font-weight:600;width:20px;color:var(--txt2)}
+.exp-tam-bar{flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden}
+.exp-tam-fill{height:100%;border-radius:4px;transition:width 0.3s}
+.exp-tam-fill.green{background:var(--green)}
+.exp-tam-fill.blue{background:var(--accent)}
+.exp-tam-val{font-size:10px;color:var(--txt2);width:50px;text-align:right;font-family:monospace}
+.exp-item-progress{margin-top:8px}
 
 /* APP */
 .app-screen{display:none}.app-screen.active{display:block}
@@ -330,6 +364,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
             <div class="mod-info"><div class="mod-name">Compras</div><div class="mod-desc">Pedidos e fornecedores</div></div>
             <span class="mod-soon">Em breve</span>
         </div>
+        <div class="mod-btn" onclick="openExpedicao()">
+            <div class="mod-icon">📦</div>
+            <div class="mod-info"><div class="mod-name">Expedição</div><div class="mod-desc">Controle de envios</div></div>
+            <div class="mod-arrow">›</div>
+        </div>
         <div class="mod-btn" onclick="openModule('financeiro')">
             <div class="mod-icon">💰</div>
             <div class="mod-info"><div class="mod-name">Financeiro</div><div class="mod-desc">Fluxo de caixa e contas</div></div>
@@ -392,6 +431,140 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </div>
     <button class="submenu-back" onclick="goHome()">← Voltar ao menu</button>
     <button class="settings-btn" onclick="openChangePw()">⚙️ Alterar Senha</button>
+</div>
+
+<!-- SUBMENU: EXPEDIÇÃO - ESTAÇÕES -->
+<div class="submenu-screen" id="sub-expedicao">
+    <div class="login-icon">📦</div>
+    <div class="submenu-title">Expedição</div>
+    <div class="submenu-desc">Selecione a estação</div>
+    <div class="submenu-year-note">Ano 2026</div>
+    <div class="submenu-grid">
+        <div class="sub-btn" onclick="openExpedicaoEstacao('inverno')">
+            <div class="sub-icon">❄️</div>
+            <div class="sub-info"><div class="sub-name">Inverno</div><div class="sub-desc">Coleção de inverno</div></div>
+            <div class="sub-arrow">›</div>
+        </div>
+        <div class="sub-btn" onclick="openExpedicaoEstacao('verao')">
+            <div class="sub-icon">☀️</div>
+            <div class="sub-info"><div class="sub-name">Verão</div><div class="sub-desc">Coleção de verão</div></div>
+            <span class="sub-soon">Em breve</span>
+        </div>
+    </div>
+    <button class="submenu-back" onclick="goHome()">← Voltar ao menu</button>
+</div>
+
+<!-- SUBMENU: EXPEDIÇÃO - CÁPSULAS INVERNO -->
+<div class="submenu-screen" id="sub-expedicao-inverno">
+    <div class="login-icon">❄️</div>
+    <div class="submenu-title">Inverno 2026</div>
+    <div class="submenu-desc">Selecione a cápsula</div>
+    <div class="submenu-grid">
+        <div class="sub-btn" onclick="openExpedicaoCapsula('inverno', 1)">
+            <div class="sub-icon">1️⃣</div>
+            <div class="sub-info"><div class="sub-name">1ª Cápsula</div><div class="sub-desc">Primeira entrega</div></div>
+            <div class="sub-arrow">›</div>
+        </div>
+        <div class="sub-btn disabled">
+            <div class="sub-icon">2️⃣</div>
+            <div class="sub-info"><div class="sub-name">2ª Cápsula</div><div class="sub-desc">Segunda entrega</div></div>
+            <span class="sub-soon">Em breve</span>
+        </div>
+        <div class="sub-btn disabled">
+            <div class="sub-icon">3️⃣</div>
+            <div class="sub-info"><div class="sub-name">3ª Cápsula</div><div class="sub-desc">Terceira entrega</div></div>
+            <span class="sub-soon">Em breve</span>
+        </div>
+        <div class="sub-btn disabled">
+            <div class="sub-icon">4️⃣</div>
+            <div class="sub-info"><div class="sub-name">4ª Cápsula</div><div class="sub-desc">Quarta entrega</div></div>
+            <span class="sub-soon">Em breve</span>
+        </div>
+        <div class="sub-btn disabled">
+            <div class="sub-icon">5️⃣</div>
+            <div class="sub-info"><div class="sub-name">5ª Cápsula</div><div class="sub-desc">Quinta entrega</div></div>
+            <span class="sub-soon">Em breve</span>
+        </div>
+    </div>
+    <button class="submenu-back" onclick="backToExpedicao()">← Voltar</button>
+</div>
+
+<!-- SUBMENU: EXPEDIÇÃO - CÁPSULAS VERÃO -->
+<div class="submenu-screen" id="sub-expedicao-verao">
+    <div class="login-icon">☀️</div>
+    <div class="submenu-title">Verão 2026</div>
+    <div class="submenu-desc">Selecione a cápsula</div>
+    <div class="submenu-grid">
+        <div class="sub-btn disabled">
+            <div class="sub-icon">1️⃣</div>
+            <div class="sub-info"><div class="sub-name">1ª Cápsula</div><div class="sub-desc">Primeira entrega</div></div>
+            <span class="sub-soon">Em breve</span>
+        </div>
+        <div class="sub-btn disabled">
+            <div class="sub-icon">2️⃣</div>
+            <div class="sub-info"><div class="sub-name">2ª Cápsula</div><div class="sub-desc">Segunda entrega</div></div>
+            <span class="sub-soon">Em breve</span>
+        </div>
+        <div class="sub-btn disabled">
+            <div class="sub-icon">3️⃣</div>
+            <div class="sub-info"><div class="sub-name">3ª Cápsula</div><div class="sub-desc">Terceira entrega</div></div>
+            <span class="sub-soon">Em breve</span>
+        </div>
+        <div class="sub-btn disabled">
+            <div class="sub-icon">4️⃣</div>
+            <div class="sub-info"><div class="sub-name">4ª Cápsula</div><div class="sub-desc">Quarta entrega</div></div>
+            <span class="sub-soon">Em breve</span>
+        </div>
+        <div class="sub-btn disabled">
+            <div class="sub-icon">5️⃣</div>
+            <div class="sub-info"><div class="sub-name">5ª Cápsula</div><div class="sub-desc">Quinta entrega</div></div>
+            <span class="sub-soon">Em breve</span>
+        </div>
+    </div>
+    <button class="submenu-back" onclick="backToExpedicao()">← Voltar</button>
+</div>
+
+<!-- SUBMENU: EXPEDIÇÃO - DESTINOS (1ª Cápsula Inverno) -->
+<div class="submenu-screen" id="sub-expedicao-destinos">
+    <div class="login-icon">📦</div>
+    <div class="submenu-title">1ª Cápsula Inverno</div>
+    <div class="submenu-desc">Selecione o destino</div>
+    <div class="exp-update-date">📅 Atualizado em 05/02/2026</div>
+    <div class="submenu-grid">
+        <div class="sub-btn" onclick="openExpedicaoDestino('showroom')">
+            <div class="sub-icon">🏬</div>
+            <div class="sub-info"><div class="sub-name">Showroom</div><div class="sub-desc">Envios para loja física</div></div>
+            <div class="sub-arrow">›</div>
+        </div>
+        <div class="sub-btn" onclick="openExpedicaoDestino('ecommerce')">
+            <div class="sub-icon">🌐</div>
+            <div class="sub-info"><div class="sub-name">E-commerce</div><div class="sub-desc">Envios para loja online</div></div>
+            <div class="sub-arrow">›</div>
+        </div>
+        <div class="sub-btn" onclick="openExpedicaoDestino('mostruario')">
+            <div class="sub-icon">👗</div>
+            <div class="sub-info"><div class="sub-name">Mostruário Isabella</div><div class="sub-desc">Peças de mostruário</div></div>
+            <div class="sub-arrow">›</div>
+        </div>
+    </div>
+    <button class="submenu-back" onclick="backToExpedicaoInverno()">← Voltar</button>
+</div>
+
+<!-- TELA: EXPEDIÇÃO - DETALHES -->
+<div class="app-screen" id="app-expedicao">
+    <div class="header">
+        <button class="back-btn" onclick="backToExpedicaoDestinos()">←</button>
+        <div class="header-info" style="flex:1"><h1 id="exp-header-title">Expedição</h1><div class="sub" id="exp-header-sub">1ª Cápsula Inverno 2026</div></div>
+    </div>
+    <main class="content">
+        <div class="card" id="exp-total-card">
+            <div class="card-title">📊 Resumo Geral</div>
+            <div class="exp-total-stats" id="exp-total-stats"></div>
+            <div class="exp-progress-section" id="exp-total-progress"></div>
+        </div>
+        <div class="section-title">📦 Referências</div>
+        <div id="exp-items-list"></div>
+    </main>
 </div>
 
 <!-- GEOLOCALIZADOR -->
@@ -573,7 +746,12 @@ function getCurrentScreen() {
     if (document.getElementById('home').classList.contains('visible')) return 'home';
     if (document.getElementById('login-screen').classList.contains('active')) return 'login';
     if (document.getElementById('sub-comercial').classList.contains('active')) return 'sub-comercial';
+    if (document.getElementById('sub-expedicao').classList.contains('active')) return 'sub-expedicao';
+    if (document.getElementById('sub-expedicao-inverno').classList.contains('active')) return 'sub-expedicao-inverno';
+    if (document.getElementById('sub-expedicao-verao').classList.contains('active')) return 'sub-expedicao-verao';
+    if (document.getElementById('sub-expedicao-destinos').classList.contains('active')) return 'sub-expedicao-destinos';
     if (document.getElementById('app-comercial').classList.contains('active')) return 'app-comercial';
+    if (document.getElementById('app-expedicao').classList.contains('active')) return 'app-expedicao';
     if (document.getElementById('geo-screen').classList.contains('active')) return 'geo-screen';
     if (document.getElementById('changepw-screen').classList.contains('active')) return 'changepw';
     if (document.getElementById('dev-compras').classList.contains('active')) return 'dev-compras';
@@ -603,8 +781,24 @@ function goToScreen(screen, addToHistory = true) {
         case 'sub-comercial':
             document.getElementById('sub-comercial').classList.add('active');
             break;
+        case 'sub-expedicao':
+            document.getElementById('sub-expedicao').classList.add('active');
+            break;
+        case 'sub-expedicao-inverno':
+            document.getElementById('sub-expedicao-inverno').classList.add('active');
+            break;
+        case 'sub-expedicao-verao':
+            document.getElementById('sub-expedicao-verao').classList.add('active');
+            break;
+        case 'sub-expedicao-destinos':
+            document.getElementById('sub-expedicao-destinos').classList.add('active');
+            break;
         case 'app-comercial':
             document.getElementById('app-comercial').classList.add('active');
+            break;
+        case 'app-expedicao':
+            document.getElementById('app-expedicao').classList.add('active');
+            if(currentExpDestino) renderExpedicao(currentExpDestino);
             break;
         case 'geo-screen':
             document.getElementById('geo-screen').classList.add('active');
@@ -710,8 +904,165 @@ function backFromChangePw(){
 let currentMod=null, currentUser=null;
 const allScreens='.app-screen,.dev-screen,.login-screen,.submenu-screen,.changepw-screen,.geo-screen';
 function hideAll(){document.querySelectorAll(allScreens).forEach(s=>s.classList.remove('active'));document.getElementById('home').classList.add('hidden');document.getElementById('home').classList.remove('visible')}
-const modIcons={comercial:'📊',compras:'🛒',financeiro:'💰'};
-const modNames={comercial:'Comercial',compras:'Compras',financeiro:'Financeiro'};
+const modIcons={comercial:'📊',compras:'🛒',financeiro:'💰',expedicao:'📦'};
+const modNames={comercial:'Comercial',compras:'Compras',financeiro:'Financeiro',expedicao:'Expedição'};
+
+// ===== EXPEDIÇÃO =====
+const EXPEDICAO_INV1 = [{"ref":"BDI26003","desc":"BODY BASIC RENDA","cor":"MARFIM","prod":{"PP":12,"P":24,"M":24,"G":12},"envShow":{"PP":11,"P":22,"M":22,"G":10}},{"ref":"BDI26004","desc":"BODY BASIC TULE MANGA","cor":"AREIA","prod":{"PP":18,"P":35,"M":35,"G":18},"envShow":{"PP":17,"P":32,"M":33,"G":18}},{"ref":"BDI26004","desc":"BODY BASIC TULE MANGA","cor":"PRETO","prod":{"PP":18,"P":32,"M":32,"G":18},"envShow":{"PP":16,"P":31,"M":31,"G":16}},{"ref":"BDI26005","desc":"BODY BASIC ISA PAES","cor":"MARFIM","prod":{"PP":16,"P":30,"M":30,"G":16},"envShow":{"PP":14,"P":29,"M":29,"G":15}},{"ref":"BDI26005","desc":"BODY BASIC ISA PAES","cor":"MARROM","prod":{"PP":16,"P":31,"M":31,"G":16},"envShow":{"PP":15,"P":29,"M":30,"G":15}},{"ref":"BDI26005","desc":"BODY BASIC ISA PAES","cor":"PRETO","prod":{"PP":22,"P":40,"M":40,"G":22},"envShow":{"PP":20,"P":38,"M":37,"G":20}},{"ref":"BDI26011","desc":"BODY TRICOT DECOTE V","cor":"MARROM","prod":{"PP":12,"P":24,"M":24,"G":12},"envShow":{"PP":10,"P":23,"M":22,"G":10}},{"ref":"BDI26011","desc":"BODY TRICOT DECOTE V","cor":"PRETO","prod":{"PP":12,"P":24,"M":24,"G":12},"envShow":{"PP":11,"P":18,"M":23,"G":11}},{"ref":"BLI26001","desc":"BLUSA TOP DETALHE DECOTE","cor":"MARROM","prod":{"PP":13,"P":24,"M":24,"G":13},"envShow":{"PP":11,"P":22,"M":21,"G":11}},{"ref":"BLI26002","desc":"BLUSA CROPPED ALFAIATARIA DUO COLOR","cor":"AMARELO CLARO","prod":{"PP":14,"P":28,"M":28,"G":14},"envShow":{"PP":13,"P":27,"M":26,"G":13}},{"ref":"BLI26002","desc":"BLUSA CROPPED ALFAIATARIA DUO COLOR","cor":"ROSA CLARO","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":18,"M":19,"G":9}},{"ref":"BLI26003","desc":"BLUSA CROPPED ALFAIATARIA CORSELET","cor":"AZUL CLARO","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":17,"M":18,"G":8}},{"ref":"BLI26003","desc":"BLUSA CROPPED ALFAIATARIA CORSELET","cor":"MARFIM","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":8,"P":18,"M":18,"G":8}},{"ref":"BLI26004","desc":"BLUSA CROPPED ALFAIATARIA MESCLA","cor":"AZUL","prod":{"PP":11,"P":22,"M":22,"G":11},"envShow":{"PP":10,"P":21,"M":21,"G":11}},{"ref":"BLI26004","desc":"BLUSA CROPPED ALFAIATARIA MESCLA","cor":"MARFIM","prod":{"PP":12,"P":24,"M":24,"G":12},"envShow":{"PP":10,"P":22,"M":23,"G":11}},{"ref":"BLI26006","desc":"BLUSA TOP PEPLUM DETALHE DECOTE","cor":"MARFIM","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":20,"M":20,"G":10}},{"ref":"BLI26006","desc":"BLUSA TOP PEPLUM DETALHE DECOTE","cor":"PRETO","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":18,"M":19,"G":9}},{"ref":"BLI26010","desc":"BLUSA BASIC MANGA RENDA","cor":"MARROM","prod":{"PP":16,"P":27,"M":27,"G":16},"envShow":{"PP":14,"P":25,"M":26,"G":15}},{"ref":"BLI26011","desc":"BLUSA TOP PEPLUM JEANS PAETE","cor":"OFF-WHITE","prod":{"PP":11,"P":23,"M":23,"G":11},"envShow":{"PP":10,"P":22,"M":22,"G":10}},{"ref":"BLI26013","desc":"BLUSA BASIC REGATA ISA PAES","cor":"MARFIM","prod":{"PP":16,"P":34,"M":34,"G":16},"envShow":{"PP":15,"P":31,"M":31,"G":15}},{"ref":"BLI26013","desc":"BLUSA BASIC REGATA ISA PAES","cor":"MARROM","prod":{"PP":17,"P":34,"M":34,"G":17},"envShow":{"PP":16,"P":31,"M":31,"G":16}},{"ref":"BLI26013","desc":"BLUSA BASIC REGATA ISA PAES","cor":"PRETO","prod":{"PP":12,"P":28,"M":28,"G":12},"envShow":{"PP":11,"P":25,"M":26,"G":11}},{"ref":"BLI26019","desc":"BLUSA BASIC MANGA RENDA","cor":"AREIA","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":18,"M":19,"G":9}},{"ref":"BLI26019","desc":"BLUSA BASIC MANGA RENDA","cor":"VERMELHO ESCURO","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":0,"P":0,"M":0,"G":0}},{"ref":"BLI26026","desc":"BLUSA BASIC CAVADA MARTINGALES","cor":"OFF-WHITE","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":8,"P":17,"M":18,"G":8}},{"ref":"BLI26027","desc":"BLUSA REGATA BASIC ISA PAES","cor":"PRETO","prod":{"PP":0,"P":60,"M":60,"G":30},"envShow":{"PP":0,"P":56,"M":58,"G":23}},{"ref":"BLI26028","desc":"BLUSA TOP PAETE PEPLUM DETALHE DECOTE","cor":"MARROM","prod":{"PP":12,"P":19,"M":19,"G":12},"envShow":{"PP":11,"P":16,"M":17,"G":10}},{"ref":"BLI26029","desc":"BLUSA BASIC MANGA RENDA","cor":"MARFIM","prod":{"PP":12,"P":18,"M":18,"G":12},"envShow":{"PP":10,"P":15,"M":16,"G":10}},{"ref":"BZI26001","desc":"BLAZER ALFAIATARIA TELA BORDADA","cor":"MARROM","prod":{"PP":13,"P":24,"M":24,"G":13},"envShow":{"PP":12,"P":23,"M":23,"G":12}},{"ref":"BZI26002","desc":"BLAZER ALFAIATARIA VIES","cor":"AZUL CLARO","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":17,"M":18,"G":11}},{"ref":"BZI26002","desc":"BLAZER ALFAIATARIA VIES","cor":"MARFIM","prod":{"PP":17,"P":33,"M":33,"G":17},"envShow":{"PP":15,"P":31,"M":32,"G":15}},{"ref":"BZI26003","desc":"BLAZER ALFAIATARIA BASIC ISA PAES","cor":"MARFIM","prod":{"PP":18,"P":32,"M":32,"G":18},"envShow":{"PP":17,"P":31,"M":30,"G":17}},{"ref":"BZI26003","desc":"BLAZER ALFAIATARIA BASIC ISA PAES","cor":"MARROM","prod":{"PP":18,"P":32,"M":32,"G":18},"envShow":{"PP":17,"P":30,"M":31,"G":17}},{"ref":"BZI26003","desc":"BLAZER ALFAIATARIA BASIC ISA PAES","cor":"PRETO","prod":{"PP":18,"P":31,"M":31,"G":18},"envShow":{"PP":16,"P":27,"M":29,"G":15}},{"ref":"CAI26006","desc":"CAMISA ALFAIATARIA ESTAMPADA","cor":"MARFIM","prod":{"PP":14,"P":40,"M":28,"G":14},"envShow":{"PP":13,"P":27,"M":27,"G":13}},{"ref":"CAI26007","desc":"CAMISA ALFAIATARIA PAETE","cor":"MARROM","prod":{"PP":18,"P":23,"M":23,"G":18},"envShow":{"PP":16,"P":21,"M":22,"G":17}},{"ref":"CAI26009","desc":"CAMISA ALFAIATARIA COM PONTEIRA","cor":"MARROM","prod":{"PP":10,"P":14,"M":14,"G":10},"envShow":{"PP":9,"P":12,"M":12,"G":9}},{"ref":"CAI26009","desc":"CAMISA ALFAIATARIA COM PONTEIRA","cor":"PRETO","prod":{"PP":10,"P":16,"M":16,"G":10},"envShow":{"PP":8,"P":14,"M":15,"G":9}},{"ref":"CJI26002","desc":"CONJUNTO BASIC REGATA DETALHE CHANTILLY","cor":"AREIA","prod":{"PP":14,"P":26,"M":26,"G":14},"envShow":{"PP":0,"P":22,"M":25,"G":13}},{"ref":"CJI26002","desc":"CONJUNTO BASIC REGATA DETALHE CHANTILLY","cor":"OFF-WHITE","prod":{"PP":15,"P":26,"M":26,"G":15},"envShow":{"PP":14,"P":23,"M":25,"G":14}},{"ref":"CJI26013","desc":"CONJUNTO ALFAIATARIA BLUSA CAPA","cor":"MARROM","prod":{"PP":10,"P":14,"M":14,"G":10},"envShow":{"PP":8,"P":12,"M":13,"G":9}},{"ref":"CJI26013","desc":"CONJUNTO ALFAIATARIA BLUSA CAPA","cor":"PRETO","prod":{"PP":10,"P":16,"M":16,"G":10},"envShow":{"PP":9,"P":12,"M":15,"G":9}},{"ref":"CLI26001","desc":"CALCA ALFAIATARIA BARRA ITALIANA","cor":"CAMEL","prod":{"PP":18,"P":32,"M":32,"G":18},"envShow":{"PP":17,"P":31,"M":30,"G":17}},{"ref":"CLI26001","desc":"CALCA ALFAIATARIA BARRA ITALIANA","cor":"MARROM","prod":{"PP":18,"P":32,"M":32,"G":18},"envShow":{"PP":17,"P":30,"M":31,"G":16}},{"ref":"CLI26002","desc":"CALCA ALFAIATARIA TIRA LATERAL","cor":"AMARELO CLARO","prod":{"PP":14,"P":30,"M":30,"G":14},"envShow":{"PP":14,"P":25,"M":29,"G":12}},{"ref":"CLI26002","desc":"CALCA ALFAIATARIA TIRA LATERAL","cor":"ROSA CLARO","prod":{"PP":10,"P":19,"M":18,"G":10},"envShow":{"PP":8,"P":17,"M":16,"G":9}},{"ref":"CLI26003","desc":"CALCA ALFAIATARIA VIES","cor":"AZUL CLARO","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":10,"P":17,"M":18,"G":9}},{"ref":"CLI26003","desc":"CALCA ALFAIATARIA VIES","cor":"MARFIM","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":8,"P":19,"M":19,"G":9}},{"ref":"CLI26004","desc":"CALCA ALFAIATARIA NERVURA","cor":"MARROM","prod":{"PP":18,"P":32,"M":32,"G":18},"envShow":{"PP":16,"P":31,"M":30,"G":17}},{"ref":"CLI26005","desc":"CALCA ALFAIATARIA NERVURA","cor":"MARFIM","prod":{"PP":16,"P":32,"M":32,"G":16},"envShow":{"PP":15,"P":31,"M":31,"G":15}},{"ref":"CLI26005","desc":"CALCA ALFAIATARIA NERVURA","cor":"PRETO","prod":{"PP":16,"P":32,"M":32,"G":16},"envShow":{"PP":15,"P":30,"M":31,"G":15}},{"ref":"CLI26006","desc":"CALCA STREET ALFAIATARIA MESCLA","cor":"AZUL","prod":{"PP":8,"P":16,"M":16,"G":8},"envShow":{"PP":6,"P":15,"M":14,"G":7}},{"ref":"CLI26006","desc":"CALCA STREET ALFAIATARIA MESCLA","cor":"MARFIM","prod":{"PP":8,"P":20,"M":20,"G":8},"envShow":{"PP":6,"P":19,"M":17,"G":7}},{"ref":"CLI26008","desc":"CALCA JEANS PAETE","cor":"OFF-WHITE","prod":{"PP":12,"P":24,"M":24,"G":12},"envShow":{"PP":11,"P":22,"M":22,"G":11}},{"ref":"JAI26001","desc":"JAQUETA BOMBER DETALHE TRICOT","cor":"MARROM","prod":{"PP":12,"P":22,"M":22,"G":12},"envShow":{"PP":11,"P":20,"M":21,"G":11}},{"ref":"JAI26002","desc":"JAQUETA ALFAIATARIA MESCLA","cor":"AZUL","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":19,"M":18,"G":9}},{"ref":"JAI26002","desc":"JAQUETA ALFAIATARIA MESCLA","cor":"MARFIM","prod":{"PP":11,"P":22,"M":22,"G":11},"envShow":{"PP":10,"P":20,"M":21,"G":10}},{"ref":"JAI26003","desc":"JAQUETA JEANS PAETE","cor":"OFF-WHITE","prod":{"PP":12,"P":24,"M":24,"G":12},"envShow":{"PP":11,"P":21,"M":22,"G":11}},{"ref":"MCI26001","desc":"MACACAO LONGO ALFAIATARIA DUO COLOR","cor":"MARROM","prod":{"PP":16,"P":32,"M":32,"G":16},"envShow":{"PP":15,"P":30,"M":32,"G":14}},{"ref":"SAI26001","desc":"SAIA MIDI MEIO GODE","cor":"MARROM","prod":{"PP":13,"P":24,"M":24,"G":13},"envShow":{"PP":12,"P":23,"M":23,"G":12}},{"ref":"SAI26002","desc":"SAIA CURTA ALFAIATARIA VIES","cor":"AZUL CLARO","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":18,"M":19,"G":9}},{"ref":"SAI26002","desc":"SAIA CURTA ALFAIATARIA VIES","cor":"MARFIM","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":20,"M":20,"G":9}},{"ref":"SAI26003","desc":"SAIA MIDI PEPLUM","cor":"MARFIM","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":20,"M":18,"G":9}},{"ref":"SAI26003","desc":"SAIA MIDI PEPLUM","cor":"MARROM","prod":{"PP":15,"P":29,"M":29,"G":15},"envShow":{"PP":14,"P":27,"M":28,"G":14}},{"ref":"SAI26003","desc":"SAIA MIDI PEPLUM","cor":"PRETO","prod":{"PP":10,"P":21,"M":21,"G":10},"envShow":{"PP":9,"P":19,"M":19,"G":9}},{"ref":"SAI26004","desc":"SAIA CURTA ALFAIATARIA MESCLA","cor":"AZUL","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":19,"M":19,"G":9}},{"ref":"SAI26004","desc":"SAIA CURTA ALFAIATARIA MESCLA","cor":"MARFIM","prod":{"PP":11,"P":22,"M":22,"G":11},"envShow":{"PP":9,"P":20,"M":21,"G":10}},{"ref":"SAI26005","desc":"SAIA MIDI TULE PAETE","cor":"MARROM","prod":{"PP":12,"P":19,"M":19,"G":12},"envShow":{"PP":11,"P":17,"M":18,"G":11}},{"ref":"SAI26009","desc":"SAIA MIDI TRICOT TRANSPARENCIA","cor":"PRETO","prod":{"PP":20,"P":30,"M":50,"G":0},"envShow":{"PP":19,"P":26,"M":47,"G":0}},{"ref":"SAI26012","desc":"SAIA MIDI FORRO SAI26009","cor":"PRETO","prod":{"PP":20,"P":30,"M":30,"G":20},"envShow":{"PP":0,"P":0,"M":0,"G":0}},{"ref":"SHI26001","desc":"SHORT CURTO DETALHE PREGA","cor":"MARROM","prod":{"PP":13,"P":24,"M":24,"G":13},"envShow":{"PP":13,"P":23,"M":23,"G":12}},{"ref":"SHI26002","desc":"SHORT CURTO ALFAIATARIA BASIC","cor":"MARFIM","prod":{"PP":16,"P":32,"M":32,"G":16},"envShow":{"PP":15,"P":31,"M":31,"G":15}},{"ref":"SHI26002","desc":"SHORT CURTO ALFAIATARIA BASIC","cor":"MARROM","prod":{"PP":10,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":18,"M":19,"G":9}},{"ref":"SHI26002","desc":"SHORT CURTO ALFAIATARIA BASIC","cor":"PRETO","prod":{"PP":16,"P":32,"M":32,"G":16},"envShow":{"PP":14,"P":30,"M":29,"G":16}},{"ref":"SHI26023","desc":"SHORT CURTO FORRO SAI26009","cor":"PRETO","prod":{"PP":20,"P":30,"M":30,"G":20},"envShow":{"PP":0,"P":0,"M":0,"G":0}},{"ref":"VEI26001","desc":"VESTIDO LONGO SAIA CAMADAS","cor":"MARROM","prod":{"PP":10,"P":21,"M":21,"G":10},"envShow":{"PP":9,"P":20,"M":20,"G":9}},{"ref":"VEI26006","desc":"VESTIDO CURTO DETALHE SOBREPOSICAO","cor":"PRETO","prod":{"PP":14,"P":27,"M":27,"G":14},"envShow":{"PP":13,"P":25,"M":26,"G":13}},{"ref":"VEI26008","desc":"VESTIDO CURTO APLICACAO RENDA","cor":"AREIA","prod":{"PP":14,"P":28,"M":28,"G":14},"envShow":{"PP":13,"P":25,"M":27,"G":13}},{"ref":"VEI26009","desc":"VESTIDO LONGO BABADOS RENDA","cor":"AREIA","prod":{"PP":14,"P":26,"M":26,"G":14},"envShow":{"PP":12,"P":23,"M":25,"G":13}},{"ref":"VEI26010","desc":"VESTIDO LONGO DETALHE CUT-OUT","cor":"MARROM","prod":{"PP":12,"P":22,"M":22,"G":12},"envShow":{"PP":11,"P":20,"M":21,"G":11}},{"ref":"VEI26012","desc":"VESTIDO CURTO SAIA ASSIMETRICA","cor":"MARFIM","prod":{"PP":10,"P":11,"M":11,"G":10},"envShow":{"PP":9,"P":10,"M":11,"G":9}},{"ref":"VEI26012","desc":"VESTIDO CURTO SAIA ASSIMETRICA","cor":"MARROM","prod":{"PP":10,"P":15,"M":15,"G":10},"envShow":{"PP":9,"P":13,"M":14,"G":9}},{"ref":"VEI26022","desc":"VESTIDO LONGUETE CINTO FLORES","cor":"MARROM","prod":{"PP":18,"P":23,"M":41,"G":18},"envShow":{"PP":17,"P":21,"M":40,"G":17}},{"ref":"VEI26023","desc":"VESTIDO CURTO ESTAMPADO SAIA BABADOS","cor":"MARFIM","prod":{"PP":14,"P":28,"M":28,"G":14},"envShow":{"PP":13,"P":27,"M":27,"G":13}},{"ref":"VEI26025","desc":"VESTIDO LONGO ESTAMPADO PALA LASTEX","cor":"MARFIM","prod":{"PP":19,"P":39,"M":32,"G":19},"envShow":{"PP":17,"P":34,"M":31,"G":18}},{"ref":"VEI26045","desc":"VESTIDO CURTO MOULAGE","cor":"OFF-WHITE","prod":{"PP":6,"P":7,"M":13,"G":6},"envShow":{"PP":4,"P":8,"M":12,"G":5}}];
+
+let currentExpDestino = null;
+
+function openExpedicao(){
+    hideAll();
+    document.getElementById('sub-expedicao').classList.add('active');
+    pushState('sub-expedicao');
+}
+function openExpedicaoEstacao(estacao){
+    hideAll();
+    if(estacao==='inverno'){
+        document.getElementById('sub-expedicao-inverno').classList.add('active');
+        pushState('sub-expedicao-inverno');
+    }else if(estacao==='verao'){
+        document.getElementById('sub-expedicao-verao').classList.add('active');
+        pushState('sub-expedicao-verao');
+    }
+}
+function backToExpedicao(){
+    hideAll();
+    document.getElementById('sub-expedicao').classList.add('active');
+    pushState('sub-expedicao');
+}
+function openExpedicaoCapsula(estacao, num){
+    if(estacao==='inverno' && num===1){
+        hideAll();
+        document.getElementById('sub-expedicao-destinos').classList.add('active');
+        pushState('sub-expedicao-destinos');
+    }else{
+        alert('Em breve!');
+    }
+}
+function backToExpedicaoInverno(){
+    hideAll();
+    document.getElementById('sub-expedicao-inverno').classList.add('active');
+    pushState('sub-expedicao-inverno');
+}
+function backToExpedicaoDestinos(){
+    hideAll();
+    document.getElementById('sub-expedicao-destinos').classList.add('active');
+    pushState('sub-expedicao-destinos');
+}
+function openExpedicaoDestino(destino){
+    currentExpDestino = destino;
+    hideAll();
+    document.getElementById('app-expedicao').classList.add('active');
+    pushState('app-expedicao');
+    renderExpedicao(destino);
+}
+function renderExpedicao(destino){
+    const titles = {showroom:'🏬 Showroom', ecommerce:'🌐 E-commerce', mostruario:'👗 Mostruário Isabella'};
+    
+    document.getElementById('exp-header-title').textContent = titles[destino] || 'Expedição';
+    
+    // Calcular totais
+    let totalProd = 0, totalEnvShow = 0;
+    const refsUnicas = new Set();
+    EXPEDICAO_INV1.forEach(item => {
+        const p = item.prod || {};
+        totalProd += (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0);
+        const e = item.envShow || {};
+        totalEnvShow += (e.PP||0) + (e.P||0) + (e.M||0) + (e.G||0);
+        refsUnicas.add(item.ref);
+    });
+    
+    // E-commerce = 342 (1 por tamanho existente por cor)
+    const totalEcomm = 342;
+    // Isabella meta = 86 (1 P por cor)
+    const metaIsabella = 86;
+    // Resto após showroom e ecommerce
+    const resto = totalProd - totalEnvShow - totalEcomm;
+    // Isabella recebe no máximo 86, resto vai para showroom depois
+    const envIsabella = Math.min(resto, metaIsabella);
+    // Meta showroom = produzido - ecommerce - isabella
+    const metaShowroom = totalProd - totalEcomm - metaIsabella;
+    
+    let totalMeta, totalEnv, pctTotal;
+    if(destino === 'showroom'){
+        totalMeta = metaShowroom;
+        totalEnv = totalEnvShow;
+    } else if(destino === 'ecommerce'){
+        totalMeta = totalEcomm;
+        totalEnv = totalEcomm;
+    } else {
+        totalMeta = metaIsabella;
+        totalEnv = envIsabella;
+    }
+    pctTotal = totalMeta > 0 ? ((totalEnv / totalMeta) * 100).toFixed(1) : 0;
+    const colorTotal = pctTotal >= 100 ? 'green' : 'blue';
+    
+    // Stats resumo
+    document.getElementById('exp-total-stats').innerHTML = `
+        <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Referências</div></div>
+        <div class="exp-stat"><div class="exp-stat-value">${totalProd.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Produzido</div></div>
+        <div class="exp-stat"><div class="exp-stat-value">${totalEnv.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Enviado</div></div>
+        <div class="exp-stat"><div class="exp-stat-value" style="color:var(--${colorTotal})">${pctTotal}%</div><div class="exp-stat-label">Progresso</div></div>
+    `;
+    
+    // Barra total
+    document.getElementById('exp-total-progress').innerHTML = `
+        <div class="exp-progress-row">
+            <div class="exp-progress-header">
+                <span class="exp-progress-label">Total Enviado</span>
+                <span class="exp-progress-value">${totalEnv.toLocaleString('pt-BR')} / ${totalMeta.toLocaleString('pt-BR')}</span>
+            </div>
+            <div class="exp-progress-bar">
+                <div class="exp-progress-fill ${colorTotal}" style="width:${Math.min(pctTotal,100)}%"></div>
+            </div>
+        </div>
+    `;
+    
+    // Lista de itens com barras por tamanho
+    const items = EXPEDICAO_INV1.map(item => {
+        const p = item.prod || {};
+        const e = item.envShow || {};
+        const totalP = (p.PP||0)+(p.P||0)+(p.M||0)+(p.G||0);
+        const totalE = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
+        if(totalP === 0) return '';
+        
+        const pctItem = totalP > 0 ? ((totalE / totalP) * 100).toFixed(0) : 0;
+        const colorItem = pctItem >= 100 ? 'green' : 'blue';
+        
+        // Barras por tamanho
+        const tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
+            const prod = p[t] || 0;
+            const env = e[t] || 0;
+            const pct = prod > 0 ? Math.min((env/prod)*100, 100) : 0;
+            const col = pct >= 100 ? 'green' : 'blue';
+            return `
+                <div class="exp-tam-row">
+                    <span class="exp-tam-label">${t}</span>
+                    <div class="exp-tam-bar"><div class="exp-tam-fill ${col}" style="width:${pct}%"></div></div>
+                    <span class="exp-tam-val">${env}/${prod}</span>
+                </div>
+            `;
+        }).join('');
+        
+        return `
+            <div class="exp-item">
+                <div class="exp-item-header">
+                    <div>
+                        <div class="exp-item-ref">${item.ref}</div>
+                        <div class="exp-item-name">${item.desc}</div>
+                        <div class="exp-item-cor">🎨 ${item.cor}</div>
+                    </div>
+                    <div class="exp-item-badge" style="color:var(--${colorItem})">${pctItem}%</div>
+                </div>
+                <div class="exp-tamanhos-grid">${tamanhos}</div>
+            </div>
+        `;
+    }).join('');
+    
+    document.getElementById('exp-items-list').innerHTML = items;
+}
 
 function openModule(mod){
     currentMod=mod;
