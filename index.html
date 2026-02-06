@@ -902,6 +902,12 @@ document.documentElement.style.setProperty('--splash-duration', isFirstVisit ? '
 window.addEventListener('beforeunload', function(){
     const activeScreens = document.querySelectorAll('.active');
     const screenIds = [];
+    
+    // Verificar se home está visível
+    if(document.getElementById('home').classList.contains('visible')){
+        screenIds.push('home');
+    }
+    
     activeScreens.forEach(s => {
         if(s.id) screenIds.push(s.id);
     });
@@ -1769,7 +1775,25 @@ function fCF(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:
 function fP(v){return(v*100).toFixed(1)+'%'}
 document.querySelectorAll('.nav-btn').forEach(b=>{b.addEventListener('click',()=>{
 document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');
-document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(b.dataset.screen).classList.add('active');})});
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(b.dataset.screen).classList.add('active');
+// Salvar aba ativa
+sessionStorage.setItem('last-tab', b.dataset.screen);
+})});
+
+// Restaurar aba ativa ao carregar
+(function(){
+    const lastTab = sessionStorage.getItem('last-tab');
+    if(lastTab){
+        const btn = document.querySelector(`.nav-btn[data-screen="${lastTab}"]`);
+        const screen = document.getElementById(lastTab);
+        if(btn && screen){
+            document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+            document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+            btn.classList.add('active');
+            screen.classList.add('active');
+        }
+    }
+})();
 // Combinar P e F para buscar dados completos
 const allProducts = [...P, ...F];
 document.getElementById('topdia').innerHTML=R.slice(0,10).map((t,i)=>{
