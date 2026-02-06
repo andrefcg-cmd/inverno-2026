@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<meta name="theme-color" content="#000000"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#000000"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Isa Paes"><link rel="manifest" href="/inverno-2026/manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png"><title>Isa Paes</title>
 <style>
@@ -918,7 +918,6 @@ window.addEventListener('beforeunload', function(){
     sessionStorage.setItem('last-scroll', window.scrollY);
     // Salvar histórico de navegação completo
     sessionStorage.setItem('nav-history', JSON.stringify(navHistory));
-    console.log('[NAV-DEBUG] === BEFOREUNLOAD === navHistory salvo:', JSON.stringify(navHistory), '| history.length:', history.length);
     // Salvar destino de expedição se estiver ativo
     if(currentExpDestino) sessionStorage.setItem('last-exp-destino', currentExpDestino);
 });
@@ -952,28 +951,28 @@ setTimeout(()=>{
                 navHistory = ['home'];
             }
             
-            // Recriar estados no history do navegador
-            console.log('[NAV-DEBUG] === REFRESH DETECTADO ===');
-            console.log('[NAV-DEBUG] navHistory restaurado:', JSON.stringify(navHistory));
-            console.log('[NAV-DEBUG] history.length ANTES de recriar:', history.length);
-            navHistory.forEach((screen, i) => {
-                history.pushState({screen: screen}, '', '');
-                console.log('[NAV-DEBUG] pushState[' + i + ']:', screen, '| history.length:', history.length);
-            });
-            console.log('[NAV-DEBUG] history.length DEPOIS de recriar:', history.length);
+            // NÃO recriar pushState para cada tela - apenas substituir o estado atual
+            // O navHistory em memória já controla a navegação via popstate
+            history.replaceState({screen: navHistory[navHistory.length - 1] || 'home', restored: true}, '', '');
             
             // Função para mostrar home
             function showHome(){
                 const home = document.getElementById('home');
                 home.classList.remove('hidden');
                 home.classList.add('visible');
+                console.log('[NAV-DEBUG] showHome() chamado | home classes:', home.className);
             }
+            
+            console.log('[NAV-DEBUG] screens para restaurar (raw):', JSON.stringify(screens));
             
             // Filtrar telas válidas (remover home e welcome-screen)
             const telasParaRestaurar = screens.filter(id => id !== 'home' && id !== 'welcome-screen');
             
+            console.log('[NAV-DEBUG] telasParaRestaurar:', JSON.stringify(telasParaRestaurar));
+            
             // Se não tem telas para restaurar, mostrar home
             if(telasParaRestaurar.length === 0){
+                console.log('[NAV-DEBUG] Nenhuma tela para restaurar -> showHome()');
                 showHome();
                 return;
             }
@@ -983,6 +982,7 @@ setTimeout(()=>{
             const home = document.getElementById('home');
             home.classList.add('hidden');
             home.classList.remove('visible');
+            console.log('[NAV-DEBUG] Home escondida, restaurando telas:', JSON.stringify(telasParaRestaurar));
             
             // Restaurar cada tela visualmente
             telasParaRestaurar.forEach(id => {
@@ -1271,9 +1271,6 @@ function pushState(screen) {
     if (navHistory[navHistory.length - 1] !== screen) {
         navHistory.push(screen);
         history.pushState({screen: screen}, '', '');
-        console.log('[NAV-DEBUG] pushState("' + screen + '") | navHistory:', JSON.stringify(navHistory), '| history.length:', history.length);
-    } else {
-        console.log('[NAV-DEBUG] pushState("' + screen + '") IGNORADO (duplicado) | navHistory:', JSON.stringify(navHistory));
     }
     // Salvar tela atual para persistência ao recarregar
     sessionStorage.setItem('current-screen', screen);
@@ -1304,7 +1301,6 @@ function navigateBack() {
     return false;
 }
 function goToScreen(screen, addToHistory = true) {
-    console.log('[NAV-DEBUG] goToScreen("' + screen + '", addToHistory=' + addToHistory + ') | navHistory:', JSON.stringify(navHistory));
     hideAll();
     switch(screen) {
         case 'home':
@@ -1357,22 +1353,25 @@ function goToScreen(screen, addToHistory = true) {
     if (addToHistory) pushState(screen);
 }
 // Listener para o botão voltar do navegador/celular
+let _handlingPop = false;
 window.addEventListener('popstate', function(e) {
-    console.log('[NAV-DEBUG] >>> POPSTATE disparado | e.state:', JSON.stringify(e.state), '| navHistory:', JSON.stringify(navHistory), '| history.length:', history.length);
+    if (_handlingPop) return;
+    _handlingPop = true;
+    
     if (navHistory.length > 1) {
         navHistory.pop();
         const prevScreen = navHistory[navHistory.length - 1] || 'home';
-        console.log('[NAV-DEBUG] >>> Voltando para:', prevScreen, '| navHistory restante:', JSON.stringify(navHistory));
         goToScreen(prevScreen, false);
     } else {
-        // Se não há histórico, volta pra home
-        console.log('[NAV-DEBUG] >>> navHistory vazio, indo para home | history.length:', history.length);
         goToScreen('home', false);
     }
+    // Sempre re-empurrar um estado para impedir que o app feche
+    history.pushState({screen: navHistory[navHistory.length - 1] || 'home'}, '', '');
+    
+    setTimeout(function(){ _handlingPop = false; }, 100);
 });
 // Prevenir que o app feche ao apertar voltar na home
 history.pushState({screen: 'home'}, '', '');
-console.log('[NAV-DEBUG] === INIT pushState home | history.length:', history.length, '| navHistory:', JSON.stringify(navHistory));
 
 // ===== USUÁRIOS E PERMISSÕES =====
 const USERS = {
@@ -1874,7 +1873,7 @@ function installApp(){
 }
 window.addEventListener('appinstalled',()=>{ib.classList.remove('visible')});
 
-if('serviceWorker' in navigator){navigator.serviceWorker.register('/inverno-2026/sw.js',{scope:'/inverno-2026/'}).catch(()=>{})}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/inverno-2026/sw.js',{scope:'/inverno-2026/'}).then(reg=>{reg.update()}).catch(()=>{})}
 
 // ========== GEOLOCALIZADOR ==========
 let geoMap,geoGeocoder,geoLocations=[],geoMarkers=[],geoCircles=[],geoShowRadius=true,geoApiKey='AIzaSyARGjgURb7_rNxQVkeV6AZ46XLk4UcPzhc',geoMapInitialized=false;

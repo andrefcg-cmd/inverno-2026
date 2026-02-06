@@ -1,5 +1,16 @@
-const V = 'v63';
+const V = 'v65';
 
 self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', () => self.clients.claim());
-self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+self.addEventListener('activate', (e) => {
+    e.waitUntil(
+        caches.keys().then(keys => Promise.all(
+            keys.map(k => caches.delete(k))
+        )).then(() => self.clients.claim())
+    );
+});
+self.addEventListener('fetch', e => {
+    // Network-first: sempre tenta buscar da rede
+    e.respondWith(
+        fetch(e.request).catch(() => caches.match(e.request))
+    );
+});
