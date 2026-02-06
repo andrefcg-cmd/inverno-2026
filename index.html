@@ -923,34 +923,53 @@ setTimeout(()=>{
             const lastScreens = sessionStorage.getItem('last-screens');
             const lastScroll = sessionStorage.getItem('last-scroll');
             const lastExpDestino = sessionStorage.getItem('last-exp-destino');
-            if(lastScreens){
-                try{
-                    const screens = JSON.parse(lastScreens);
-                    if(screens.length > 0){
-                        hideAll();
-                        // Se estava na tela de boas-vindas, ir direto para home
-                        if(screens.includes('welcome-screen')){
-                            document.getElementById('home').classList.add('visible');
-                            pushState('home');
-                            return;
-                        }
-                        screens.forEach(id => {
-                            const el = document.getElementById(id);
-                            if(el) el.classList.add('active');
-                        });
-                        // Restaurar destino de expedição se necessário
-                        if(screens.includes('app-expedicao') && lastExpDestino){
-                            currentExpDestino = lastExpDestino;
-                            renderExpedicao(lastExpDestino);
-                        }
-                        // Restaurar scroll
-                        if(lastScroll){
-                            setTimeout(() => window.scrollTo(0, parseInt(lastScroll)), 100);
-                        }
+            
+            // Se estava na tela de boas-vindas ou sem telas salvas, ir para home
+            if(!lastScreens || lastScreens === '[]' || lastScreens.includes('welcome-screen')){
+                document.getElementById('home').classList.remove('hidden');
+                document.getElementById('home').classList.add('visible');
+                pushState('home');
+                return;
+            }
+            
+            try{
+                const screens = JSON.parse(lastScreens);
+                if(screens.length > 0){
+                    // Verificar se é apenas home
+                    if(screens.length === 1 && screens[0] === 'home'){
+                        document.getElementById('home').classList.remove('hidden');
+                        document.getElementById('home').classList.add('visible');
+                        pushState('home');
                         return;
                     }
-                }catch(e){}
+                    
+                    // Esconder home e restaurar telas
+                    document.getElementById('home').classList.add('hidden');
+                    document.getElementById('home').classList.remove('visible');
+                    
+                    screens.forEach(id => {
+                        if(id === 'home') return; // Home usa visible, não active
+                        const el = document.getElementById(id);
+                        if(el) el.classList.add('active');
+                    });
+                    
+                    // Restaurar destino de expedição se necessário
+                    if(screens.includes('app-expedicao') && lastExpDestino){
+                        currentExpDestino = lastExpDestino;
+                        renderExpedicao(lastExpDestino);
+                    }
+                    // Restaurar scroll
+                    if(lastScroll){
+                        setTimeout(() => window.scrollTo(0, parseInt(lastScroll)), 100);
+                    }
+                    return;
+                }
+            }catch(e){
+                console.log('Erro ao restaurar telas:', e);
             }
+            
+            // Fallback: ir para home
+            document.getElementById('home').classList.remove('hidden');
             document.getElementById('home').classList.add('visible');
             pushState('home');
         } else {
