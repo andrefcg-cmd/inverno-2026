@@ -999,30 +999,29 @@ function renderExpedicao(destino){
     pctTotal = totalMeta > 0 ? ((totalEnv / totalMeta) * 100).toFixed(1) : 0;
     const colorTotal = pctTotal >= 100 ? 'green' : 'blue';
     
-    // Stats resumo - mostrar valores apropriados para cada destino
+    // Stats resumo - mostrar 56 refs e 86 cores em todos
+    const totalCores = EXPEDICAO_INV1.length; // 86
     let statsHtml;
     if(destino === 'showroom'){
         statsHtml = `
             <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Referências</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalCores}</div><div class="exp-stat-label">Variações de Cores</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${totalProd.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Produzido</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${totalEnv.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Enviado</div></div>
-            <div class="exp-stat"><div class="exp-stat-value" style="color:var(--${colorTotal})">${pctTotal}%</div><div class="exp-stat-label">Progresso</div></div>
         `;
     } else if(destino === 'ecommerce'){
         statsHtml = `
-            <div class="exp-stat"><div class="exp-stat-value">${EXPEDICAO_INV1.length}</div><div class="exp-stat-label">Cores</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Referências</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalCores}</div><div class="exp-stat-label">Variações de Cores</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${totalMeta}</div><div class="exp-stat-label">Meta</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${totalEnv}</div><div class="exp-stat-label">Enviado</div></div>
-            <div class="exp-stat"><div class="exp-stat-value" style="color:var(--${colorTotal})">${pctTotal}%</div><div class="exp-stat-label">Progresso</div></div>
         `;
     } else {
-        // Isabella - contar quantas cores tem P
-        const coresComP = EXPEDICAO_INV1.filter(item => (item.prod?.P || 0) > 0).length;
         statsHtml = `
-            <div class="exp-stat"><div class="exp-stat-value">${coresComP}</div><div class="exp-stat-label">Cores</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Referências</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalCores}</div><div class="exp-stat-label">Variações de Cores</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${totalMeta}</div><div class="exp-stat-label">Meta</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${totalEnv}</div><div class="exp-stat-label">Enviado</div></div>
-            <div class="exp-stat"><div class="exp-stat-value" style="color:var(--${colorTotal})">${pctTotal}%</div><div class="exp-stat-label">Progresso</div></div>
         `;
     }
     document.getElementById('exp-total-stats').innerHTML = statsHtml;
