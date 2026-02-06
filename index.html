@@ -1092,22 +1092,13 @@ function renderExpedicao(destino){
                 `;
             }).join('');
         } else if(destino === 'ecommerce'){
-            // Showroom: meta = produzido - ecommerce(1 cada) - isabella(1 P)
+            // E-commerce: 1/1 para cada tamanho existente
             tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
-                const prod = p[t] || 0;
-                const env = e[t] || 0;
-                // Descontar 1 do ecommerce de cada tamanho
-                // Descontar 1 da isabella só do P
-                const descEcomm = 1;
-                const descIsabella = (t === 'P') ? 1 : 0;
-                const meta = prod - descEcomm - descIsabella;
-                const pct = meta > 0 ? Math.min((env/meta)*100, 100) : 0;
-                const col = env >= meta ? 'green' : 'blue';
                 return `
                     <div class="exp-tam-row">
                         <span class="exp-tam-label">${t}</span>
-                        <div class="exp-tam-bar"><div class="exp-tam-fill ${col}" style="width:${pct}%"></div></div>
-                        <span class="exp-tam-val">${env}/${meta}</span>
+                        <div class="exp-tam-bar"><div class="exp-tam-fill green" style="width:100%"></div></div>
+                        <span class="exp-tam-val">1/1</span>
                     </div>
                 `;
             }).join('');
