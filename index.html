@@ -951,10 +951,9 @@ setTimeout(()=>{
                 navHistory = ['home'];
             }
             
-            // Recriar estados no history do navegador
-            navHistory.forEach(screen => {
-                history.pushState({screen: screen}, '', '');
-            });
+            // Não recriar estados individuais no history do navegador
+            // Apenas garantir uma entrada base para o popstate funcionar
+            history.replaceState({screen: navHistory[navHistory.length - 1] || 'home'}, '', '');
             
             // Função para mostrar home
             function showHome(){
@@ -1264,6 +1263,8 @@ async function getWeatherAndShowWelcome(user){
 function pushState(screen) {
     if (navHistory[navHistory.length - 1] !== screen) {
         navHistory.push(screen);
+        // Usar pushState para criar nova entrada no histórico do navegador
+        // O popstate handler sempre re-adiciona uma entrada, então aqui é seguro
         history.pushState({screen: screen}, '', '');
     }
     // Salvar tela atual para persistência ao recarregar
@@ -1347,15 +1348,23 @@ function goToScreen(screen, addToHistory = true) {
     if (addToHistory) pushState(screen);
 }
 // Listener para o botão voltar do navegador/celular
+let isHandlingPopstate = false;
 window.addEventListener('popstate', function(e) {
+    if (isHandlingPopstate) return;
+    isHandlingPopstate = true;
+    
     if (navHistory.length > 1) {
         navHistory.pop();
         const prevScreen = navHistory[navHistory.length - 1] || 'home';
         goToScreen(prevScreen, false);
     } else {
-        // Se não há histórico, volta pra home
+        // Na home - não fechar o app
         goToScreen('home', false);
     }
+    // Re-empurrar estado para que o próximo "voltar" não feche o app
+    history.pushState({screen: navHistory[navHistory.length - 1] || 'home'}, '', '');
+    
+    setTimeout(() => { isHandlingPopstate = false; }, 50);
 });
 // Prevenir que o app feche ao apertar voltar na home
 history.pushState({screen: 'home'}, '', '');
