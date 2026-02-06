@@ -918,6 +918,7 @@ window.addEventListener('beforeunload', function(){
     sessionStorage.setItem('last-scroll', window.scrollY);
     // Salvar histórico de navegação completo
     sessionStorage.setItem('nav-history', JSON.stringify(navHistory));
+    console.log('[NAV-DEBUG] === BEFOREUNLOAD === navHistory salvo:', JSON.stringify(navHistory), '| history.length:', history.length);
     // Salvar destino de expedição se estiver ativo
     if(currentExpDestino) sessionStorage.setItem('last-exp-destino', currentExpDestino);
 });
@@ -951,9 +952,15 @@ setTimeout(()=>{
                 navHistory = ['home'];
             }
             
-            // Não recriar estados individuais no history do navegador
-            // Apenas garantir uma entrada base para o popstate funcionar
-            history.replaceState({screen: navHistory[navHistory.length - 1] || 'home'}, '', '');
+            // Recriar estados no history do navegador
+            console.log('[NAV-DEBUG] === REFRESH DETECTADO ===');
+            console.log('[NAV-DEBUG] navHistory restaurado:', JSON.stringify(navHistory));
+            console.log('[NAV-DEBUG] history.length ANTES de recriar:', history.length);
+            navHistory.forEach((screen, i) => {
+                history.pushState({screen: screen}, '', '');
+                console.log('[NAV-DEBUG] pushState[' + i + ']:', screen, '| history.length:', history.length);
+            });
+            console.log('[NAV-DEBUG] history.length DEPOIS de recriar:', history.length);
             
             // Função para mostrar home
             function showHome(){
@@ -1263,9 +1270,10 @@ async function getWeatherAndShowWelcome(user){
 function pushState(screen) {
     if (navHistory[navHistory.length - 1] !== screen) {
         navHistory.push(screen);
-        // Usar pushState para criar nova entrada no histórico do navegador
-        // O popstate handler sempre re-adiciona uma entrada, então aqui é seguro
         history.pushState({screen: screen}, '', '');
+        console.log('[NAV-DEBUG] pushState("' + screen + '") | navHistory:', JSON.stringify(navHistory), '| history.length:', history.length);
+    } else {
+        console.log('[NAV-DEBUG] pushState("' + screen + '") IGNORADO (duplicado) | navHistory:', JSON.stringify(navHistory));
     }
     // Salvar tela atual para persistência ao recarregar
     sessionStorage.setItem('current-screen', screen);
@@ -1296,6 +1304,7 @@ function navigateBack() {
     return false;
 }
 function goToScreen(screen, addToHistory = true) {
+    console.log('[NAV-DEBUG] goToScreen("' + screen + '", addToHistory=' + addToHistory + ') | navHistory:', JSON.stringify(navHistory));
     hideAll();
     switch(screen) {
         case 'home':
@@ -1348,26 +1357,22 @@ function goToScreen(screen, addToHistory = true) {
     if (addToHistory) pushState(screen);
 }
 // Listener para o botão voltar do navegador/celular
-let isHandlingPopstate = false;
 window.addEventListener('popstate', function(e) {
-    if (isHandlingPopstate) return;
-    isHandlingPopstate = true;
-    
+    console.log('[NAV-DEBUG] >>> POPSTATE disparado | e.state:', JSON.stringify(e.state), '| navHistory:', JSON.stringify(navHistory), '| history.length:', history.length);
     if (navHistory.length > 1) {
         navHistory.pop();
         const prevScreen = navHistory[navHistory.length - 1] || 'home';
+        console.log('[NAV-DEBUG] >>> Voltando para:', prevScreen, '| navHistory restante:', JSON.stringify(navHistory));
         goToScreen(prevScreen, false);
     } else {
-        // Na home - não fechar o app
+        // Se não há histórico, volta pra home
+        console.log('[NAV-DEBUG] >>> navHistory vazio, indo para home | history.length:', history.length);
         goToScreen('home', false);
     }
-    // Re-empurrar estado para que o próximo "voltar" não feche o app
-    history.pushState({screen: navHistory[navHistory.length - 1] || 'home'}, '', '');
-    
-    setTimeout(() => { isHandlingPopstate = false; }, 50);
 });
 // Prevenir que o app feche ao apertar voltar na home
 history.pushState({screen: 'home'}, '', '');
+console.log('[NAV-DEBUG] === INIT pushState home | history.length:', history.length, '| navHistory:', JSON.stringify(navHistory));
 
 // ===== USUÁRIOS E PERMISSÕES =====
 const USERS = {
