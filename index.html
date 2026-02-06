@@ -898,6 +898,9 @@ const splashTime = isFirstVisit ? 3000 : 2000;
 sessionStorage.setItem('isa-paes-visited', 'true');
 document.documentElement.style.setProperty('--splash-duration', isFirstVisit ? '2.5s' : '1.6s');
 
+// Histórico de navegação para botão voltar
+let navHistory = ['home'];
+
 // Salvar estado da página antes de sair
 window.addEventListener('beforeunload', function(){
     const activeScreens = document.querySelectorAll('.active');
@@ -913,6 +916,8 @@ window.addEventListener('beforeunload', function(){
     });
     sessionStorage.setItem('last-screens', JSON.stringify(screenIds));
     sessionStorage.setItem('last-scroll', window.scrollY);
+    // Salvar histórico de navegação completo
+    sessionStorage.setItem('nav-history', JSON.stringify(navHistory));
     // Salvar destino de expedição se estiver ativo
     if(currentExpDestino) sessionStorage.setItem('last-exp-destino', currentExpDestino);
 });
@@ -929,6 +934,7 @@ setTimeout(()=>{
             const lastScreens = sessionStorage.getItem('last-screens');
             const lastScroll = sessionStorage.getItem('last-scroll');
             const lastExpDestino = sessionStorage.getItem('last-exp-destino');
+            const savedNavHistory = sessionStorage.getItem('nav-history');
             
             let screens = [];
             try {
@@ -937,26 +943,47 @@ setTimeout(()=>{
                 screens = [];
             }
             
-            // Se estava na tela de boas-vindas, sem telas salvas, ou home
-            const goToHome = screens.length === 0 || 
-                             screens.includes('welcome-screen') || 
-                             (screens.length === 1 && screens[0] === 'home');
+            // Restaurar histórico de navegação
+            try {
+                const restoredHistory = savedNavHistory ? JSON.parse(savedNavHistory) : ['home'];
+                navHistory = restoredHistory.length > 0 ? restoredHistory : ['home'];
+            } catch(e) {
+                navHistory = ['home'];
+            }
             
-            if(goToHome){
-                document.getElementById('home').classList.remove('hidden');
-                document.getElementById('home').classList.add('visible');
-                pushState('home');
+            // Recriar estados no history do navegador
+            navHistory.forEach(screen => {
+                history.pushState({screen: screen}, '', '');
+            });
+            
+            // Função para mostrar home
+            function showHome(){
+                const home = document.getElementById('home');
+                home.classList.remove('hidden');
+                home.classList.add('visible');
+            }
+            
+            // Se não tem telas salvas ou só tem home ou welcome
+            if(screens.length === 0 || 
+               screens.includes('welcome-screen') || 
+               (screens.length === 1 && screens[0] === 'home')){
+                showHome();
                 return;
             }
             
-            // Esconder home e restaurar telas
-            document.getElementById('home').classList.add('hidden');
-            document.getElementById('home').classList.remove('visible');
+            // Tem outras telas para restaurar
+            // Primeiro mostra home escondido (para navegação funcionar)
+            const home = document.getElementById('home');
+            home.classList.add('hidden');
+            home.classList.remove('visible');
             
+            // Restaurar cada tela visualmente
             screens.forEach(id => {
-                if(id === 'home') return; // Home usa visible, não active
+                if(id === 'home') return;
                 const el = document.getElementById(id);
-                if(el) el.classList.add('active');
+                if(el) {
+                    el.classList.add('active');
+                }
             });
             
             // Restaurar destino de expedição se necessário
@@ -1234,7 +1261,6 @@ async function getWeatherAndShowWelcome(user){
 }
 
 // ===== NAVEGAÇÃO COM HISTORY API (BOTÃO VOLTAR NATIVO) =====
-let navHistory = ['home'];
 function pushState(screen) {
     if (navHistory[navHistory.length - 1] !== screen) {
         navHistory.push(screen);
