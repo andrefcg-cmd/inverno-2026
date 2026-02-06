@@ -963,23 +963,23 @@ setTimeout(()=>{
                 home.classList.add('visible');
             }
             
-            // Se não tem telas salvas ou só tem home ou welcome
-            if(screens.length === 0 || 
-               screens.includes('welcome-screen') || 
-               (screens.length === 1 && screens[0] === 'home')){
+            // Filtrar telas válidas (remover home e welcome-screen)
+            const telasParaRestaurar = screens.filter(id => id !== 'home' && id !== 'welcome-screen');
+            
+            // Se não tem telas para restaurar, mostrar home
+            if(telasParaRestaurar.length === 0){
                 showHome();
                 return;
             }
             
             // Tem outras telas para restaurar
-            // Primeiro mostra home escondido (para navegação funcionar)
+            // Primeiro esconde home
             const home = document.getElementById('home');
             home.classList.add('hidden');
             home.classList.remove('visible');
             
             // Restaurar cada tela visualmente
-            screens.forEach(id => {
-                if(id === 'home') return;
+            telasParaRestaurar.forEach(id => {
                 const el = document.getElementById(id);
                 if(el) {
                     el.classList.add('active');
