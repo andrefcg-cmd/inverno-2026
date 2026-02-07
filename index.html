@@ -14,8 +14,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .splash{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;overflow:hidden}
 .splash.fade-out{opacity:0;pointer-events:none;transition:opacity .3s ease}
 .splash-logo{width:200px;opacity:0.9}
-.splash-logo.first-visit{animation:splashLogoZoom 1.6s cubic-bezier(0.7,0,1,0.5) forwards;animation-delay:var(--splash-icons-end, 2.4s)}
-.splash-logo.revisit{animation:splashLogoBlink 1.6s ease-in-out forwards}
+.splash-logo.first-visit{animation:splashLogoZoom 1.2s cubic-bezier(0.7,0,1,0.5) forwards;animation-delay:var(--splash-icons-end, 2.4s)}
+.splash-logo.revisit{opacity:0.9}
 .splash-icons{margin-top:32px;display:flex;gap:20px;font-size:24px}
 .splash-icon{opacity:0.3}
 .first-visit ~ .splash-icons .splash-icon:nth-child(1){animation:splashIcon 0.8s ease-in-out forwards}
@@ -29,7 +29,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .revisit ~ .splash-icons .splash-icon:nth-child(4){animation:splashIcon 0.6s ease-in-out 0.45s forwards}
 .revisit ~ .splash-icons .splash-icon:nth-child(5){animation:splashIcon 0.6s ease-in-out 0.6s forwards}
 @keyframes splashLogoZoom{0%{opacity:0.9;transform:scale(1)}100%{opacity:0;transform:scale(30)}}
-@keyframes splashLogoBlink{0%,70%{opacity:0.9;transform:scale(1)}82%{opacity:0;transform:scale(0.97)}100%{opacity:1;transform:scale(1)}}
 @keyframes splashIcon{0%{opacity:0.3;transform:scale(1)}40%{opacity:1;transform:scale(1.2)}80%{opacity:0.3;transform:scale(1)}100%{opacity:0;transform:scale(0.8)}}
 
 /* WELCOME SCREEN */
@@ -909,7 +908,7 @@ const F=[{"referencia": "BLI26028", "descricao": "BLUSA TOP PAETE PEPLUM DETALHE
 
 // Splash -> Login Inicial -> Welcome -> Home
 const isFirstVisit = !sessionStorage.getItem('isa-paes-visited');
-const splashTime = isFirstVisit ? 4100 : 1800;
+const splashTime = isFirstVisit ? 3700 : 1800;
 sessionStorage.setItem('isa-paes-visited', 'true');
 document.querySelector('.splash-logo').classList.add(isFirstVisit ? 'first-visit' : 'revisit');
 
