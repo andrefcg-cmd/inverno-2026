@@ -1,4 +1,4 @@
-const V = 'v75';
+const V = 'v79';
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => {
