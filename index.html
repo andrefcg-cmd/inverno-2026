@@ -1669,6 +1669,7 @@ function renderExpedicao(destino){
             <div class="exp-progress-bar">
                 <div class="exp-progress-fill ${colorTotal}" style="width:${Math.min(pctTotal,100)}%"></div>
             </div>
+            <div style="text-align:right;font-size:12px;margin-top:4px;font-weight:600;color:var(--${colorTotal})">${pctTotal}%</div>
         </div>
     `;
     
@@ -2078,7 +2079,7 @@ function geoCreateMarker(loc,index){
     circle.locationId=loc.id;
     geoCircles.push(circle);
     const infoWindow=new google.maps.InfoWindow({
-        content:`<div style="color:#000;padding:8px;max-width:220px;"><strong>${index+1}. ${loc.address}</strong><div style="margin-top:6px;font-size:11px;color:#666;">Lat: ${loc.lat.toFixed(6)}<br>Lng: ${loc.lng.toFixed(6)}</div></div>`
+        content:`<div style="color:#000;padding:8px;max-width:220px;"><strong>${index+1}. ${loc.address}</strong></div>`
     });
     marker.addListener('click',()=>infoWindow.open(geoMap,marker));
 }
@@ -2104,7 +2105,7 @@ function geoUpdateUI(){
         if(hasConflict){cardClass='conflict';const dets=loc.conflicts.map(c=>c.distance+'km').join(', ');statusHtml=`<span class="geo-loc-status conflict">⚠️ ${loc.conflicts.length}: ${dets}</span>`}
         else{cardClass='valid';statusHtml='<span class="geo-loc-status ok">✓ OK</span>'}
         const displayName = loc.nome ? `<div class="geo-loc-name">${loc.nome}</div>` : '';
-        return`<div class="geo-loc-card ${cardClass}" onclick="geoFocus(${loc.id})" style="cursor:pointer"><div class="geo-loc-marker">${i+1}</div><div class="geo-loc-info">${displayName}<div class="geo-loc-address">${loc.address}</div><div class="geo-loc-coords">${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}</div>${statusHtml}</div><div class="geo-loc-actions"><button class="geo-action-btn delete" onclick="event.stopPropagation();geoRemove(${loc.id})" title="Remover">×</button></div></div>`;
+        return`<div class="geo-loc-card ${cardClass}" onclick="geoFocus(${loc.id})" style="cursor:pointer"><div class="geo-loc-marker">${i+1}</div><div class="geo-loc-info">${displayName}<div class="geo-loc-address">${loc.address}</div>${statusHtml}</div><div class="geo-loc-actions"><button class="geo-action-btn delete" onclick="event.stopPropagation();geoRemove(${loc.id})" title="Remover">×</button></div></div>`;
     }).join('');
     geoUpdateMarkers();
 }
@@ -2532,7 +2533,6 @@ function geoUpdateUIVerify() {
             <div class="geo-loc-info">
                 <div class="geo-loc-name">${loc.nome || 'Sem nome'}</div>
                 <div class="geo-loc-address">${loc.address}</div>
-                <div class="geo-loc-coords">${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}</div>
             </div>
             <div class="geo-loc-dist">
                 <div class="geo-loc-dist-value">${distFormatted}</div>
