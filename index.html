@@ -123,7 +123,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .initial-login-title{font-size:14px;color:var(--txt2);text-align:center;margin-bottom:24px}
 
 /* PHOTO MODAL */
-.photo-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10000;padding:20px;opacity:0;transition:opacity .3s ease;touch-action:none}
+.photo-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10000;padding:20px;opacity:0;transition:opacity .3s ease;touch-action:none;-webkit-touch-callout:none}
 .photo-modal.active{display:flex;opacity:1}
 .photo-modal-close{position:absolute;top:20px;right:20px;width:40px;height:40px;background:var(--card);border:1px solid var(--brd);border-radius:50%;color:var(--txt);font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10001}
 .photo-modal-img-wrap{position:relative;max-width:100%;max-height:80vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
@@ -2793,89 +2793,88 @@ function _applyPhotoTransform(){
     img.style.transform = `translate(${_photoZoom.x}px, ${_photoZoom.y}px) scale(${_photoZoom.scale})`;
 }
 
-document.getElementById('photo-modal')?.addEventListener('click', function(e){
-    if(e.target === this && !_photoTouch.isPinching && !_photoTouch.isDragging) closePhoto();
-});
+function _initPhotoZoom(){
+    const modal = document.getElementById('photo-modal');
+    if(!modal) return;
 
-// Touch events no modal
-const _photoModal = document.getElementById('photo-modal');
+    modal.addEventListener('click', function(e){
+        if(e.target === this && !_photoTouch.isPinching && !_photoTouch.isDragging) closePhoto();
+    });
 
-_photoModal?.addEventListener('touchstart', function(e){
-    const img = document.getElementById('photo-modal-img');
-    if(e.touches.length === 2){
-        e.preventDefault();
-        _photoTouch.isPinching = true;
-        _photoTouch.startDist = _getTouchDist(e.touches[0], e.touches[1]);
-        _photoTouch.startScale = _photoZoom.scale;
-        const c = _getTouchCenter(e.touches[0], e.touches[1]);
-        _photoTouch.startX = c.x - _photoZoom.x;
-        _photoTouch.startY = c.y - _photoZoom.y;
-    } else if(e.touches.length === 1 && _photoZoom.scale > 1){
-        _photoTouch.isDragging = true;
-        _photoTouch.lastX = e.touches[0].clientX;
-        _photoTouch.lastY = e.touches[0].clientY;
-    }
-}, {passive: false});
+    modal.addEventListener('touchstart', function(e){
+        if(e.touches.length === 2){
+            e.preventDefault();
+            _photoTouch.isPinching = true;
+            _photoTouch.startDist = _getTouchDist(e.touches[0], e.touches[1]);
+            _photoTouch.startScale = _photoZoom.scale;
+            const c = _getTouchCenter(e.touches[0], e.touches[1]);
+            _photoTouch.startX = c.x - _photoZoom.x;
+            _photoTouch.startY = c.y - _photoZoom.y;
+        } else if(e.touches.length === 1 && _photoZoom.scale > 1){
+            _photoTouch.isDragging = true;
+            _photoTouch.lastX = e.touches[0].clientX;
+            _photoTouch.lastY = e.touches[0].clientY;
+        }
+    }, {passive: false});
 
-_photoModal?.addEventListener('touchmove', function(e){
-    if(e.touches.length === 2 && _photoTouch.isPinching){
-        e.preventDefault();
-        const dist = _getTouchDist(e.touches[0], e.touches[1]);
-        let newScale = _photoTouch.startScale * (dist / _photoTouch.startDist);
-        newScale = Math.max(1, Math.min(newScale, 5));
-        _photoZoom.scale = newScale;
-        
-        const c = _getTouchCenter(e.touches[0], e.touches[1]);
-        _photoZoom.x = c.x - _photoTouch.startX;
-        _photoZoom.y = c.y - _photoTouch.startY;
-        
-        _applyPhotoTransform();
-    } else if(e.touches.length === 1 && _photoTouch.isDragging && _photoZoom.scale > 1){
-        e.preventDefault();
-        const dx = e.touches[0].clientX - _photoTouch.lastX;
-        const dy = e.touches[0].clientY - _photoTouch.lastY;
-        _photoZoom.x += dx;
-        _photoZoom.y += dy;
-        _photoTouch.lastX = e.touches[0].clientX;
-        _photoTouch.lastY = e.touches[0].clientY;
-        _applyPhotoTransform();
-    }
-}, {passive: false});
-
-_photoModal?.addEventListener('touchend', function(e){
-    if(e.touches.length < 2) _photoTouch.isPinching = false;
-    if(e.touches.length === 0){
-        _photoTouch.isDragging = false;
-        // Se escala voltou a 1, resetar posição
-        if(_photoZoom.scale <= 1){
-            _photoZoom = {scale:1, x:0, y:0};
+    modal.addEventListener('touchmove', function(e){
+        if(e.touches.length === 2 && _photoTouch.isPinching){
+            e.preventDefault();
+            const dist = _getTouchDist(e.touches[0], e.touches[1]);
+            let newScale = _photoTouch.startScale * (dist / _photoTouch.startDist);
+            newScale = Math.max(1, Math.min(newScale, 5));
+            _photoZoom.scale = newScale;
+            const c = _getTouchCenter(e.touches[0], e.touches[1]);
+            _photoZoom.x = c.x - _photoTouch.startX;
+            _photoZoom.y = c.y - _photoTouch.startY;
+            _applyPhotoTransform();
+        } else if(e.touches.length === 1 && _photoTouch.isDragging && _photoZoom.scale > 1){
+            e.preventDefault();
+            const dx = e.touches[0].clientX - _photoTouch.lastX;
+            const dy = e.touches[0].clientY - _photoTouch.lastY;
+            _photoZoom.x += dx;
+            _photoZoom.y += dy;
+            _photoTouch.lastX = e.touches[0].clientX;
+            _photoTouch.lastY = e.touches[0].clientY;
             _applyPhotoTransform();
         }
-    }
-});
+    }, {passive: false});
 
-// Double tap para zoom rápido
-let _lastTap = 0;
-_photoModal?.addEventListener('touchend', function(e){
-    if(e.target.classList.contains('photo-modal-close')) return;
-    const now = Date.now();
-    if(now - _lastTap < 300 && e.changedTouches.length === 1){
-        e.preventDefault();
-        if(_photoZoom.scale > 1){
-            _photoZoom = {scale:1, x:0, y:0};
-        } else {
-            _photoZoom.scale = 2.5;
-            // Centralizar no ponto tocado
-            const rect = document.getElementById('photo-modal-img').getBoundingClientRect();
-            const tx = e.changedTouches[0].clientX;
-            const ty = e.changedTouches[0].clientY;
-            _photoZoom.x = (rect.left + rect.width/2 - tx) * 1.5;
-            _photoZoom.y = (rect.top + rect.height/2 - ty) * 1.5;
+    modal.addEventListener('touchend', function(e){
+        if(e.touches.length < 2) _photoTouch.isPinching = false;
+        if(e.touches.length === 0){
+            _photoTouch.isDragging = false;
+            if(_photoZoom.scale <= 1){
+                _photoZoom = {scale:1, x:0, y:0};
+                _applyPhotoTransform();
+            }
         }
-        _applyPhotoTransform();
-    }
-    _lastTap = now;
-});
+    });
+
+    // Double tap para zoom rápido
+    let _lastTap = 0;
+    modal.addEventListener('touchend', function(e){
+        if(e.target.classList.contains('photo-modal-close')) return;
+        const now = Date.now();
+        if(now - _lastTap < 300 && e.changedTouches.length === 1){
+            e.preventDefault();
+            if(_photoZoom.scale > 1){
+                _photoZoom = {scale:1, x:0, y:0};
+            } else {
+                _photoZoom.scale = 2.5;
+                const rect = document.getElementById('photo-modal-img').getBoundingClientRect();
+                const tx = e.changedTouches[0].clientX;
+                const ty = e.changedTouches[0].clientY;
+                _photoZoom.x = (rect.left + rect.width/2 - tx) * 1.5;
+                _photoZoom.y = (rect.top + rect.height/2 - ty) * 1.5;
+            }
+            _applyPhotoTransform();
+        }
+        _lastTap = now;
+    });
+    
+    console.log('[PHOTOS] Pinch-to-zoom inicializado');
+}
 </script>
 
 <!-- PHOTO MODAL -->
@@ -2888,5 +2887,6 @@ _photoModal?.addEventListener('touchend', function(e){
         <div class="photo-modal-desc" id="photo-modal-desc"></div>
     </div>
 </div>
+<script>_initPhotoZoom();</script>
 
 </body></html>
