@@ -1839,17 +1839,17 @@ const allProducts = [...P, ...F];
 document.getElementById('topdia').innerHTML=R.slice(0,10).map((t,i)=>{
     const prod = allProducts.find(p => p.referencia === t.referencia) || {};
     const giroDia = prod.estoqueEnviado ? (t.pecas / prod.estoqueEnviado) : 0;
-    return `<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="rank-number ${i<3?'rank-'+(i+1):'rank-default'}">${i+1}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${prod.estoqueAtual || 0}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.pecas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Dia: </span><span class="product-stat-value">${fP(giroDia)}</span></div></div><div style="margin-top:8px"><span class="product-stat-label">Valor total: </span><span class="product-stat-value">${fCF(t.valor)}</span></div></div>`;
+    return `<div class="product-item" onclick="openPhoto('${t.referencia}','${t.descricao.replace(/'/g,"\\'")}')"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="rank-number ${i<3?'rank-'+(i+1):'rank-default'}">${i+1}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${prod.estoqueAtual || 0}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.pecas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Dia: </span><span class="product-stat-value">${fP(giroDia)}</span></div></div><div style="margin-top:8px"><span class="product-stat-label">Valor total: </span><span class="product-stat-value">${fCF(t.valor)}</span></div></div>`;
 }).join('');
 const tA=A.filter(x=>x.aceitacao>0).sort((a,b)=>b.aceitacao-a.aceitacao).slice(0,5);
-document.getElementById('topA').innerHTML=tA.map((t,i)=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge status-excelente">${fP(t.aceitacao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro || (t.vendasLiquidas/t.enviado))}</span></div></div><div class="product-stats" style="margin-top:4px"><div class="product-stat"><span class="product-stat-label">Devoluções: </span><span class="product-stat-value">${t.devolucoes || 0}</span></div></div></div>`).join('');
+document.getElementById('topA').innerHTML=tA.map((t,i)=>`<div class="product-item" onclick="openPhoto('${t.referencia}','${t.descricao.replace(/'/g,"\\'")}')"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge status-excelente">${fP(t.aceitacao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro || (t.vendasLiquidas/t.enviado))}</span></div></div><div class="product-stats" style="margin-top:4px"><div class="product-stat"><span class="product-stat-label">Devoluções: </span><span class="product-stat-value">${t.devolucoes || 0}</span></div></div></div>`).join('');
 const tR=A.filter(x=>x.rejeicao>0).sort((a,b)=>b.rejeicao-a.rejeicao).slice(0,5);
-document.getElementById('topR').innerHTML=tR.map((t,i)=>`<div class="product-item"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge status-fraco">${fP(t.aceitacao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro || (t.vendasLiquidas/t.enviado))}</span></div></div><div class="product-stats" style="margin-top:4px"><div class="product-stat"><span class="product-stat-label">Devoluções: </span><span class="product-stat-value">${t.devolucoes || 0}</span></div></div></div>`).join('');
+document.getElementById('topR').innerHTML=tR.map((t,i)=>`<div class="product-item" onclick="openPhoto('${t.referencia}','${t.descricao.replace(/'/g,"\\'")}')"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge status-fraco">${fP(t.aceitacao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro || (t.vendasLiquidas/t.enviado))}</span></div></div><div class="product-stats" style="margin-top:4px"><div class="product-stat"><span class="product-stat-label">Devoluções: </span><span class="product-stat-value">${t.devolucoes || 0}</span></div></div></div>`).join('');
 function gS(s){if(s.includes('Excelente'))return'status-excelente';if(s.includes('Bom'))return'status-bom';if(s.includes('Fraco'))return'status-fraco';return'status-regular'}
 function gK(s){if(s.includes('Excelente'))return'excelente';if(s.includes('Bom'))return'bom';if(s.includes('Fraco'))return'fraco';return'regular'}
 function gC(s){if(s.includes('Excelente'))return'card-excelente';if(s.includes('Bom'))return'card-bom';if(s.includes('Fraco'))return'card-fraco';return'card-regular'}
 function rR(f='all'){let items=A;if(f!=='all')items=items.filter(x=>gK(x.status)===f);
-document.getElementById('rc').innerHTML=items.map(t=>`<div class="product-item ${gC(t.status)}"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge ${gS(t.status)}">${fP(t.aceitacao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro || (t.vendasLiquidas/t.enviado))}</span></div></div><div class="product-stats" style="margin-top:4px"><div class="product-stat"><span class="product-stat-label">Devoluções: </span><span class="product-stat-value">${t.devolucoes || 0}</span></div></div></div>`).join('')}
+document.getElementById('rc').innerHTML=items.map(t=>`<div class="product-item ${gC(t.status)}" onclick="openPhoto('${t.referencia}','${t.descricao.replace(/'/g,"\\'")}')"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><span class="status-badge ${gS(t.status)}">${fP(t.aceitacao)}</span></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro || (t.vendasLiquidas/t.enviado))}</span></div></div><div class="product-stats" style="margin-top:4px"><div class="product-stat"><span class="product-stat-label">Devoluções: </span><span class="product-stat-value">${t.devolucoes || 0}</span></div></div></div>`).join('')}
 document.querySelectorAll('#rf .filter-pill').forEach(p=>{p.addEventListener('click',()=>{document.querySelectorAll('#rf .filter-pill').forEach(x=>x.classList.remove('active'));p.classList.add('active');rR(p.dataset.filter)})});rR();
 function rP(s=''){let items=P;if(s){const q=s.toLowerCase();items=items.filter(x=>x.referencia.toLowerCase().includes(q)||x.descricao.toLowerCase().includes(q))}
 document.getElementById('lp').innerHTML=items.map(t=>{const sc=t.status==='Excelente'?'status-excelente':'status-bom';return`<div class="product-item" onclick="openPhoto('${t.referencia}','${t.descricao.replace(/'/g,"\\'")}')"><div class="product-header"><div><div class="product-ref">${t.referencia}</div><div class="product-name">${t.descricao}</div></div><div class="product-price">${fCF(t.preco)}</div></div><div class="product-stats"><div class="product-stat"><span class="product-stat-label">Estoque: </span><span class="product-stat-value">${t.estoqueAtual}</span></div><div class="product-stat"><span class="product-stat-label">Vendas: </span><span class="product-stat-value">${t.vendasLiquidas} pçs</span></div><div class="product-stat"><span class="product-stat-label">Giro Total: </span><span class="product-stat-value">${fP(t.giro)}</span></div></div><div style="margin-top:8px"><span class="status-badge ${sc}">${t.status}</span></div></div>`}).join('')}rP();
@@ -2671,12 +2671,72 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ========== PHOTO MODAL ==========
-const PRODUCT_PHOTOS = {
-    // Adicione as fotos aqui no formato: 'REFERENCIA': 'URL_DA_FOTO'
-    // Exemplo:
-    // 'CLI26008': 'https://exemplo.com/foto.jpg',
-    // 'BZI26002': 'fotos/blazer.jpg',
-};
+// ===== FOTOS DE PRODUTOS VIA GOOGLE DRIVE =====
+const DRIVE_FOLDER_ID = '1GncZpD2wlJBDe-lGpe7TC6UsTx3c2frW';
+const DRIVE_API_KEY = geoApiKey; // Reutiliza a mesma key do GeoLocalizador
+
+// Cache de fotos no localStorage
+function getPhotoCache() {
+    try {
+        const cache = localStorage.getItem('photo-cache');
+        if (cache) {
+            const parsed = JSON.parse(cache);
+            // Cache válido por 24h
+            if (parsed.ts && (Date.now() - parsed.ts) < 86400000) {
+                return parsed.data;
+            }
+        }
+    } catch(e) {}
+    return {};
+}
+
+function setPhotoCache(data) {
+    try {
+        localStorage.setItem('photo-cache', JSON.stringify({ ts: Date.now(), data }));
+    } catch(e) {}
+}
+
+let photoCache = getPhotoCache();
+
+// Buscar todos os arquivos da pasta de uma vez e cachear
+async function loadAllPhotos() {
+    if (Object.keys(photoCache).length > 0) return; // Já tem cache válido
+    try {
+        let allFiles = [];
+        let pageToken = '';
+        do {
+            const url = `https://www.googleapis.com/drive/v3/files?q='${DRIVE_FOLDER_ID}'+in+parents+and+trashed=false&fields=files(id,name)&pageSize=1000&key=${DRIVE_API_KEY}` + (pageToken ? `&pageToken=${pageToken}` : '');
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error('Drive API error: ' + resp.status);
+            const data = await resp.json();
+            allFiles = allFiles.concat(data.files || []);
+            pageToken = data.nextPageToken || '';
+        } while (pageToken);
+        
+        const cache = {};
+        allFiles.forEach(f => {
+            // Remove extensão para usar como chave (ex: CJI26013.jpg → CJI26013)
+            const ref = f.name.replace(/\.[^.]+$/, '').toUpperCase();
+            cache[ref] = f.id;
+        });
+        photoCache = cache;
+        setPhotoCache(cache);
+        console.log('[PHOTOS] Cache carregado:', Object.keys(cache).length, 'fotos');
+    } catch(e) {
+        console.error('[PHOTOS] Erro ao carregar fotos:', e);
+    }
+}
+
+// Iniciar carregamento ao abrir o app (não bloqueia)
+loadAllPhotos();
+
+function getPhotoUrl(ref) {
+    const fileId = photoCache[ref.toUpperCase()];
+    if (fileId) {
+        return `https://lh3.googleusercontent.com/d/${fileId}=s1200`;
+    }
+    return null;
+}
 
 function openPhoto(ref, desc){
     const modal = document.getElementById('photo-modal');
@@ -2688,15 +2748,20 @@ function openPhoto(ref, desc){
     refEl.textContent = ref;
     descEl.textContent = desc;
     
-    const photoUrl = PRODUCT_PHOTOS[ref];
+    const photoUrl = getPhotoUrl(ref);
     if(photoUrl){
         img.src = photoUrl;
         img.style.display = 'block';
         noimg.style.display = 'none';
+        img.onerror = function() {
+            img.style.display = 'none';
+            noimg.style.display = 'block';
+            noimg.textContent = '📷 Erro ao carregar foto';
+        };
     } else {
         img.style.display = 'none';
         noimg.style.display = 'block';
-        noimg.textContent = '📷 Foto não cadastrada';
+        noimg.textContent = '📷 Foto não encontrada';
     }
     
     modal.classList.add('active');
