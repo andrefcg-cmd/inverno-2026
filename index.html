@@ -1565,10 +1565,7 @@ function renderExpedicao(destino){
     const refsExcluidas = ['SHI26023', 'SAI26012'];
     
     // Filtrar dados baseado no destino
-    let dadosFiltrados = EXPEDICAO_INV1;
-    if(destino === 'showroom'){
-        dadosFiltrados = EXPEDICAO_INV1.filter(item => !refsExcluidas.includes(item.ref));
-    }
+    let dadosFiltrados = EXPEDICAO_INV1.filter(item => !refsExcluidas.includes(item.ref));
     
     // Calcular totais
     let totalProd = 0, totalEnvShow = 0;
@@ -1583,30 +1580,21 @@ function renderExpedicao(destino){
         refsUnicas.add(item.ref);
     });
     
-    // E-commerce = 1 por tamanho existente por cor (todos os dados)
+    // E-commerce = 1 por tamanho existente por cor (dados filtrados)
     let totalEcomm = 0;
-    EXPEDICAO_INV1.forEach(item => {
+    dadosFiltrados.forEach(item => {
         const p = item.prod || {};
         totalEcomm += ['PP','P','M','G'].filter(t => p[t] > 0).length;
     });
     
-    // Isabella meta = 1 P por cor (todos os dados)
+    // Isabella meta = 1 P por cor (dados filtrados)
     let metaIsabella = 0;
-    EXPEDICAO_INV1.forEach(item => {
+    dadosFiltrados.forEach(item => {
         if((item.prod?.P || 0) > 0) metaIsabella++;
     });
     
-    // Calcular quantidade excluída do showroom
-    let qtdExcluida = 0;
-    EXPEDICAO_INV1.filter(item => refsExcluidas.includes(item.ref)).forEach(item => {
-        const p = item.prod || {};
-        const ecommTams = ['PP','P','M','G'].filter(t => p[t] > 0).length;
-        const isabellaQty = p.P > 0 ? 1 : 0;
-        qtdExcluida += (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0) - ecommTams - isabellaQty;
-    });
-    
-    // Resto após showroom e ecommerce (baseado nos dados filtrados)
-    const resto = totalProd - totalEnvShow - totalEcomm + qtdExcluida;
+    // Resto após showroom e ecommerce
+    const resto = totalProd - totalEnvShow - totalEcomm;
     const envIsabella = Math.min(resto, metaIsabella);
     
     // Meta showroom = produzido (filtrado) - ecommerce(filtrado) - isabella(filtrado)
