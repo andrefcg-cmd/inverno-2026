@@ -13,7 +13,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 /* SPLASH */
 .splash{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s ease}
 .splash.fade-out{opacity:0;pointer-events:none}
-.splash-logo{width:200px;opacity:0;animation:splashLogoReveal var(--splash-duration, 2.5s) ease-in-out forwards}
+.splash-logo{width:200px;opacity:0.9;animation:splashLogoPulse var(--splash-duration, 2.5s) ease-in-out forwards}
 .splash-icons{margin-top:32px;display:flex;gap:20px;font-size:24px}
 .splash-icon{opacity:0.3}
 .splash-icon:nth-child(1){animation:splashIcon var(--splash-duration, 2.5s) ease-in-out}
@@ -21,7 +21,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .splash-icon:nth-child(3){animation:splashIcon var(--splash-duration, 2.5s) ease-in-out calc(var(--splash-duration, 2.5s) * 0.3)}
 .splash-icon:nth-child(4){animation:splashIcon var(--splash-duration, 2.5s) ease-in-out calc(var(--splash-duration, 2.5s) * 0.45)}
 .splash-icon:nth-child(5){animation:splashIcon var(--splash-duration, 2.5s) ease-in-out calc(var(--splash-duration, 2.5s) * 0.6)}
-@keyframes splashLogoReveal{0%,70%{opacity:0;transform:scale(0.95)}85%{opacity:1;transform:scale(1.03)}100%{opacity:0.9;transform:scale(1)}}
+@keyframes splashLogoPulse{0%,65%{opacity:0.9;transform:scale(1)}75%{opacity:0.4;transform:scale(0.97)}85%{opacity:1;transform:scale(1.04)}95%{opacity:0.5;transform:scale(0.98)}100%{opacity:1;transform:scale(1)}}
 @keyframes splashIcon{0%,100%{opacity:0.3;transform:scale(1)}20%{opacity:1;transform:scale(1.2)}40%{opacity:0.3;transform:scale(1)}}
 
 /* WELCOME SCREEN */
