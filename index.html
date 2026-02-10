@@ -1317,11 +1317,22 @@ async function doInitialLogin(){
             return;
         }
         
+        // Detectar se é PWA instalado
+        const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                      window.navigator.standalone === true ||
+                      document.referrer.includes('android-app://');
+        console.log('[Bio] Rodando como PWA:', isPWA);
+        
         // Verificar se dispositivo suporta biometria
         let biometriaDisponivel = false;
         if (window.PublicKeyCredential) {
             try {
-                if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function') {
+                // Em PWA Android, sempre tentar mostrar o modal
+                // A verificação real acontece no momento do registro
+                if (isPWA) {
+                    biometriaDisponivel = true;
+                    console.log('[Bio] PWA detectado - assumindo biometria disponível');
+                } else if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function') {
                     biometriaDisponivel = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
                 } else {
                     biometriaDisponivel = true;
