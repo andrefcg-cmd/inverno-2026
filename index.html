@@ -907,22 +907,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 // ISA|PAES PWA v2.0
 // ==========================================
 
+// ===== CONFIGURAÇÃO API (Cloudflare Worker) =====
 const API_CONFIG = {
     baseUrl: 'https://isapaes-api.andrefcg.workers.dev',
-    apiKey: 'Isapaes@2026!X',  // ← SUBSTITUA pela sua API Key
-    cacheTimeout: 30 * 60 * 1000  // 30 minutos
+    apiKey: 'Isapaes@2026!X',
+    cacheTimeout: 30 * 60 * 1000,  // 30 minutos
+    autoRefreshInterval: 30 * 60 * 1000  // 30 minutos
 };
 
 let expedicaoCache = {
     showroom: null,
     ecommerce: null,
     mostruario: null,
-    lastUpdate: {}
+    lastUpdate: {},
+    totais: null
 };
+
+let _autoRefreshTimer = null;
 
 function loadExpedicaoCache() {
     try {
-        const cached = localStorage.getItem('expedicao_cache');
+        const cached = localStorage.getItem('expedicao_cache_v3');
         if (cached) {
             expedicaoCache = JSON.parse(cached);
             console.log('[API] Cache carregado');
@@ -932,7 +937,7 @@ function loadExpedicaoCache() {
 
 function saveExpedicaoCache() {
     try {
-        localStorage.setItem('expedicao_cache', JSON.stringify(expedicaoCache));
+        localStorage.setItem('expedicao_cache_v3', JSON.stringify(expedicaoCache));
     } catch (e) { console.log('[API] Erro save:', e); }
 }
 
@@ -942,37 +947,60 @@ function isCacheValid(destino) {
     return (Date.now() - lastUpdate) < API_CONFIG.cacheTimeout;
 }
 
-async function fetchExpedicaoFromAPI(destino) {
-    const endpoints = {
-        'showroom': '/expedicao/showroom',
-        'ecommerce': '/expedicao/ecommerce',
-        'mostruario': '/expedicao/mostruario'
-    };
-    const url = `${API_CONFIG.baseUrl}${endpoints[destino]}?dataInicial=2026-01-01T00:00:00.000Z`;
+// Buscar dados do Worker (saldo líquido)
+async function fetchExpedicaoFromWorker(destino) {
+    const endpoint = destino === 'showroom' ? '/expedicao/showroom-liquido' : `/expedicao/${destino}`;
+    const url = `${API_CONFIG.baseUrl}${endpoint}`;
+    
+    console.log(`[API] Buscando ${destino}...`);
     
     const response = await fetch(url, {
         headers: { 'X-API-Key': API_CONFIG.apiKey }
     });
     
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}`);
+    }
+    
     const data = await response.json();
-    if (data.error) throw new Error(data.error);
+    
+    if (data.error) {
+        throw new Error(data.error);
+    }
+    
+    console.log(`[API] Recebido: ${data.items?.length || 0} itens, totais:`, data.totais);
     return data;
 }
 
+// Transformar dados da API para formato do PWA
 function transformApiData(apiData) {
-    if (!apiData.items) return [];
+    if (!apiData.items || apiData.items.length === 0) {
+        return EXPEDICAO_INV1;
+    }
+    
+    // Se veio do endpoint showroom-liquido, já está no formato correto
+    if (apiData.items[0]?.envShow) {
+        return apiData.items;
+    }
+    
+    // Transformar formato antigo (env) para novo (prod + envShow)
     return apiData.items.map(item => ({
         ref: item.ref,
         desc: item.desc,
         cor: item.cor,
         prod: {
-            PP: item.env?.PP || 0,
-            P: item.env?.P || 0,
-            M: item.env?.M || 0,
-            G: item.env?.G || 0
+            PP: item.env?.PP || item.prod?.PP || 0,
+            P: item.env?.P || item.prod?.P || 0,
+            M: item.env?.M || item.prod?.M || 0,
+            G: item.env?.G || item.prod?.G || 0
         },
-        envShow: { PP: 0, P: 0, M: 0, G: 0 }
+        envShow: {
+            PP: item.env?.PP || item.envShow?.PP || 0,
+            P: item.env?.P || item.envShow?.P || 0,
+            M: item.env?.M || item.envShow?.M || 0,
+            G: item.env?.G || item.envShow?.G || 0
+        }
     }));
 }
 
@@ -987,11 +1015,14 @@ async function getExpedicaoData(destino, forceRefresh = false) {
     try {
         if (!hasCache) showExpedicaoLoading(true);
         
-        const apiData = await fetchExpedicaoFromAPI(destino);
+        const apiData = await fetchExpedicaoFromWorker(destino);
         const transformed = transformApiData(apiData);
         
         expedicaoCache[destino] = transformed;
         expedicaoCache.lastUpdate[destino] = Date.now();
+        if (apiData.totais) {
+            expedicaoCache.totais = apiData.totais;
+        }
         saveExpedicaoCache();
         
         console.log(`[API] Loaded ${destino}: ${transformed.length} items`);
@@ -1018,10 +1049,11 @@ function showExpedicaoLoading(show) {
         loader = document.createElement('div');
         loader.id = 'exp-loading';
         loader.innerHTML = `
-            <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999">
-                <div style="background:white;padding:24px 32px;border-radius:12px;text-align:center">
-                    <div style="width:40px;height:40px;border:3px solid #e0e0e0;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px"></div>
-                    <div style="color:#333;font-size:14px">Carregando dados...</div>
+            <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999">
+                <div style="background:#1a1a1a;padding:24px 32px;border-radius:12px;text-align:center;border:1px solid #333">
+                    <div style="width:40px;height:40px;border:3px solid #333;border-top-color:#e94560;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px"></div>
+                    <div style="color:#fff;font-size:14px">Conectando ao TOTVS...</div>
+                    <div style="color:#777;font-size:11px;margin-top:8px">Buscando dados em tempo real</div>
                 </div>
             </div>
             <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
@@ -1036,11 +1068,11 @@ function showExpedicaoToast(message, type = 'info') {
     let toast = document.getElementById('exp-toast');
     if (toast) toast.remove();
     
-    const colors = { info: '#3b82f6', success: '#10b981', warning: '#f59e0b', error: '#ef4444' };
+    const colors = { info: '#3b82f6', success: '#00d9a5', warning: '#ffc107', error: '#ff4757' };
     
     toast = document.createElement('div');
     toast.id = 'exp-toast';
-    toast.style.cssText = `position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:${colors[type]};color:white;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.2)`;
+    toast.style.cssText = `position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:${colors[type]};color:${type === 'warning' ? '#000' : '#fff'};padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3)`;
     toast.textContent = message;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
@@ -1048,17 +1080,33 @@ function showExpedicaoToast(message, type = 'info') {
 
 async function refreshExpedicaoData() {
     if (!currentExpDestino) return;
-    showExpedicaoToast('Atualizando...', 'info');
+    showExpedicaoToast('Atualizando via TOTVS...', 'info');
     try {
         await getExpedicaoData(currentExpDestino, true);
         renderExpedicao(currentExpDestino);
-        showExpedicaoToast('Atualizado ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}), 'success');
+        showExpedicaoToast('✓ Atualizado ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}), 'success');
     } catch (error) {
+        console.error('[API] Refresh error:', error);
         showExpedicaoToast('Erro ao atualizar', 'error');
     }
 }
 
-document.addEventListener('DOMContentLoaded', loadExpedicaoCache);
+// Auto-refresh a cada 30 minutos
+function startAutoRefresh() {
+    if (_autoRefreshTimer) clearInterval(_autoRefreshTimer);
+    _autoRefreshTimer = setInterval(() => {
+        if (currentExpDestino && document.getElementById('app-expedicao')?.classList.contains('active')) {
+            console.log('[API] Auto-refresh...');
+            refreshExpedicaoData();
+        }
+    }, API_CONFIG.autoRefreshInterval);
+    console.log('[API] Auto-refresh configurado (30min)');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadExpedicaoCache();
+    startAutoRefresh();
+});
 
 const R=[{"referencia": "CJI26013", "descricao": "CONJUNTO ALFAIATARIA BLUSA CAPA", "pecas": 5, "valor": 3217.01}, {"referencia": "CJI26002", "descricao": "CONJUNTO BASIC REGATA DETALHE CHANTILLY", "pecas": 3, "valor": 1919.7}, {"referencia": "CLI26001", "descricao": "CALCA ALFAIATARIA BARRA ITALIANA", "pecas": 3, "valor": 869.7}, {"referencia": "BDI26005", "descricao": "BODY BASIC ISA PAES", "pecas": 3, "valor": 719.7}, {"referencia": "BDI26004", "descricao": "BODY BASIC TULE MANGA", "pecas": 3, "valor": 509.7}, {"referencia": "JAI26002", "descricao": "JAQUETA ALFAIATARIA MESCLA", "pecas": 2, "valor": 1279.8}, {"referencia": "VEI26012", "descricao": "VESTIDO CURTO SAIA ASSIMETRICA", "pecas": 2, "valor": 1159.8}, {"referencia": "SAI26004", "descricao": "SAIA CURTA ALFAIATARIA MESCLA", "pecas": 2, "valor": 739.8}, {"referencia": "SAI26003", "descricao": "SAIA MIDI PEPLUM", "pecas": 2, "valor": 579.8}, {"referencia": "BLI26002", "descricao": "BLUSA CROPPED ALFAIATARIA DUO COLOR", "pecas": 2, "valor": 539.8}, {"referencia": "BDI26011", "descricao": "BODY TRICOT DECOTE V", "pecas": 2, "valor": 439.8}, {"referencia": "BLI26003", "descricao": "BLUSA CROPPED ALFAIATARIA CORSELET", "pecas": 2, "valor": 439.8}, {"referencia": "MCI26001", "descricao": "MACACAO LONGO ALFAIATARIA DUO COLOR", "pecas": 1, "valor": 669.9}, {"referencia": "SAI26009", "descricao": "SAIA MIDI TRICOT TRANSPARENCIA", "pecas": 1, "valor": 599.9}, {"referencia": "VEI26023", "descricao": "VESTIDO CURTO ESTAMPADO SAIA BABADOS", "pecas": 1, "valor": 599.9}, {"referencia": "VEI26022", "descricao": "VESTIDO LONGUETE CINTO FLORES", "pecas": 1, "valor": 530.91}, {"referencia": "SAI26001", "descricao": "SAIA MIDI MEIO GODE", "pecas": 1, "valor": 499.9}, {"referencia": "CLI26006", "descricao": "CALCA STREET ALFAIATARIA MESCLA", "pecas": 1, "valor": 469.9}, {"referencia": "CLI26002", "descricao": "CALCA ALFAIATARIA TIRA LATERAL", "pecas": 1, "valor": 429.9}, {"referencia": "CLI26003", "descricao": "CALCA ALFAIATARIA VIES", "pecas": 1, "valor": 399.9}, {"referencia": "SAI26002", "descricao": "SAIA CURTA ALFAIATARIA VIES", "pecas": 1, "valor": 369.9}, {"referencia": "BLI26006", "descricao": "BLUSA TOP PEPLUM DETALHE DECOTE", "pecas": 1, "valor": 309.9}, {"referencia": "BLI26001", "descricao": "BLUSA TOP DETALHE DECOTE", "pecas": 1, "valor": 299.9}, {"referencia": "CAI26006", "descricao": "CAMISA ALFAIATARIA ESTAMPADA", "pecas": 1, "valor": 299.9}, {"referencia": "CLI26005", "descricao": "CALCA ALFAIATARIA NERVURA", "pecas": 1, "valor": 289.9}, {"referencia": "BLI26004", "descricao": "BLUSA CROPPED ALFAIATARIA MESCLA", "pecas": 1, "valor": 219.9}, {"referencia": "BLI26010", "descricao": "BLUSA BASIC MANGA RENDA", "pecas": 1, "valor": 149.9}, {"referencia": "BLI26019", "descricao": "BLUSA BASIC MANGA RENDA", "pecas": 1, "valor": 149.9}, {"referencia": "BLI26013", "descricao": "BLUSA BASIC REGATA ISA PAES", "pecas": 1, "valor": 99.9}];
 const A=[{"referencia": "BDI26003", "descricao": "BODY BASIC RENDA", "preco": 239.9, "enviado": 65, "estoqueAtual": 1, "vendidoBruto": 63, "devolucoes": 0, "vendasLiquidas": 64, "aceitacao": 0.984615, "rejeicao": 0.0, "status": "🟢 Excelente"}, {"referencia": "BLI26010", "descricao": "BLUSA BASIC MANGA RENDA", "preco": 149.9, "enviado": 80, "estoqueAtual": 0, "vendidoBruto": 77, "devolucoes": 0, "vendasLiquidas": 80, "aceitacao": 1.0, "rejeicao": 0.0, "status": "🟢 Excelente"}, {"referencia": "CLI26003", "descricao": "CALCA ALFAIATARIA VIES", "preco": 399.9, "enviado": 109, "estoqueAtual": -2, "vendidoBruto": 104, "devolucoes": 2, "vendasLiquidas": 111, "aceitacao": 1.018349, "rejeicao": 0.019231, "status": "🟢 Excelente"}, {"referencia": "BLI26029", "descricao": "BLUSA BASIC MANGA RENDA", "preco": 149.9, "enviado": 51, "estoqueAtual": -1, "vendidoBruto": 47, "devolucoes": 0, "vendasLiquidas": 52, "aceitacao": 1.019608, "rejeicao": 0.0, "status": "🟢 Excelente"}, {"referencia": "BLI26013", "descricao": "BLUSA BASIC REGATA ISA PAES", "preco": 99.9, "enviado": 259, "estoqueAtual": 7, "vendidoBruto": 238, "devolucoes": 0, "vendasLiquidas": 252, "aceitacao": 0.972973, "rejeicao": 0.0, "status": "🟢 Excelente"}, {"referencia": "BLI26019", "descricao": "BLUSA BASIC MANGA RENDA", "preco": 149.9, "enviado": 55, "estoqueAtual": 6, "vendidoBruto": 49, "devolucoes": 0, "vendasLiquidas": 49, "aceitacao": 0.890909, "rejeicao": 0.0, "status": "🟢 Excelente"}, {"referencia": "CAI26006", "descricao": "CAMISA ALFAIATARIA ESTAMPADA", "preco": 299.9, "enviado": 80, "estoqueAtual": 7, "vendidoBruto": 67, "devolucoes": 1, "vendasLiquidas": 73, "aceitacao": 0.9125, "rejeicao": 0.014925, "status": "🟢 Excelente"}, {"referencia": "CLI26006", "descricao": "CALCA STREET ALFAIATARIA MESCLA", "preco": 469.9, "enviado": 91, "estoqueAtual": 15, "vendidoBruto": 72, "devolucoes": 0, "vendasLiquidas": 76, "aceitacao": 0.835165, "rejeicao": 0.0, "status": "🟢 Excelente"}, {"referencia": "CLI26008", "descricao": "CALCA JEANS PAETE", "preco": 599.9, "enviado": 66, "estoqueAtual": 12, "vendidoBruto": 52, "devolucoes": 0, "vendasLiquidas": 54, "aceitacao": 0.818182, "rejeicao": 0.0, "status": "🟢 Excelente"}, {"referencia": "BZI26002", "descricao": "BLAZER ALFAIATARIA VIES", "preco": 579.9, "enviado": 148, "estoqueAtual": 28, "vendidoBruto": 114, "devolucoes": 1, "vendasLiquidas": 120, "aceitacao": 0.810811, "rejeicao": 0.008772, "status": "🟢 Excelente"}, {"referencia": "JAI26003", "descricao": "JAQUETA JEANS PAETE", "preco": 619.9, "enviado": 65, "estoqueAtual": 18, "vendidoBruto": 46, "devolucoes": 0, "vendasLiquidas": 47, "aceitacao": 0.723077, "rejeicao": 0.0, "status": "🟢 Excelente"}, {"referencia": "BDI26004", "descricao": "BODY BASIC TULE MANGA", "preco": 169.9, "enviado": 194, "estoqueAtual": 49, "vendidoBruto": 128, "devolucoes": 1, "vendasLiquidas": 145, "aceitacao": 0.747423, "rejeicao": 0.007812, "status": "🔵 Bom"}, {"referencia": "JAI26002", "descricao": "JAQUETA ALFAIATARIA MESCLA", "preco": 639.9, "enviado": 117, "estoqueAtual": 33, "vendidoBruto": 76, "devolucoes": 1, "vendasLiquidas": 84, "aceitacao": 0.717949, "rejeicao": 0.013158, "status": "🔵 Bom"}, {"referencia": "BLI26003", "descricao": "BLUSA CROPPED ALFAIATARIA CORSELET", "preco": 219.9, "enviado": 104, "estoqueAtual": 32, "vendidoBruto": 66, "devolucoes": 0, "vendasLiquidas": 72, "aceitacao": 0.692308, "rejeicao": 0.0, "status": "🔵 Bom"}, {"referencia": "CLI26004", "descricao": "CALCA ALFAIATARIA NERVURA", "preco": 259.9, "enviado": 94, "estoqueAtual": 68, "vendidoBruto": 55, "devolucoes": 0, "vendasLiquidas": 26, "aceitacao": 0.276596, "rejeicao": 0.0, "status": "🔵 Bom"}, {"referencia": "BZI26001", "descricao": "BLAZER ALFAIATARIA TELA BORDADA", "preco": 659.9, "enviado": 70, "estoqueAtual": 28, "vendidoBruto": 40, "devolucoes": 0, "vendasLiquidas": 42, "aceitacao": 0.6, "rejeicao": 0.0, "status": "🔵 Bom"}, {"referencia": "BLI26011", "descricao": "BLUSA TOP PEPLUM JEANS PAETE", "preco": 369.9, "enviado": 64, "estoqueAtual": 26, "vendidoBruto": 37, "devolucoes": 0, "vendasLiquidas": 38, "aceitacao": 0.59375, "rejeicao": 0.0, "status": "🔵 Bom ⚠️"}, {"referencia": "CJI26013", "descricao": "CONJUNTO ALFAIATARIA BLUSA CAPA", "preco": 649.9, "enviado": 87, "estoqueAtual": 27, "vendidoBruto": 49, "devolucoes": 1, "vendasLiquidas": 60, "aceitacao": 0.689655, "rejeicao": 0.020408, "status": "🔵 Bom"}, {"referencia": "VEI26025", "descricao": "VESTIDO LONGO ESTAMPADO PALA LASTEX", "preco": 639.9, "enviado": 100, "estoqueAtual": 46, "vendidoBruto": 51, "devolucoes": 0, "vendasLiquidas": 54, "aceitacao": 0.54, "rejeicao": 0.0, "status": "🔵 Bom"}, {"referencia": "SAI26003", "descricao": "SAIA MIDI PEPLUM", "preco": 289.9, "enviado": 195, "estoqueAtual": 76, "vendidoBruto": 95, "devolucoes": 1, "vendasLiquidas": 119, "aceitacao": 0.610256, "rejeicao": 0.010526, "status": "🟡 Regular"}, {"referencia": "VEI26045", "descricao": "VESTIDO CURTO MOULAGE", "preco": 499.9, "enviado": 29, "estoqueAtual": 10, "vendidoBruto": 14, "devolucoes": 0, "vendasLiquidas": 19, "aceitacao": 0.655172, "rejeicao": 0.0, "status": "🟡 Regular"}, {"referencia": "BDI26005", "descricao": "BODY BASIC ISA PAES", "preco": 239.9, "enviado": 291, "estoqueAtual": 126, "vendidoBruto": 139, "devolucoes": 2, "vendasLiquidas": 165, "aceitacao": 0.56701, "rejeicao": 0.0, "status": "🟡 Regular ⚠️"}, {"referencia": "BLI26002", "descricao": "BLUSA CROPPED ALFAIATARIA DUO COLOR", "preco": 269.9, "enviado": 134, "estoqueAtual": 68, "vendidoBruto": 61, "devolucoes": 0, "vendasLiquidas": 66, "aceitacao": 0.492537, "rejeicao": 0.014388, "status": "🟡 Regular"}, {"referencia": "SHI26001", "descricao": "SHORT CURTO DETALHE PREGA", "preco": 299.9, "enviado": 71, "estoqueAtual": 37, "vendidoBruto": 32, "devolucoes": 0, "vendasLiquidas": 34, "aceitacao": 0.478873, "rejeicao": 0.0, "status": "🟡 Regular"}, {"referencia": "CAI26007", "descricao": "CAMISA ALFAIATARIA PAETE", "preco": 299.9, "enviado": 76, "estoqueAtual": 39, "vendidoBruto": 35, "devolucoes": 1, "vendasLiquidas": 37, "aceitacao": 0.486842, "rejeicao": 0.0, "status": "🟡 Regular"}, {"referencia": "MCI26001", "descricao": "MACACAO LONGO ALFAIATARIA DUO COLOR", "preco": 669.9, "enviado": 91, "estoqueAtual": 47, "vendidoBruto": 41, "devolucoes": 1, "vendasLiquidas": 44, "aceitacao": 0.483516, "rejeicao": 0.028571, "status": "🟡 Regular"}, {"referencia": "CAI26009", "descricao": "CAMISA ALFAIATARIA COM PONTEIRA", "preco": 249.9, "enviado": 88, "estoqueAtual": 46, "vendidoBruto": 37, "devolucoes": 0, "vendasLiquidas": 42, "aceitacao": 0.477273, "rejeicao": 0.02439, "status": "🟡 Regular ⚠️"}, {"referencia": "BLI26006", "descricao": "BLUSA TOP PEPLUM DETALHE DECOTE", "preco": 309.9, "enviado": 114, "estoqueAtual": 52, "vendidoBruto": 47, "devolucoes": 0, "vendasLiquidas": 62, "aceitacao": 0.54386, "rejeicao": 0.0, "status": "🟡 Regular"}, {"referencia": "CLI26005", "descricao": "CALCA ALFAIATARIA NERVURA", "preco": 289.9, "enviado": 183, "estoqueAtual": 68, "vendidoBruto": 75, "devolucoes": 0, "vendasLiquidas": 115, "aceitacao": 0.628415, "rejeicao": 0.0, "status": "🟡 Regular"}, {"referencia": "VEI26012", "descricao": "VESTIDO CURTO SAIA ASSIMETRICA", "preco": 579.9, "enviado": 84, "estoqueAtual": 45, "vendidoBruto": 34, "devolucoes": 0, "vendasLiquidas": 39, "aceitacao": 0.464286, "rejeicao": 0.0, "status": "🟡 Regular"}, {"referencia": "VEI26001", "descricao": "VESTIDO LONGO SAIA CAMADAS", "preco": 799.9, "enviado": 58, "estoqueAtual": 35, "vendidoBruto": 23, "devolucoes": 0, "vendasLiquidas": 23, "aceitacao": 0.396552, "rejeicao": 0.0, "status": "🟡 Regular"}, {"referencia": "SHI26002", "descricao": "SHORT CURTO ALFAIATARIA BASIC", "preco": 219.9, "enviado": 236, "estoqueAtual": 134, "vendidoBruto": 93, "devolucoes": 0, "vendasLiquidas": 102, "aceitacao": 0.432203, "rejeicao": 0.0, "status": "🟡 Regular"}, {"referencia": "BZI26003", "descricao": "BLAZER ALFAIATARIA BASIC ISA PAES", "preco": 469.9, "enviado": 277, "estoqueAtual": 158, "vendidoBruto": 109, "devolucoes": 1, "vendasLiquidas": 119, "aceitacao": 0.429603, "rejeicao": 0.0, "status": "🟡 Regular"}, {"referencia": "BLI26004", "descricao": "BLUSA CROPPED ALFAIATARIA MESCLA", "preco": 219.9, "enviado": 129, "estoqueAtual": 77, "vendidoBruto": 49, "devolucoes": 0, "vendasLiquidas": 52, "aceitacao": 0.403101, "rejeicao": 0.009174, "status": "🟡 Regular"}, {"referencia": "CLI26001", "descricao": "CALCA ALFAIATARIA BARRA ITALIANA", "preco": 289.9, "enviado": 189, "estoqueAtual": 102, "vendidoBruto": 71, "devolucoes": 3, "vendasLiquidas": 87, "aceitacao": 0.460317, "rejeicao": 0.0, "status": "🟡 Regular"}, {"referencia": "BLI26001", "descricao": "BLUSA TOP DETALHE DECOTE", "preco": 299.9, "enviado": 65, "estoqueAtual": 39, "vendidoBruto": 23, "devolucoes": 0, "vendasLiquidas": 26, "aceitacao": 0.4, "rejeicao": 0.042254, "status": "🟡 Regular"}, {"referencia": "CLI26002", "descricao": "CALCA ALFAIATARIA TIRA LATERAL", "preco": 429.9, "enviado": 130, "estoqueAtual": 82, "vendidoBruto": 46, "devolucoes": 1, "vendasLiquidas": 48, "aceitacao": 0.369231, "rejeicao": 0.0, "status": "🟡 Regular"}, {"referencia": "SAI26004", "descricao": "SAIA CURTA ALFAIATARIA MESCLA", "preco": 369.9, "enviado": 116, "estoqueAtual": 68, "vendidoBruto": 41, "devolucoes": 1, "vendasLiquidas": 48, "aceitacao": 0.413793, "rejeicao": 0.021739, "status": "🟡 Regular"}, {"referencia": "VEI26023", "descricao": "VESTIDO CURTO ESTAMPADO SAIA BABADOS", "preco": 599.9, "enviado": 80, "estoqueAtual": 48, "vendidoBruto": 27, "devolucoes": 1, "vendasLiquidas": 32, "aceitacao": 0.4, "rejeicao": 0.02439, "status": "🟡 Regular ⚠️"}, {"referencia": "BLI26026", "descricao": "BLUSA BASIC CAVADA MARTINGALES", "preco": 269.9, "enviado": 51, "estoqueAtual": 35, "vendidoBruto": 16, "devolucoes": 0, "vendasLiquidas": 16, "aceitacao": 0.313725, "rejeicao": 0.037037, "status": "🟡 Regular ⚠️"}, {"referencia": "SAI26001", "descricao": "SAIA MIDI MEIO GODE", "preco": 499.9, "enviado": 70, "estoqueAtual": 47, "vendidoBruto": 21, "devolucoes": 0, "vendasLiquidas": 23, "aceitacao": 0.328571, "rejeicao": 0.0, "status": "🟡 Regular"}, {"referencia": "VEI26008", "descricao": "VESTIDO CURTO APLICACAO RENDA", "preco": 599.9, "enviado": 78, "estoqueAtual": 55, "vendidoBruto": 21, "devolucoes": 0, "vendasLiquidas": 23, "aceitacao": 0.294872, "rejeicao": 0.0, "status": "🔴 Fraco"}, {"referencia": "CJI26002", "descricao": "CONJUNTO BASIC REGATA DETALHE CHANTILLY", "preco": 639.9, "enviado": 136, "estoqueAtual": 90, "vendidoBruto": 36, "devolucoes": 0, "vendasLiquidas": 46, "aceitacao": 0.338235, "rejeicao": 0.0, "status": "🔴 Fraco"}, {"referencia": "SAI26002", "descricao": "SAIA CURTA ALFAIATARIA VIES", "preco": 369.9, "enviado": 113, "estoqueAtual": 82, "vendidoBruto": 29, "devolucoes": 0, "vendasLiquidas": 31, "aceitacao": 0.274336, "rejeicao": 0.0, "status": "🔴 Fraco"}, {"referencia": "BDI26011", "descricao": "BODY TRICOT DECOTE V", "preco": 219.9, "enviado": 131, "estoqueAtual": 109, "vendidoBruto": 17, "devolucoes": 1, "vendasLiquidas": 22, "aceitacao": 0.167939, "rejeicao": 0.0, "status": "🔴 Fraco ⚠️"}, {"referencia": "JAI26001", "descricao": "JAQUETA BOMBER DETALHE TRICOT", "preco": 499.9, "enviado": 63, "estoqueAtual": 48, "vendidoBruto": 15, "devolucoes": 0, "vendasLiquidas": 15, "aceitacao": 0.238095, "rejeicao": 0.0, "status": "🔴 Fraco"}, {"referencia": "VEI26006", "descricao": "VESTIDO CURTO DETALHE SOBREPOSICAO", "preco": 799.9, "enviado": 77, "estoqueAtual": 60, "vendidoBruto": 17, "devolucoes": 0, "vendasLiquidas": 17, "aceitacao": 0.220779, "rejeicao": 0.058824, "status": "🔴 Fraco"}, {"referencia": "SAI26009", "descricao": "SAIA MIDI TRICOT TRANSPARENCIA", "preco": 599.9, "enviado": 92, "estoqueAtual": 69, "vendidoBruto": 19, "devolucoes": 1, "vendasLiquidas": 23, "aceitacao": 0.25, "rejeicao": 0.0, "status": "🔴 Fraco"}, {"referencia": "SAI26005", "descricao": "SAIA MIDI TULE PAETE", "preco": 349.9, "enviado": 57, "estoqueAtual": 46, "vendidoBruto": 11, "devolucoes": 0, "vendasLiquidas": 11, "aceitacao": 0.192982, "rejeicao": 0.0, "status": "🔴 Fraco ⚠️"}, {"referencia": "VEI26009", "descricao": "VESTIDO LONGO BABADOS RENDA", "preco": 699.9, "enviado": 73, "estoqueAtual": 58, "vendidoBruto": 13, "devolucoes": 0, "vendasLiquidas": 15, "aceitacao": 0.205479, "rejeicao": 0.052632, "status": "🔴 Fraco"}, {"referencia": "VEI26022", "descricao": "VESTIDO LONGUETE CINTO FLORES", "preco": 589.9, "enviado": 95, "estoqueAtual": 77, "vendidoBruto": 14, "devolucoes": 0, "vendasLiquidas": 18, "aceitacao": 0.189474, "rejeicao": 0.0, "status": "🔴 Fraco ⚠️"}, {"referencia": "VEI26010", "descricao": "VESTIDO LONGO DETALHE CUT-OUT", "preco": 629.9, "enviado": 63, "estoqueAtual": 58, "vendidoBruto": 5, "devolucoes": 0, "vendasLiquidas": 5, "aceitacao": 0.079365, "rejeicao": 0.0, "status": "🔴 Fraco"}, {"referencia": "BLI26027", "descricao": "BLUSA REGATA BASIC ISA PAES", "preco": 99.9, "enviado": 137, "estoqueAtual": 123, "vendidoBruto": 7, "devolucoes": 1, "vendasLiquidas": 14, "aceitacao": 0.10219, "rejeicao": 0.0, "status": "🔴 Fraco"}, {"referencia": "BLI26028", "descricao": "BLUSA TOP PAETE PEPLUM DETALHE DECOTE", "preco": 359.9, "enviado": 54, "estoqueAtual": 52, "vendidoBruto": 2, "devolucoes": 0, "vendasLiquidas": 2, "aceitacao": 0.037037, "rejeicao": 0.142857, "status": "🔴 Fraco"}];
@@ -1809,11 +1857,8 @@ async function renderExpedicao(destino){
             <div class="exp-progress-bar">
                 <div class="exp-progress-fill ${colorTotal}" style="width:${Math.min(pctTotal,100)}%"></div>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+            <div style="margin-top:8px">
                 <span style="font-size:11px;color:var(--txt2)">${updateText}</span>
-                <button onclick="refreshExpedicaoData()" style="background:var(--accent);color:white;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px">
-                    🔄 Atualizar
-                </button>
             </div>
             <div style="text-align:right;font-size:12px;margin-top:4px;font-weight:600;color:var(--${colorTotal})">${pctTotal}%</div>
         </div>
