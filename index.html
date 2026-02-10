@@ -1333,27 +1333,39 @@ async function doInitialLogin(){
         document.getElementById('initial-error').textContent = '';
         document.getElementById('initial-login').classList.remove('active');
         
-        // SEMPRE oferecer biometria se disponível (mesmo se já tiver cadastrada para outro usuário)
-        if(window.PublicKeyCredential){
-            setTimeout(()=>{
-                const bioUserAtual = localStorage.getItem('bio-user');
-                let mensagem = 'Deseja ativar o login por biometria/Face ID?';
-                
-                // Se já tem biometria cadastrada para outro usuário
-                if(bioUserAtual && bioUserAtual !== user){
-                    mensagem = `A biometria está cadastrada para "${bioUserAtual}". Deseja recadastrar para "${user}"?`;
-                } else if(bioUserAtual === user){
-                    // Já está cadastrada para este usuário, não perguntar
-                    getWeatherAndShowWelcome(user);
-                    return;
-                }
-                
-                if(confirm(mensagem)){
+        // Verificar se biometria está disponível
+        let biometriaDisponivel = false;
+        if (window.PublicKeyCredential) {
+            try {
+                biometriaDisponivel = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+            } catch(e) {
+                console.log('[Bio] Erro ao verificar disponibilidade:', e);
+            }
+        }
+        
+        // SEMPRE oferecer biometria se disponível
+        if (biometriaDisponivel) {
+            const bioUserAtual = localStorage.getItem('bio-user');
+            let mensagem = 'Deseja ativar o login por biometria/Face ID?';
+            
+            // Se já tem biometria cadastrada para este usuário, não perguntar
+            if (bioUserAtual === user) {
+                getWeatherAndShowWelcome(user);
+                return;
+            }
+            
+            // Se já tem biometria cadastrada para outro usuário
+            if (bioUserAtual && bioUserAtual !== user) {
+                mensagem = `A biometria está cadastrada para "${bioUserAtual}". Deseja recadastrar para "${user}"?`;
+            }
+            
+            setTimeout(() => {
+                if (confirm(mensagem)) {
                     registerInitialBiometric(user);
                 }
                 getWeatherAndShowWelcome(user);
-            },100);
-            return; // Sair aqui, o getWeatherAndShowWelcome será chamado no setTimeout
+            }, 300);
+            return;
         }
         
         getWeatherAndShowWelcome(user);
@@ -2321,10 +2333,8 @@ function mostrarPtrToast(mensagem, tipo = '') {
     }, 2500);
 }
 
-// Inicializar quando a tela de expedição abrir
-document.addEventListener('DOMContentLoaded', () => {
-    initPullToRefresh();
-});
+// Flag para saber se já inicializou o PTR
+let ptrInitialized = false;
 
 // ==========================================
 // CONFIGURAÇÃO DE COLEÇÕES E CÁPSULAS
@@ -2468,6 +2478,15 @@ function openExpedicaoDestino(destino){
     hideAll();
     document.getElementById('app-expedicao').classList.add('active');
     pushState('app-expedicao');
+    
+    // Inicializar pull-to-refresh se ainda não foi
+    if (!ptrInitialized) {
+        setTimeout(() => {
+            initPullToRefresh();
+            ptrInitialized = true;
+        }, 100);
+    }
+    
     renderExpedicao(destino);
 }
 async function renderExpedicao(destino){
