@@ -1581,10 +1581,6 @@ function showWelcomeScreen(user, weather = null){
 
 // Função para obter localização e clima
 async function getWeatherAndShowWelcome(user){
-    // INICIAR CARREGAMENTO DA EXPEDIÇÃO EM SEGUNDO PLANO
-    // Isso vai rodar enquanto o usuário vê a tela de boas-vindas
-    iniciarCarregamentoExpedicaoBackground();
-    
     // Verificar se GPS foi negado anteriormente
     const gpsNegado = localStorage.getItem('gps-negado');
     
