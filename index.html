@@ -667,27 +667,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <div class="sub-btn disabled" id="btn-I26-1" onclick="openExpedicaoCapsula('I26', 1)">
             <div class="sub-icon">1️⃣</div>
             <div class="sub-info"><div class="sub-name">1ª Cápsula</div><div class="sub-desc">Primeira entrega</div></div>
-            <span class="sub-soon" id="status-I26-1">Verificando...</span>
+            <span class="sub-soon" id="status-I26-1">Em breve</span>
         </div>
         <div class="sub-btn disabled" id="btn-I26-2" onclick="openExpedicaoCapsula('I26', 2)">
             <div class="sub-icon">2️⃣</div>
             <div class="sub-info"><div class="sub-name">2ª Cápsula</div><div class="sub-desc">Segunda entrega</div></div>
-            <span class="sub-soon" id="status-I26-2">Verificando...</span>
+            <span class="sub-soon" id="status-I26-2">Em breve</span>
         </div>
         <div class="sub-btn disabled" id="btn-I26-3" onclick="openExpedicaoCapsula('I26', 3)">
             <div class="sub-icon">3️⃣</div>
             <div class="sub-info"><div class="sub-name">3ª Cápsula</div><div class="sub-desc">Terceira entrega</div></div>
-            <span class="sub-soon" id="status-I26-3">Verificando...</span>
+            <span class="sub-soon" id="status-I26-3">Em breve</span>
         </div>
         <div class="sub-btn disabled" id="btn-I26-4" onclick="openExpedicaoCapsula('I26', 4)">
             <div class="sub-icon">4️⃣</div>
             <div class="sub-info"><div class="sub-name">4ª Cápsula</div><div class="sub-desc">Quarta entrega</div></div>
-            <span class="sub-soon" id="status-I26-4">Verificando...</span>
+            <span class="sub-soon" id="status-I26-4">Em breve</span>
         </div>
         <div class="sub-btn disabled" id="btn-I26-5" onclick="openExpedicaoCapsula('I26', 5)">
             <div class="sub-icon">5️⃣</div>
             <div class="sub-info"><div class="sub-name">5ª Cápsula</div><div class="sub-desc">Quinta entrega</div></div>
-            <span class="sub-soon" id="status-I26-5">Verificando...</span>
+            <span class="sub-soon" id="status-I26-5">Em breve</span>
         </div>
     </div>
     <button class="submenu-back" onclick="backToExpedicao()">←</button>
@@ -702,27 +702,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <div class="sub-btn disabled" id="btn-V27-1" onclick="openExpedicaoCapsula('V27', 1)">
             <div class="sub-icon">1️⃣</div>
             <div class="sub-info"><div class="sub-name">1ª Cápsula</div><div class="sub-desc">Primeira entrega</div></div>
-            <span class="sub-soon" id="status-V27-1">Verificando...</span>
+            <span class="sub-soon" id="status-V27-1">Em breve</span>
         </div>
         <div class="sub-btn disabled" id="btn-V27-2" onclick="openExpedicaoCapsula('V27', 2)">
             <div class="sub-icon">2️⃣</div>
             <div class="sub-info"><div class="sub-name">2ª Cápsula</div><div class="sub-desc">Segunda entrega</div></div>
-            <span class="sub-soon" id="status-V27-2">Verificando...</span>
+            <span class="sub-soon" id="status-V27-2">Em breve</span>
         </div>
         <div class="sub-btn disabled" id="btn-V27-3" onclick="openExpedicaoCapsula('V27', 3)">
             <div class="sub-icon">3️⃣</div>
             <div class="sub-info"><div class="sub-name">3ª Cápsula</div><div class="sub-desc">Terceira entrega</div></div>
-            <span class="sub-soon" id="status-V27-3">Verificando...</span>
+            <span class="sub-soon" id="status-V27-3">Em breve</span>
         </div>
         <div class="sub-btn disabled" id="btn-V27-4" onclick="openExpedicaoCapsula('V27', 4)">
             <div class="sub-icon">4️⃣</div>
             <div class="sub-info"><div class="sub-name">4ª Cápsula</div><div class="sub-desc">Quarta entrega</div></div>
-            <span class="sub-soon" id="status-V27-4">Verificando...</span>
+            <span class="sub-soon" id="status-V27-4">Em breve</span>
         </div>
         <div class="sub-btn disabled" id="btn-V27-5" onclick="openExpedicaoCapsula('V27', 5)">
             <div class="sub-icon">5️⃣</div>
             <div class="sub-info"><div class="sub-name">5ª Cápsula</div><div class="sub-desc">Quinta entrega</div></div>
-            <span class="sub-soon" id="status-V27-5">Verificando...</span>
+            <span class="sub-soon" id="status-V27-5">Em breve</span>
         </div>
     </div>
     <button class="submenu-back" onclick="backToExpedicao()">←</button>
@@ -934,20 +934,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 const API_CONFIG = {
     baseUrl: 'https://isapaes-api.andrefcg.workers.dev',
-    apiKey: 'Isapaes@2026!X',  // ← SUBSTITUA pela sua API Key
+    apiKey: 'Isapaes@2026!X',
     cacheTimeout: 30 * 60 * 1000  // 30 minutos
 };
 
-let expedicaoCache = {
-    showroom: null,
-    ecommerce: null,
-    mostruario: null,
-    lastUpdate: {}
-};
+// Cache organizado por cápsula: { 'I26-1': { showroom: {...}, lastUpdate: {...} }, ... }
+let expedicaoCache = {};
+
+function getCacheKey() {
+    return `${capsulaAtual.colecao}-${capsulaAtual.num}`;
+}
 
 function loadExpedicaoCache() {
     try {
-        const cached = localStorage.getItem('expedicao_cache');
+        const cached = localStorage.getItem('expedicao_cache_v2');
         if (cached) {
             expedicaoCache = JSON.parse(cached);
             console.log('[API] Cache carregado');
@@ -957,14 +957,31 @@ function loadExpedicaoCache() {
 
 function saveExpedicaoCache() {
     try {
-        localStorage.setItem('expedicao_cache', JSON.stringify(expedicaoCache));
+        localStorage.setItem('expedicao_cache_v2', JSON.stringify(expedicaoCache));
     } catch (e) { console.log('[API] Erro save:', e); }
 }
 
 function isCacheValid(destino) {
-    const lastUpdate = expedicaoCache.lastUpdate[destino];
+    const key = getCacheKey();
+    if (!expedicaoCache[key] || !expedicaoCache[key].lastUpdate) return false;
+    const lastUpdate = expedicaoCache[key].lastUpdate[destino];
     if (!lastUpdate) return false;
     return (Date.now() - lastUpdate) < API_CONFIG.cacheTimeout;
+}
+
+function getCachedData(destino) {
+    const key = getCacheKey();
+    return expedicaoCache[key]?.[destino] || null;
+}
+
+function setCachedData(destino, data) {
+    const key = getCacheKey();
+    if (!expedicaoCache[key]) {
+        expedicaoCache[key] = { lastUpdate: {} };
+    }
+    expedicaoCache[key][destino] = data;
+    expedicaoCache[key].lastUpdate[destino] = Date.now();
+    saveExpedicaoCache();
 }
 
 async function fetchExpedicaoFromAPI(destino) {
@@ -1014,12 +1031,14 @@ function transformApiData(apiData) {
 }
 
 async function getExpedicaoData(destino, forceRefresh = false) {
-    if (!forceRefresh && isCacheValid(destino) && expedicaoCache[destino]) {
-        console.log(`[API] Cache hit: ${destino}`);
-        return expedicaoCache[destino];
+    const cachedData = getCachedData(destino);
+    
+    if (!forceRefresh && isCacheValid(destino) && cachedData) {
+        console.log(`[API] Cache hit: ${destino} (${getCacheKey()})`);
+        return cachedData;
     }
     
-    const hasCache = expedicaoCache[destino]?.length > 0;
+    const hasCache = cachedData?.length > 0;
     
     try {
         if (!hasCache) showExpedicaoLoading(true);
@@ -1027,11 +1046,9 @@ async function getExpedicaoData(destino, forceRefresh = false) {
         const apiData = await fetchExpedicaoFromAPI(destino);
         const transformed = transformApiData(apiData);
         
-        expedicaoCache[destino] = transformed;
-        expedicaoCache.lastUpdate[destino] = Date.now();
-        saveExpedicaoCache();
+        setCachedData(destino, transformed);
         
-        console.log(`[API] Loaded ${destino}: ${transformed.length} items`);
+        console.log(`[API] Loaded ${destino} (${getCacheKey()}): ${transformed.length} items`);
         showExpedicaoLoading(false);
         return transformed;
         
@@ -1041,7 +1058,7 @@ async function getExpedicaoData(destino, forceRefresh = false) {
         
         if (hasCache) {
             showExpedicaoToast('Usando cache (offline)', 'warning');
-            return expedicaoCache[destino];
+            return cachedData;
         }
         
         showExpedicaoToast('Erro. Usando dados locais.', 'error');
@@ -2059,7 +2076,8 @@ async function renderExpedicao(destino){
     pctTotal = totalMeta > 0 ? ((totalEnv / totalMeta) * 100).toFixed(1) : 0;
     const colorTotal = pctTotal >= 100 ? 'green' : 'blue';
     
-    const lastUpdate = expedicaoCache.lastUpdate[destino];
+    const cacheKey = getCacheKey();
+    const lastUpdate = expedicaoCache[cacheKey]?.lastUpdate?.[destino];
     const updateText = lastUpdate 
         ? 'Atualizado: ' + new Date(lastUpdate).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})
         : 'Dados locais';
@@ -2106,12 +2124,9 @@ async function renderExpedicao(destino){
                     <div class="exp-progress-fill ${colorTotal}" style="width:${Math.min(pctTotal,100)}%"></div>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-                    <span style="font-size:11px;color:var(--txt2)">${updateText}</span>
-                    <button onclick="refreshExpedicaoData()" style="background:var(--accent);color:white;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px">
-                        🔄 Atualizar
-                    </button>
+                    <span style="font-size:12px;color:#ffc107;font-weight:600;background:rgba(255,193,7,0.15);padding:4px 8px;border-radius:4px">🕐 ${updateText}</span>
+                    <span style="font-size:12px;font-weight:600;color:var(--${colorTotal})">${pctTotal}%</span>
                 </div>
-                <div style="text-align:right;font-size:12px;margin-top:4px;font-weight:600;color:var(--${colorTotal})">${pctTotal}%</div>
             </div>
         `;
     }
