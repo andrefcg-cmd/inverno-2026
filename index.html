@@ -507,6 +507,18 @@ html, body { overscroll-behavior-y: contain; }
 .splash-refresh-text{margin-top:20px;color:#666;font-size:12px}
 .splash-refresh-progress{margin-top:16px;width:200px;height:4px;background:#222;border-radius:2px;overflow:hidden}
 .splash-refresh-progress-bar{height:100%;background:linear-gradient(90deg,#e94560,#ff6b8a);width:0%;transition:width .3s ease}
+
+/* Modal Biometria */
+.bio-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:10000;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.bio-modal.active{opacity:1;pointer-events:auto}
+.bio-modal-content{background:#1a1a1a;border-radius:16px;padding:30px;text-align:center;max-width:300px;margin:20px}
+.bio-modal-icon{font-size:48px;margin-bottom:16px}
+.bio-modal-title{font-size:18px;font-weight:600;margin-bottom:12px;color:#fff}
+.bio-modal-text{font-size:14px;color:#888;margin-bottom:24px;line-height:1.5}
+.bio-modal-btns{display:flex;gap:12px}
+.bio-modal-btn{flex:1;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer}
+.bio-modal-btn.primary{background:#e94560;color:#fff}
+.bio-modal-btn.secondary{background:#333;color:#fff}
 </style></head><body>
 
 <!-- SPLASH -->
@@ -824,6 +836,20 @@ html, body { overscroll-behavior-y: contain; }
 </div>
 
 <!-- GEOLOCALIZADOR -->
+
+<!-- Modal Biometria -->
+<div class="bio-modal" id="bio-modal">
+    <div class="bio-modal-content">
+        <div class="bio-modal-icon">🔐</div>
+        <div class="bio-modal-title">Ativar Biometria?</div>
+        <div class="bio-modal-text">Use Face ID ou impressão digital para entrar mais rápido na próxima vez.</div>
+        <div class="bio-modal-btns">
+            <button class="bio-modal-btn secondary" id="bio-modal-no">Agora não</button>
+            <button class="bio-modal-btn primary" id="bio-modal-yes">Ativar</button>
+        </div>
+    </div>
+</div>
+
 <div class="geo-screen" id="geo-screen">
     <div class="geo-header">
         <button class="back-btn" onclick="goBackTo('sub-comercial')">←</button>
@@ -980,7 +1006,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '2.4.1';
+const APP_VERSION = '2.6.0';
 
 // Verificar se precisa limpar cache (nova versão)
 (function checkAppVersion() {
@@ -1403,18 +1429,16 @@ async function doInitialLogin(){
                     biometriaDisponivel = true;
                 }
             } catch(e) {
+                console.log('[Bio] Erro verificação:', e);
                 biometriaDisponivel = true;
             }
         }
         
-        // Oferecer biometria apenas se disponível e não cadastrada
+        console.log('[Bio] Disponível:', biometriaDisponivel);
+        
+        // Oferecer biometria usando modal customizado
         if (biometriaDisponivel) {
-            setTimeout(() => {
-                if (confirm('Deseja ativar o login por biometria/Face ID?')) {
-                    registerInitialBiometric(user);
-                }
-                getWeatherAndShowWelcome(user);
-            }, 300);
+            mostrarModalBiometria(user);
             return;
         }
         
@@ -1434,7 +1458,7 @@ async function registerInitialBiometric(user){
         const cred = await navigator.credentials.create({publicKey:{
             challenge: crypto.getRandomValues(new Uint8Array(32)),
             rp:{name:'Isa Paes', id:location.hostname},
-            user:{id, name:user, displayName:USERS[user].nome},
+            user:{id, name:user, displayName:USERS[user]?.nome || user},
             pubKeyCredParams:[{alg:-7, type:'public-key'}],
             authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required'},
             timeout:60000
@@ -1442,8 +1466,33 @@ async function registerInitialBiometric(user){
         if(cred){
             localStorage.setItem('bio-user', user);
             localStorage.setItem('bio-cred-id', btoa(String.fromCharCode(...new Uint8Array(cred.rawId))));
+            console.log('[Bio] ✅ Biometria cadastrada para:', user);
+            return true;
         }
-    }catch(e){console.log('Biometria cancelada')}
+    }catch(e){
+        console.log('[Bio] Erro ao cadastrar:', e);
+    }
+    return false;
+}
+
+// Modal de biometria customizado (funciona em PWA)
+function mostrarModalBiometria(user) {
+    const modal = document.getElementById('bio-modal');
+    const btnYes = document.getElementById('bio-modal-yes');
+    const btnNo = document.getElementById('bio-modal-no');
+    
+    modal.classList.add('active');
+    
+    btnYes.onclick = async () => {
+        modal.classList.remove('active');
+        await registerInitialBiometric(user);
+        getWeatherAndShowWelcome(user);
+    };
+    
+    btnNo.onclick = () => {
+        modal.classList.remove('active');
+        getWeatherAndShowWelcome(user);
+    };
 }
 
 // Função para criar gotas de chuva
@@ -2031,63 +2080,146 @@ function aplicarCacheNaUI(cache) {
 // Flag para controlar se já carregou os dados
 let expedicaoCarregada = false;
 
+// Progresso do carregamento em background
+let loadingProgress = { current: 0, total: 0, status: '', percent: 0 };
+
 async function openExpedicao(){
-    // Tentar carregar do cache primeiro (instantâneo)
+    // Navegar imediatamente (não trava)
+    hideAll();
+    document.getElementById('sub-expedicao').classList.add('active');
+    pushState('sub-expedicao');
+    
+    // Tentar carregar do cache primeiro
     const cache = carregarCacheCapsulas();
     
     if (cache && cache.status && Object.keys(cache.status).length > 0) {
-        // Tem cache! Abre instantâneo
+        // Tem cache! Aplicar na UI
         aplicarCacheNaUI(cache);
         expedicaoCarregada = true;
-        
-        hideAll();
-        document.getElementById('sub-expedicao').classList.add('active');
-        pushState('sub-expedicao');
         
         // Atualizar em segundo plano se cache estiver velho
         if (!cacheCapsulaValido(cache)) {
             console.log('[Cache] Cache expirado, atualizando em segundo plano...');
-            atualizarCapsulasSilenciosamente();
+            iniciarCarregamentoBackground();
         }
         return;
     }
     
-    // Sem cache - verificar se já está carregando em segundo plano
-    if (expedicaoCarregada) {
-        hideAll();
-        document.getElementById('sub-expedicao').classList.add('active');
-        pushState('sub-expedicao');
-        return;
+    // Sem cache - iniciar carregamento em background se ainda não iniciou
+    if (!backgroundLoadingStarted && !backgroundLoadingPromise) {
+        iniciarCarregamentoBackground();
     }
+}
+
+// Iniciar carregamento em background (não bloqueia UI)
+function iniciarCarregamentoBackground() {
+    if (backgroundLoadingStarted) return;
     
-    if (backgroundLoadingPromise) {
-        // Carregamento em andamento - mostrar loading e aguardar
-        mostrarLoadingAPI();
-        atualizarLoadingAPI(60, 'Finalizando carregamento...');
+    backgroundLoadingStarted = true;
+    backgroundLoadingPromise = carregarCapsulasBackground();
+}
+
+// Carregar cápsulas em background - PARALELO (muito mais rápido!)
+async function carregarCapsulasBackground() {
+    console.log('[Background] Iniciando carregamento PARALELO de cápsulas...');
+    
+    loadingProgress = { current: 0, total: 10, status: 'Conectando ao TOTVS...', percent: 10 };
+    
+    // Primeiro, tentar endpoint que retorna tudo de uma vez (mais rápido)
+    try {
+        const response = await fetch(`${API_CONFIG.baseUrl}/api/totvs/capsulas/status`, {
+            headers: { 'X-API-Key': API_CONFIG.apiKey || 'Isapaes@2026!X' }
+        });
         
-        try {
-            const result = await backgroundLoadingPromise;
-            atualizarLoadingAPI(100, 'Concluído!');
-            await new Promise(r => setTimeout(r, 300));
-            esconderLoadingAPI();
+        if (response.ok) {
+            const data = await response.json();
+            console.log('[Background] ✅ Dados recebidos do endpoint unificado!');
             
-            if (result?.erroAPI) {
-                mostrarAvisoAPIIndisponivel();
+            loadingProgress = { current: 5, total: 10, status: 'Processando dados...', percent: 50 };
+            
+            // Processar dados retornados
+            for (const item of data.capsulas || []) {
+                const key = `${item.colecao}-${item.capsula}`;
+                capsulasStatus[key] = {
+                    habilitada: item.habilitada,
+                    enviado: item.enviado || 0
+                };
+                
+                if (item.habilitada) {
+                    habilitarBotaoCapsula(item.colecao, item.capsula);
+                } else {
+                    desabilitarBotaoCapsula(item.colecao, item.capsula, 'Em breve');
+                }
             }
-        } catch (e) {
-            console.error('[Expedição] Erro:', e);
-            esconderLoadingAPI();
+            
+            loadingProgress = { current: 10, total: 10, status: 'Concluído!', percent: 100 };
+            salvarCacheCapsulas();
+            expedicaoCarregada = true;
+            
+            return { erroAPI: false };
         }
-        
-        hideAll();
-        document.getElementById('sub-expedicao').classList.add('active');
-        pushState('sub-expedicao');
-        return;
+    } catch(e) {
+        console.log('[Background] Endpoint unificado não disponível, usando paralelo...');
     }
     
-    // Nenhum cache, nenhum carregamento - iniciar com loading
-    mostrarLoadingAPI();
-    await verificarTodasCapsulasComLoading();
+    // Fallback: Carregar em PARALELO (todas ao mesmo tempo)
+    const colecoes = Object.keys(COLECOES_CONFIG);
+    const promises = [];
+    const capsulasParaVerificar = [];
+    
+    // Montar lista de todas as cápsulas
+    for (const colecao of colecoes) {
+        const config = COLECOES_CONFIG[colecao];
+        for (const capsula of config.capsulas) {
+            capsulasParaVerificar.push({ colecao, capsula, config });
+        }
+    }
+    
+    const totalCapsulas = capsulasParaVerificar.length;
+    loadingProgress = { current: 0, total: totalCapsulas, status: 'Verificando cápsulas...', percent: 20 };
+    
+    // Criar todas as promises de uma vez (paralelo!)
+    let completadas = 0;
+    
+    const verificarCapsula = async ({ colecao, capsula, config }) => {
+        const key = `${colecao}-${capsula}`;
+        try {
+            const resultado = await verificarCapsulaAPI(colecao, capsula);
+            capsulasStatus[key] = resultado;
+            
+            if (resultado.habilitada) {
+                habilitarBotaoCapsula(colecao, capsula);
+                console.log(`[Paralelo] ✅ ${colecao} Cápsula ${capsula}: ${resultado.enviado} peças`);
+            } else {
+                desabilitarBotaoCapsula(colecao, capsula, 'Em breve');
+            }
+        } catch(e) {
+            console.log(`[Paralelo] Erro ${key}:`, e);
+            capsulasStatus[key] = { habilitada: false, erro: true };
+            desabilitarBotaoCapsula(colecao, capsula, 'Erro');
+        }
+        
+        // Atualizar progresso
+        completadas++;
+        loadingProgress = {
+            current: completadas,
+            total: totalCapsulas,
+            status: `${completadas}/${totalCapsulas} cápsulas verificadas`,
+            percent: 20 + Math.round((completadas / totalCapsulas) * 80)
+        };
+    };
+    
+    // Executar todas em paralelo
+    await Promise.all(capsulasParaVerificar.map(verificarCapsula));
+    
+    // Salvar cache
+    salvarCacheCapsulas();
+    expedicaoCarregada = true;
+    loadingProgress = { current: totalCapsulas, total: totalCapsulas, status: 'Concluído!', percent: 100 };
+    
+    console.log('[Background] ✅ Carregamento paralelo concluído!');
+    
+    return { erroAPI: false };
 }
 
 // Atualizar cápsulas silenciosamente (sem loading visual)
@@ -2735,6 +2867,83 @@ function openExpedicaoDestino(destino){
         }, 100);
     }
     
+    // Se ainda está carregando em background, mostrar progresso
+    if (backgroundLoadingPromise && loadingProgress.percent < 100) {
+        mostrarProgressoCarregamento(destino);
+    } else {
+        renderExpedicao(destino);
+    }
+}
+
+// Mostrar progresso do carregamento em andamento
+async function mostrarProgressoCarregamento(destino) {
+    const splash = document.getElementById('splash-refresh');
+    const splashText = document.getElementById('splash-refresh-text');
+    const splashBar = document.getElementById('splash-refresh-bar');
+    
+    splash.classList.add('active');
+    
+    // Flag para saber se usuário cancelou
+    let cancelled = false;
+    
+    // Adicionar botão de voltar no splash
+    let voltarBtn = document.getElementById('splash-refresh-back');
+    if (!voltarBtn) {
+        voltarBtn = document.createElement('button');
+        voltarBtn.id = 'splash-refresh-back';
+        voltarBtn.textContent = '← Voltar';
+        voltarBtn.style.cssText = 'margin-top:20px;padding:10px 20px;background:#333;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer';
+        splash.appendChild(voltarBtn);
+    }
+    voltarBtn.style.display = 'block';
+    
+    // Handler para fechar splash se usuário voltar
+    const handleBack = () => {
+        cancelled = true;
+        splash.classList.remove('active');
+        voltarBtn.style.display = 'none';
+        backToExpedicaoEstacao();
+    };
+    
+    voltarBtn.onclick = handleBack;
+    
+    // Atualizar progresso enquanto carrega
+    const updateInterval = setInterval(() => {
+        if (cancelled) {
+            clearInterval(updateInterval);
+            return;
+        }
+        splashBar.style.width = loadingProgress.percent + '%';
+        splashText.textContent = loadingProgress.status;
+        
+        // Se completou, parar de atualizar
+        if (loadingProgress.percent >= 100) {
+            clearInterval(updateInterval);
+        }
+    }, 200);
+    
+    // Aguardar carregamento terminar
+    try {
+        await backgroundLoadingPromise;
+    } catch(e) {
+        console.log('[Progresso] Erro:', e);
+    }
+    
+    clearInterval(updateInterval);
+    
+    // Se usuário cancelou, não fazer mais nada
+    if (cancelled) return;
+    
+    splashBar.style.width = '100%';
+    splashText.textContent = 'Pronto!';
+    
+    await new Promise(r => setTimeout(r, 300));
+    
+    // Esconder splash e botão voltar
+    splash.classList.remove('active');
+    voltarBtn.style.display = 'none';
+    
+    // Renderizar a tela
     renderExpedicao(destino);
 }
 async function renderExpedicao(destino, dadosPreCarregados = null){
