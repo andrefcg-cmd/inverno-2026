@@ -949,7 +949,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '2.1.0';
+const APP_VERSION = '2.1.1';
 
 // Verificar se precisa limpar cache (nova versão)
 (function checkAppVersion() {
@@ -1359,21 +1359,38 @@ async function doInitialLogin(){
         
         // Verificar se biometria está disponível
         let biometriaDisponivel = false;
+        console.log('[Bio] Verificando disponibilidade...');
+        console.log('[Bio] window.PublicKeyCredential:', !!window.PublicKeyCredential);
+        
         if (window.PublicKeyCredential) {
             try {
-                biometriaDisponivel = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+                // Tentar método moderno primeiro
+                if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function') {
+                    biometriaDisponivel = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+                    console.log('[Bio] isUserVerifyingPlatformAuthenticatorAvailable:', biometriaDisponivel);
+                } else {
+                    // Fallback: assumir disponível se PublicKeyCredential existir
+                    biometriaDisponivel = true;
+                    console.log('[Bio] Fallback: assumindo disponível');
+                }
             } catch(e) {
-                console.log('[Bio] Erro ao verificar disponibilidade:', e);
+                console.log('[Bio] Erro ao verificar:', e);
+                // Em caso de erro, tentar mesmo assim
+                biometriaDisponivel = true;
             }
         }
+        
+        console.log('[Bio] Disponível:', biometriaDisponivel);
         
         // SEMPRE oferecer biometria se disponível
         if (biometriaDisponivel) {
             const bioUserAtual = localStorage.getItem('bio-user');
+            console.log('[Bio] Usuário atual com bio:', bioUserAtual);
             let mensagem = 'Deseja ativar o login por biometria/Face ID?';
             
             // Se já tem biometria cadastrada para este usuário, não perguntar
             if (bioUserAtual === user) {
+                console.log('[Bio] Já cadastrado para este usuário, pulando...');
                 getWeatherAndShowWelcome(user);
                 return;
             }
@@ -1383,15 +1400,17 @@ async function doInitialLogin(){
                 mensagem = `A biometria está cadastrada para "${bioUserAtual}". Deseja recadastrar para "${user}"?`;
             }
             
+            console.log('[Bio] Mostrando confirm...');
             setTimeout(() => {
                 if (confirm(mensagem)) {
                     registerInitialBiometric(user);
                 }
                 getWeatherAndShowWelcome(user);
-            }, 300);
+            }, 500);
             return;
         }
         
+        console.log('[Bio] Não disponível, seguindo sem biometria');
         getWeatherAndShowWelcome(user);
         
     } catch (e) {
