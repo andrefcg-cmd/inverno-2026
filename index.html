@@ -900,7 +900,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 </main>
 </div>
 
-<script>
 
 <script>
 // ==========================================
@@ -910,7 +909,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 const API_CONFIG = {
     baseUrl: 'https://isapaes-api.andrefcg.workers.dev',
-    apiKey: 'Isapaes@2026!X',  // ← SUBSTITUA pela sua API Key
+    apiKey: 'SUA_API_KEY_AQUI',  // ← SUBSTITUA pela sua API Key
     cacheTimeout: 30 * 60 * 1000  // 30 minutos
 };
 
@@ -1053,7 +1052,7 @@ async function refreshExpedicaoData() {
     try {
         await getExpedicaoData(currentExpDestino, true);
         renderExpedicao(currentExpDestino);
-        showExpedicaoToast(`Atualizado às ${new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`, 'success');
+        showExpedicaoToast('Atualizado ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}), 'success');
     } catch (error) {
         showExpedicaoToast('Erro ao atualizar', 'error');
     }
@@ -1737,17 +1736,12 @@ async function renderExpedicao(destino){
     // Buscar dados da API (ou cache)
     const dadosAPI = await getExpedicaoData(destino);
     
-    // Referências excluídas do showroom
     const refsExcluidas = ['SHI26023', 'SAI26012'];
-    
-    // Filtrar dados baseado no destino
     let dadosFiltrados = dadosAPI.filter(item => !refsExcluidas.includes(item.ref));
     
-    // Calcular totais
     let totalProd = 0, totalEnvShow = 0;
     const refsUnicas = new Set();
     
-    // Totais dos dados filtrados
     dadosFiltrados.forEach(item => {
         const p = item.prod || {};
         totalProd += (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0);
@@ -1756,24 +1750,20 @@ async function renderExpedicao(destino){
         refsUnicas.add(item.ref);
     });
     
-    // E-commerce = 1 por tamanho existente por cor (dados filtrados)
     let totalEcomm = 0;
     dadosFiltrados.forEach(item => {
         const p = item.prod || {};
         totalEcomm += ['PP','P','M','G'].filter(t => p[t] > 0).length;
     });
     
-    // Isabella meta = 1 P por cor (dados filtrados)
     let metaIsabella = 0;
     dadosFiltrados.forEach(item => {
         if((item.prod?.P || 0) > 0) metaIsabella++;
     });
     
-    // Resto após showroom e ecommerce
     const resto = totalProd - totalEnvShow - totalEcomm;
     const envIsabella = Math.min(resto, metaIsabella);
     
-    // Meta showroom = produzido (filtrado) - ecommerce(filtrado) - isabella(filtrado)
     let ecommFiltrado = 0, isabellaFiltrado = 0;
     dadosFiltrados.forEach(item => {
         const p = item.prod || {};
@@ -1796,40 +1786,20 @@ async function renderExpedicao(destino){
     pctTotal = totalMeta > 0 ? ((totalEnv / totalMeta) * 100).toFixed(1) : 0;
     const colorTotal = pctTotal >= 100 ? 'green' : 'blue';
     
-    // Última atualização
     const lastUpdate = expedicaoCache.lastUpdate[destino];
     const updateText = lastUpdate 
-        ? `Atualizado: ${new Date(lastUpdate).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})}`
+        ? 'Atualizado: ' + new Date(lastUpdate).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})
         : 'Dados locais';
     
-    // Stats resumo
     const totalCores = dadosFiltrados.length;
-    let statsHtml;
-    if(destino === 'showroom'){
-        statsHtml = `
-            <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Total de Referências</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalCores}</div><div class="exp-stat-label">Variantes de Cores</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalMeta.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças a Receber</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalEnv.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Recebidas</div></div>
-        `;
-    } else if(destino === 'ecommerce'){
-        statsHtml = `
-            <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Total de Referências</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalCores}</div><div class="exp-stat-label">Variantes de Cores</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalMeta}</div><div class="exp-stat-label">Peças a Receber</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalEnv}</div><div class="exp-stat-label">Peças Recebidas</div></div>
-        `;
-    } else {
-        statsHtml = `
-            <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Total de Referências</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalCores}</div><div class="exp-stat-label">Variantes de Cores</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalMeta}</div><div class="exp-stat-label">Peças a Receber</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalEnv}</div><div class="exp-stat-label">Peças Recebidas</div></div>
-        `;
-    }
+    const statsHtml = `
+        <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Total de Referências</div></div>
+        <div class="exp-stat"><div class="exp-stat-value">${totalCores}</div><div class="exp-stat-label">Variantes de Cores</div></div>
+        <div class="exp-stat"><div class="exp-stat-value">${totalMeta.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças a Receber</div></div>
+        <div class="exp-stat"><div class="exp-stat-value">${totalEnv.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Recebidas</div></div>
+    `;
     document.getElementById('exp-total-stats').innerHTML = statsHtml;
     
-    // Barra total + botão atualizar
     document.getElementById('exp-total-progress').innerHTML = `
         <div class="exp-progress-row">
             <div class="exp-progress-header">
@@ -1849,7 +1819,6 @@ async function renderExpedicao(destino){
         </div>
     `;
     
-    // Lista de itens com barras por tamanho
     const items = dadosFiltrados.map(item => {
         const p = item.prod || {};
         const e = item.envShow || {};
@@ -1857,88 +1826,49 @@ async function renderExpedicao(destino){
         const totalE = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
         if(totalP === 0) return '';
         
-        // Calcular meta e enviado baseado no destino
         let metaItem, envItem;
         if(destino === 'showroom'){
-            // Showroom: produzido - ecommerce(1 cada tam) - isabella(1 P)
             const ecommTams = ['PP','P','M','G'].filter(t => p[t] > 0).length;
             const isabellaQty = p.P > 0 ? 1 : 0;
             metaItem = totalP - ecommTams - isabellaQty;
             envItem = totalE;
         } else if(destino === 'ecommerce'){
-            // E-commerce: 1 de cada tamanho existente
             metaItem = ['PP','P','M','G'].filter(t => p[t] > 0).length;
-            envItem = metaItem; // 100% enviado
+            envItem = metaItem;
         } else {
-            // Isabella: 1 peça P
             metaItem = p.P > 0 ? 1 : 0;
-            envItem = metaItem; // 100% enviado
+            envItem = metaItem;
         }
         
         const pctItem = metaItem > 0 ? ((envItem / metaItem) * 100).toFixed(0) : 0;
         const colorItem = pctItem >= 100 ? 'green' : 'blue';
         
-        // Barras por tamanho
         let tamanhos;
         if(destino === 'showroom'){
-            // Showroom: meta = produzido - ecommerce(1 cada) - isabella(1 P)
             tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
                 const prod = p[t] || 0;
                 const env = e[t] || 0;
-                // Descontar 1 do ecommerce de cada tamanho
-                // Descontar 1 da isabella só do P
                 const descEcomm = 1;
                 const descIsabella = (t === 'P') ? 1 : 0;
                 const meta = prod - descEcomm - descIsabella;
                 const pct = meta > 0 ? Math.min((env/meta)*100, 100) : 0;
                 const col = env >= meta ? 'green' : 'blue';
-                return `
-                    <div class="exp-tam-row">
-                        <span class="exp-tam-label">${t}</span>
-                        <div class="exp-tam-bar"><div class="exp-tam-fill ${col}" style="width:${pct}%"></div></div>
-                        <span class="exp-tam-val">${env}/${meta}</span>
-                    </div>
-                `;
+                return '<div class="exp-tam-row"><span class="exp-tam-label">'+t+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/'+meta+'</span></div>';
             }).join('');
         } else if(destino === 'ecommerce'){
-            // E-commerce: 1/1 para cada tamanho existente
             tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
-                return `
-                    <div class="exp-tam-row">
-                        <span class="exp-tam-label">${t}</span>
-                        <div class="exp-tam-bar"><div class="exp-tam-fill green" style="width:100%"></div></div>
-                        <span class="exp-tam-val">1/1</span>
-                    </div>
-                `;
+                return '<div class="exp-tam-row"><span class="exp-tam-label">'+t+'</span><div class="exp-tam-bar"><div class="exp-tam-fill green" style="width:100%"></div></div><span class="exp-tam-val">1/1</span></div>';
             }).join('');
         } else {
-            // Isabella: só P com 1/1
             if(p.P > 0){
-                tamanhos = `
-                    <div class="exp-tam-row">
-                        <span class="exp-tam-label">P</span>
-                        <div class="exp-tam-bar"><div class="exp-tam-fill green" style="width:100%"></div></div>
-                        <span class="exp-tam-val">1/1</span>
-                    </div>
-                `;
+                tamanhos = '<div class="exp-tam-row"><span class="exp-tam-label">P</span><div class="exp-tam-bar"><div class="exp-tam-fill green" style="width:100%"></div></div><span class="exp-tam-val">1/1</span></div>';
             } else {
                 tamanhos = '<div class="exp-tam-row"><span class="exp-tam-label" style="color:var(--txt2)">Sem tamanho P</span></div>';
             }
         }
         
-        return `
-            <div class="exp-item" onclick="openPhoto('${item.ref}','${item.desc.replace(/'/g,"\\'")}')">
-                <div class="exp-item-header">
-                    <div>
-                        <div class="exp-item-ref">${item.ref} <span style="font-weight:400;color:var(--txt2);font-size:11px">(${totalP} pçs)</span></div>
-                        <div class="exp-item-name">${item.desc}</div>
-                        <div class="exp-item-cor">🎨 ${item.cor}</div>
-                    </div>
-                    <div class="exp-item-badge" style="color:var(--${colorItem})">${pctItem}%</div>
-                </div>
-                <div class="exp-tamanhos-grid">${tamanhos}</div>
-            </div>
-        `;
+        const descEscaped = item.desc.replace(/'/g, "\\'");
+        return '<div class="exp-item" onclick="openPhoto(\''+item.ref+'\',\''+descEscaped+'\')"><div class="exp-item-header"><div><div class="exp-item-ref">'+item.ref+' <span style="font-weight:400;color:var(--txt2);font-size:11px">('+totalP+' pçs)</span></div><div class="exp-item-name">'+item.desc+'</div><div class="exp-item-cor">🎨 '+item.cor+'</div></div><div class="exp-item-badge" style="color:var(--'+colorItem+')">'+pctItem+'%</div></div><div class="exp-tamanhos-grid">'+tamanhos+'</div></div>';
     }).join('');
     
     document.getElementById('exp-items-list').innerHTML = items;
