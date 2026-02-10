@@ -505,6 +505,8 @@ html, body { overscroll-behavior-y: contain; }
 .splash-refresh .splash-icon:nth-child(4){animation-delay:0.45s}
 .splash-refresh .splash-icon:nth-child(5){animation-delay:0.6s}
 .splash-refresh-text{margin-top:20px;color:#666;font-size:12px}
+.splash-refresh-progress{margin-top:16px;width:200px;height:4px;background:#222;border-radius:2px;overflow:hidden}
+.splash-refresh-progress-bar{height:100%;background:linear-gradient(90deg,#e94560,#ff6b8a);width:0%;transition:width .3s ease}
 </style></head><body>
 
 <!-- SPLASH -->
@@ -816,6 +818,9 @@ html, body { overscroll-behavior-y: contain; }
         <span class="splash-icon">👘</span>
     </div>
     <div class="splash-refresh-text" id="splash-refresh-text">Atualizando...</div>
+    <div class="splash-refresh-progress">
+        <div class="splash-refresh-progress-bar" id="splash-refresh-bar"></div>
+    </div>
 </div>
 
 <!-- GEOLOCALIZADOR -->
@@ -975,7 +980,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '2.3.0';
+const APP_VERSION = '2.3.1';
 
 // Verificar se precisa limpar cache (nova versão)
 (function checkAppVersion() {
@@ -2394,12 +2399,18 @@ async function executarRefreshGlobal() {
     // Mostrar splash
     const splash = document.getElementById('splash-refresh');
     const splashText = document.getElementById('splash-refresh-text');
-    splash.classList.add('active');
-    splashText.textContent = 'Limpando cache...';
+    const splashBar = document.getElementById('splash-refresh-bar');
     
-    await new Promise(r => setTimeout(r, 500));
+    splash.classList.add('active');
+    splashBar.style.width = '0%';
+    splashText.textContent = 'Iniciando...';
+    
+    await new Promise(r => setTimeout(r, 200));
     
     // Limpar todos os caches
+    splashBar.style.width = '20%';
+    splashText.textContent = 'Limpando cache...';
+    
     localStorage.removeItem('expedicao_cache_v2');
     localStorage.removeItem('isa-capsulas-cache-v1');
     expedicaoCache = {};
@@ -2408,20 +2419,52 @@ async function executarRefreshGlobal() {
     backgroundLoadingStarted = false;
     backgroundLoadingPromise = null;
     
-    splashText.textContent = 'Recarregando dados...';
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 300));
     
-    // Recarregar cápsulas em background
-    splashText.textContent = 'Verificando cápsulas...';
+    // Recarregar cápsulas
+    splashBar.style.width = '40%';
+    splashText.textContent = 'Conectando ao TOTVS...';
+    
+    await new Promise(r => setTimeout(r, 300));
+    
     try {
-        await verificarTodasCapsulasBackground();
+        const colecoes = Object.keys(COLECOES_CONFIG);
+        let totalCapsulas = 0;
+        colecoes.forEach(col => totalCapsulas += COLECOES_CONFIG[col].capsulas.length);
+        
+        let capsulaIdx = 0;
+        
+        for (const colecao of colecoes) {
+            const config = COLECOES_CONFIG[colecao];
+            
+            for (const capsula of config.capsulas) {
+                capsulaIdx++;
+                const progresso = 40 + Math.round((capsulaIdx / totalCapsulas) * 50);
+                splashBar.style.width = progresso + '%';
+                splashText.textContent = `Verificando ${config.nome} ${config.ano} - Cápsula ${capsula}...`;
+                
+                const key = `${colecao}-${capsula}`;
+                const resultado = await verificarCapsulaAPI(colecao, capsula);
+                capsulasStatus[key] = resultado;
+                
+                if (resultado.habilitada) {
+                    habilitarBotaoCapsula(colecao, capsula);
+                } else {
+                    desabilitarBotaoCapsula(colecao, capsula, 'Em breve');
+                }
+            }
+        }
+        
         salvarCacheCapsulas();
+        expedicaoCarregada = true;
+        
     } catch(e) {
         console.log('[Refresh] Erro ao carregar cápsulas:', e);
     }
     
+    splashBar.style.width = '100%';
     splashText.textContent = 'Pronto!';
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => setTimeout(r, 400));
     
     // Esconder splash
     splash.classList.remove('active');
