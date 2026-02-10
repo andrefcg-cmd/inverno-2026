@@ -125,9 +125,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 @keyframes welcomeFadeIn{from{opacity:0}to{opacity:1}}
 
 /* INITIAL LOGIN */
-.initial-login{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9997;padding:24px;overflow:visible}
+.initial-login{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9997;padding:40px 24px;box-sizing:border-box;overflow:visible}
 .initial-login.active{display:flex}
-.initial-login-logo{width:160px;margin-bottom:40px;flex-shrink:0}
+.initial-login-logo{width:180px;height:auto;margin-bottom:40px;flex-shrink:0;object-fit:contain}
 .initial-login-box{width:100%;max-width:320px}
 .initial-login-title{font-size:14px;color:var(--txt2);text-align:center;margin-bottom:24px}
 
@@ -1075,6 +1075,10 @@ async function getExpedicaoData(destino) {
         const apiData = await fetchExpedicaoFromAPI(destino);
         const transformed = transformApiData(apiData);
         console.log(`[API] ${destino}: ${transformed.length} itens`);
+        
+        // Guardar timestamp da atualização
+        ultimaAtualizacaoTimestamp = new Date();
+        
         return transformed;
     } catch (error) {
         console.error(`[API] Erro ${destino}:`, error);
@@ -1853,6 +1857,7 @@ const modNames={comercial:'Comercial',compras:'Compras',financeiro:'Financeiro',
 const EXPEDICAO_INV1 = [{"ref":"BDI26003","desc":"BODY BASIC RENDA","cor":"MARFIM","prod":{"PP":11,"P":22,"M":22,"G":10},"envShow":{"PP":11,"P":22,"M":22,"G":10}},{"ref":"BDI26004","desc":"BODY BASIC TULE MANGA","cor":"AREIA","prod":{"PP":17,"P":32,"M":33,"G":18},"envShow":{"PP":17,"P":32,"M":33,"G":18}},{"ref":"BDI26004","desc":"BODY BASIC TULE MANGA","cor":"PRETO","prod":{"PP":16,"P":31,"M":31,"G":16},"envShow":{"PP":16,"P":31,"M":31,"G":16}},{"ref":"BDI26005","desc":"BODY BASIC ISA PAES","cor":"MARFIM","prod":{"PP":14,"P":29,"M":29,"G":15},"envShow":{"PP":14,"P":29,"M":29,"G":15}},{"ref":"BDI26005","desc":"BODY BASIC ISA PAES","cor":"MARROM","prod":{"PP":15,"P":29,"M":30,"G":15},"envShow":{"PP":15,"P":29,"M":30,"G":15}},{"ref":"BDI26005","desc":"BODY BASIC ISA PAES","cor":"PRETO","prod":{"PP":20,"P":38,"M":37,"G":20},"envShow":{"PP":20,"P":38,"M":37,"G":20}},{"ref":"BDI26011","desc":"BODY TRICOT DECOTE V","cor":"MARROM","prod":{"PP":10,"P":23,"M":22,"G":10},"envShow":{"PP":10,"P":23,"M":22,"G":10}},{"ref":"BDI26011","desc":"BODY TRICOT DECOTE V","cor":"PRETO","prod":{"PP":11,"P":18,"M":23,"G":11},"envShow":{"PP":11,"P":18,"M":23,"G":11}},{"ref":"BLI26001","desc":"BLUSA TOP DETALHE DECOTE","cor":"MARROM","prod":{"PP":11,"P":23,"M":21,"G":11},"envShow":{"PP":11,"P":23,"M":21,"G":11}},{"ref":"BLI26002","desc":"BLUSA CROPPED ALFAIATARIA DUO COLOR","cor":"AMARELO CLARO","prod":{"PP":26,"P":28,"M":51,"G":26},"envShow":{"PP":26,"P":28,"M":51,"G":26}},{"ref":"BLI26002","desc":"BLUSA CROPPED ALFAIATARIA DUO COLOR","cor":"ROSA CLARO","prod":{"PP":18,"P":35,"M":32,"G":12},"envShow":{"PP":18,"P":35,"M":32,"G":12}},{"ref":"BLI26003","desc":"BLUSA CROPPED ALFAIATARIA CORSELET","cor":"AZUL CLARO","prod":{"PP":9,"P":17,"M":18,"G":8},"envShow":{"PP":9,"P":17,"M":18,"G":8}},{"ref":"BLI26003","desc":"BLUSA CROPPED ALFAIATARIA CORSELET","cor":"MARFIM","prod":{"PP":8,"P":18,"M":18,"G":8},"envShow":{"PP":8,"P":18,"M":18,"G":8}},{"ref":"BLI26004","desc":"BLUSA CROPPED ALFAIATARIA MESCLA","cor":"AZUL","prod":{"PP":10,"P":22,"M":21,"G":11},"envShow":{"PP":10,"P":22,"M":21,"G":11}},{"ref":"BLI26004","desc":"BLUSA CROPPED ALFAIATARIA MESCLA","cor":"MARFIM","prod":{"PP":10,"P":22,"M":23,"G":11},"envShow":{"PP":10,"P":22,"M":23,"G":11}},{"ref":"BLI26006","desc":"BLUSA TOP PEPLUM DETALHE DECOTE","cor":"MARFIM","prod":{"PP":9,"P":20,"M":20,"G":10},"envShow":{"PP":9,"P":20,"M":20,"G":10}},{"ref":"BLI26006","desc":"BLUSA TOP PEPLUM DETALHE DECOTE","cor":"PRETO","prod":{"PP":9,"P":18,"M":19,"G":9},"envShow":{"PP":9,"P":18,"M":19,"G":9}},{"ref":"BLI26010","desc":"BLUSA BASIC MANGA RENDA","cor":"MARROM","prod":{"PP":14,"P":26,"M":26,"G":15},"envShow":{"PP":14,"P":26,"M":26,"G":15}},{"ref":"BLI26011","desc":"BLUSA TOP PEPLUM JEANS PAETE","cor":"OFF-WHITE","prod":{"PP":10,"P":22,"M":22,"G":10},"envShow":{"PP":10,"P":22,"M":22,"G":10}},{"ref":"BLI26013","desc":"BLUSA BASIC REGATA ISA PAES","cor":"MARFIM","prod":{"PP":15,"P":31,"M":31,"G":15},"envShow":{"PP":15,"P":31,"M":31,"G":15}},{"ref":"BLI26013","desc":"BLUSA BASIC REGATA ISA PAES","cor":"MARROM","prod":{"PP":16,"P":31,"M":31,"G":16},"envShow":{"PP":16,"P":31,"M":31,"G":16}},{"ref":"BLI26013","desc":"BLUSA BASIC REGATA ISA PAES","cor":"PRETO","prod":{"PP":11,"P":25,"M":26,"G":11},"envShow":{"PP":11,"P":25,"M":26,"G":11}},{"ref":"BLI26019","desc":"BLUSA BASIC MANGA RENDA","cor":"VERMELHO ESCURO","prod":{"PP":8,"P":17,"M":18,"G":8},"envShow":{"PP":8,"P":17,"M":18,"G":8}},{"ref":"BLI26019","desc":"BLUSA BASIC MANGA RENDA","cor":"AREIA","prod":{"PP":9,"P":18,"M":19,"G":9},"envShow":{"PP":9,"P":18,"M":19,"G":9}},{"ref":"BLI26026","desc":"BLUSA BASIC CAVADA MARTINGALES","cor":"OFF-WHITE","prod":{"PP":8,"P":17,"M":18,"G":8},"envShow":{"PP":8,"P":17,"M":18,"G":8}},{"ref":"BLI26027","desc":"BLUSA REGATA BASIC ISA PAES","cor":"PRETO","prod":{"PP":0,"P":56,"M":58,"G":23},"envShow":{"PP":0,"P":56,"M":58,"G":23}},{"ref":"BLI26028","desc":"BLUSA TOP PAETE PEPLUM DETALHE DECOTE","cor":"MARROM","prod":{"PP":11,"P":17,"M":17,"G":10},"envShow":{"PP":11,"P":17,"M":17,"G":10}},{"ref":"BLI26029","desc":"BLUSA BASIC MANGA RENDA","cor":"MARFIM","prod":{"PP":10,"P":17,"M":16,"G":10},"envShow":{"PP":10,"P":17,"M":16,"G":10}},{"ref":"BZI26001","desc":"BLAZER ALFAIATARIA TELA BORDADA","cor":"MARROM","prod":{"PP":12,"P":23,"M":23,"G":12},"envShow":{"PP":12,"P":23,"M":23,"G":12}},{"ref":"BZI26002","desc":"BLAZER ALFAIATARIA VIES","cor":"AZUL CLARO","prod":{"PP":9,"P":17,"M":18,"G":11},"envShow":{"PP":9,"P":17,"M":18,"G":11}},{"ref":"BZI26002","desc":"BLAZER ALFAIATARIA VIES","cor":"MARFIM","prod":{"PP":15,"P":31,"M":32,"G":15},"envShow":{"PP":15,"P":31,"M":32,"G":15}},{"ref":"BZI26003","desc":"BLAZER ALFAIATARIA BASIC ISA PAES","cor":"MARFIM","prod":{"PP":17,"P":31,"M":30,"G":17},"envShow":{"PP":17,"P":31,"M":30,"G":17}},{"ref":"BZI26003","desc":"BLAZER ALFAIATARIA BASIC ISA PAES","cor":"MARROM","prod":{"PP":17,"P":30,"M":31,"G":17},"envShow":{"PP":17,"P":30,"M":31,"G":17}},{"ref":"BZI26003","desc":"BLAZER ALFAIATARIA BASIC ISA PAES","cor":"PRETO","prod":{"PP":16,"P":27,"M":29,"G":15},"envShow":{"PP":16,"P":27,"M":29,"G":15}},{"ref":"CAI26006","desc":"CAMISA ALFAIATARIA ESTAMPADA","cor":"MARFIM","prod":{"PP":13,"P":27,"M":27,"G":13},"envShow":{"PP":13,"P":27,"M":27,"G":13}},{"ref":"CAI26007","desc":"CAMISA ALFAIATARIA PAETE","cor":"MARROM","prod":{"PP":16,"P":21,"M":22,"G":17},"envShow":{"PP":16,"P":21,"M":22,"G":17}},{"ref":"CAI26009","desc":"CAMISA ALFAIATARIA COM PONTEIRA","cor":"MARROM","prod":{"PP":9,"P":13,"M":12,"G":9},"envShow":{"PP":9,"P":13,"M":12,"G":9}},{"ref":"CAI26009","desc":"CAMISA ALFAIATARIA COM PONTEIRA","cor":"PRETO","prod":{"PP":8,"P":15,"M":15,"G":9},"envShow":{"PP":8,"P":15,"M":15,"G":9}},{"ref":"CJI26002","desc":"CONJUNTO BASIC REGATA DETALHE CHANTILLY","cor":"OFF-WHITE","prod":{"PP":14,"P":24,"M":25,"G":14},"envShow":{"PP":14,"P":24,"M":25,"G":14}},{"ref":"CJI26002","desc":"CONJUNTO BASIC REGATA DETALHE CHANTILLY","cor":"AREIA","prod":{"PP":0,"P":22,"M":25,"G":13},"envShow":{"PP":0,"P":22,"M":25,"G":13}},{"ref":"CJI26013","desc":"CONJUNTO ALFAIATARIA BLUSA CAPA","cor":"MARROM","prod":{"PP":8,"P":13,"M":13,"G":9},"envShow":{"PP":8,"P":13,"M":13,"G":9}},{"ref":"CJI26013","desc":"CONJUNTO ALFAIATARIA BLUSA CAPA","cor":"PRETO","prod":{"PP":9,"P":12,"M":15,"G":9},"envShow":{"PP":9,"P":12,"M":15,"G":9}},{"ref":"CLI26001","desc":"CALCA ALFAIATARIA BARRA ITALIANA","cor":"MARROM","prod":{"PP":17,"P":30,"M":31,"G":16},"envShow":{"PP":17,"P":30,"M":31,"G":16}},{"ref":"CLI26001","desc":"CALCA ALFAIATARIA BARRA ITALIANA","cor":"CAMEL","prod":{"PP":17,"P":31,"M":30,"G":17},"envShow":{"PP":17,"P":31,"M":30,"G":17}},{"ref":"CLI26002","desc":"CALCA ALFAIATARIA TIRA LATERAL","cor":"AMARELO CLARO","prod":{"PP":13,"P":25,"M":29,"G":12},"envShow":{"PP":13,"P":25,"M":29,"G":12}},{"ref":"CLI26002","desc":"CALCA ALFAIATARIA TIRA LATERAL","cor":"ROSA CLARO","prod":{"PP":8,"P":18,"M":16,"G":9},"envShow":{"PP":8,"P":18,"M":16,"G":9}},{"ref":"CLI26003","desc":"CALCA ALFAIATARIA VIES","cor":"AZUL CLARO","prod":{"PP":10,"P":18,"M":18,"G":9},"envShow":{"PP":10,"P":18,"M":18,"G":9}},{"ref":"CLI26003","desc":"CALCA ALFAIATARIA VIES","cor":"MARFIM","prod":{"PP":8,"P":19,"M":19,"G":9},"envShow":{"PP":8,"P":19,"M":19,"G":9}},{"ref":"CLI26004","desc":"CALCA ALFAIATARIA NERVURA","cor":"MARROM","prod":{"PP":16,"P":31,"M":30,"G":17},"envShow":{"PP":16,"P":31,"M":30,"G":17}},{"ref":"CLI26005","desc":"CALCA ALFAIATARIA NERVURA","cor":"MARFIM","prod":{"PP":15,"P":32,"M":31,"G":15},"envShow":{"PP":15,"P":32,"M":31,"G":15}},{"ref":"CLI26005","desc":"CALCA ALFAIATARIA NERVURA","cor":"PRETO","prod":{"PP":15,"P":30,"M":31,"G":15},"envShow":{"PP":15,"P":30,"M":31,"G":15}},{"ref":"CLI26006","desc":"CALCA STREET ALFAIATARIA MESCLA","cor":"AZUL","prod":{"PP":6,"P":15,"M":14,"G":7},"envShow":{"PP":6,"P":15,"M":14,"G":7}},{"ref":"CLI26006","desc":"CALCA STREET ALFAIATARIA MESCLA","cor":"MARFIM","prod":{"PP":6,"P":19,"M":17,"G":7},"envShow":{"PP":6,"P":19,"M":17,"G":7}},{"ref":"CLI26008","desc":"CALCA JEANS PAETE","cor":"OFF-WHITE","prod":{"PP":11,"P":23,"M":22,"G":11},"envShow":{"PP":11,"P":23,"M":22,"G":11}},{"ref":"JAI26001","desc":"JAQUETA BOMBER DETALHE TRICOT","cor":"MARROM","prod":{"PP":11,"P":21,"M":21,"G":11},"envShow":{"PP":11,"P":21,"M":21,"G":11}},{"ref":"JAI26002","desc":"JAQUETA ALFAIATARIA MESCLA","cor":"AZUL","prod":{"PP":9,"P":20,"M":18,"G":9},"envShow":{"PP":9,"P":20,"M":18,"G":9}},{"ref":"JAI26002","desc":"JAQUETA ALFAIATARIA MESCLA","cor":"MARFIM","prod":{"PP":10,"P":20,"M":21,"G":10},"envShow":{"PP":10,"P":20,"M":21,"G":10}},{"ref":"JAI26003","desc":"JAQUETA JEANS PAETE","cor":"OFF-WHITE","prod":{"PP":11,"P":22,"M":22,"G":11},"envShow":{"PP":11,"P":22,"M":22,"G":11}},{"ref":"MCI26001","desc":"MACACAO LONGO ALFAIATARIA DUO COLOR","cor":"MARROM","prod":{"PP":15,"P":30,"M":32,"G":14},"envShow":{"PP":15,"P":30,"M":32,"G":14}},{"ref":"SAI26001","desc":"SAIA MIDI MEIO GODE","cor":"MARROM","prod":{"PP":12,"P":23,"M":23,"G":12},"envShow":{"PP":12,"P":23,"M":23,"G":12}},{"ref":"SAI26002","desc":"SAIA CURTA ALFAIATARIA VIES","cor":"AZUL CLARO","prod":{"PP":9,"P":18,"M":19,"G":9},"envShow":{"PP":9,"P":18,"M":19,"G":9}},{"ref":"SAI26002","desc":"SAIA CURTA ALFAIATARIA VIES","cor":"MARFIM","prod":{"PP":9,"P":21,"M":20,"G":9},"envShow":{"PP":9,"P":21,"M":20,"G":9}},{"ref":"SAI26003","desc":"SAIA MIDI PEPLUM","cor":"MARFIM","prod":{"PP":9,"P":20,"M":18,"G":9},"envShow":{"PP":9,"P":20,"M":18,"G":9}},{"ref":"SAI26003","desc":"SAIA MIDI PEPLUM","cor":"MARROM","prod":{"PP":14,"P":27,"M":28,"G":14},"envShow":{"PP":14,"P":27,"M":28,"G":14}},{"ref":"SAI26003","desc":"SAIA MIDI PEPLUM","cor":"PRETO","prod":{"PP":9,"P":19,"M":19,"G":9},"envShow":{"PP":9,"P":19,"M":19,"G":9}},{"ref":"SAI26004","desc":"SAIA CURTA ALFAIATARIA MESCLA","cor":"AZUL","prod":{"PP":9,"P":20,"M":19,"G":9},"envShow":{"PP":9,"P":20,"M":19,"G":9}},{"ref":"SAI26004","desc":"SAIA CURTA ALFAIATARIA MESCLA","cor":"MARFIM","prod":{"PP":9,"P":20,"M":21,"G":10},"envShow":{"PP":9,"P":20,"M":21,"G":10}},{"ref":"SAI26005","desc":"SAIA MIDI TULE PAETE","cor":"MARROM","prod":{"PP":11,"P":18,"M":18,"G":11},"envShow":{"PP":11,"P":18,"M":18,"G":11}},{"ref":"SAI26009","desc":"SAIA MIDI TRICOT TRANSPARENCIA","cor":"PRETO","prod":{"PP":19,"P":26,"M":47,"G":0},"envShow":{"PP":19,"P":26,"M":47,"G":0}},{"ref":"SHI26001","desc":"SHORT CURTO DETALHE PREGA","cor":"MARROM","prod":{"PP":13,"P":23,"M":23,"G":12},"envShow":{"PP":13,"P":23,"M":23,"G":12}},{"ref":"SHI26002","desc":"SHORT CURTO ALFAIATARIA BASIC","cor":"MARFIM","prod":{"PP":15,"P":32,"M":31,"G":15},"envShow":{"PP":15,"P":32,"M":31,"G":15}},{"ref":"SHI26002","desc":"SHORT CURTO ALFAIATARIA BASIC","cor":"MARROM","prod":{"PP":9,"P":18,"M":19,"G":9},"envShow":{"PP":9,"P":18,"M":19,"G":9}},{"ref":"SHI26002","desc":"SHORT CURTO ALFAIATARIA BASIC","cor":"PRETO","prod":{"PP":14,"P":30,"M":29,"G":16},"envShow":{"PP":14,"P":30,"M":29,"G":16}},{"ref":"VEI26001","desc":"VESTIDO LONGO SAIA CAMADAS","cor":"MARROM","prod":{"PP":9,"P":20,"M":20,"G":9},"envShow":{"PP":9,"P":20,"M":20,"G":9}},{"ref":"VEI26006","desc":"VESTIDO CURTO DETALHE SOBREPOSICAO","cor":"PRETO","prod":{"PP":13,"P":25,"M":26,"G":13},"envShow":{"PP":13,"P":25,"M":26,"G":13}},{"ref":"VEI26008","desc":"VESTIDO CURTO APLICACAO RENDA","cor":"AREIA","prod":{"PP":13,"P":26,"M":27,"G":13},"envShow":{"PP":13,"P":26,"M":27,"G":13}},{"ref":"VEI26009","desc":"VESTIDO LONGO BABADOS RENDA","cor":"AREIA","prod":{"PP":12,"P":24,"M":25,"G":13},"envShow":{"PP":12,"P":24,"M":25,"G":13}},{"ref":"VEI26010","desc":"VESTIDO LONGO DETALHE CUT-OUT","cor":"MARROM","prod":{"PP":11,"P":21,"M":21,"G":11},"envShow":{"PP":11,"P":21,"M":21,"G":11}},{"ref":"VEI26012","desc":"VESTIDO CURTO SAIA ASSIMETRICA","cor":"MARFIM","prod":{"PP":9,"P":10,"M":11,"G":9},"envShow":{"PP":9,"P":10,"M":11,"G":9}},{"ref":"VEI26012","desc":"VESTIDO CURTO SAIA ASSIMETRICA","cor":"MARROM","prod":{"PP":9,"P":13,"M":14,"G":9},"envShow":{"PP":9,"P":13,"M":14,"G":9}},{"ref":"VEI26022","desc":"VESTIDO LONGUETE CINTO FLORES","cor":"MARROM","prod":{"PP":17,"P":20,"M":40,"G":17},"envShow":{"PP":17,"P":20,"M":40,"G":17}},{"ref":"VEI26023","desc":"VESTIDO CURTO ESTAMPADO SAIA BABADOS","cor":"MARFIM","prod":{"PP":13,"P":27,"M":27,"G":13},"envShow":{"PP":13,"P":27,"M":27,"G":13}},{"ref":"VEI26025","desc":"VESTIDO LONGO ESTAMPADO PALA LASTEX","cor":"MARFIM","prod":{"PP":17,"P":34,"M":31,"G":18},"envShow":{"PP":17,"P":34,"M":31,"G":18}},{"ref":"VEI26045","desc":"VESTIDO CURTO MOULAGE","cor":"OFF-WHITE","prod":{"PP":4,"P":8,"M":12,"G":5},"envShow":{"PP":4,"P":8,"M":12,"G":5}}];
 
 let currentExpDestino = null;
+let ultimaAtualizacaoTimestamp = null; // Guarda quando os dados foram realmente atualizados
 
 // =====================================================
 // BUSCAR STATUS DAS CÁPSULAS DO CLOUDFLARE
@@ -2036,6 +2041,16 @@ let globalPtrRefreshing = false;
 
 function initGlobalPullToRefresh() {
     document.body.addEventListener('touchstart', (e) => {
+        // Verifica se o toque está dentro de um container com scroll
+        const target = e.target;
+        const scrollableParent = target.closest('#exp-content, .modal-body, .scroll-container');
+        
+        // Se está dentro de um container scrollável que não está no topo, não ativa
+        if (scrollableParent && scrollableParent.scrollTop > 0) {
+            globalPtrActive = false;
+            return;
+        }
+        
         // Só ativa se estiver no topo da página
         if (window.scrollY === 0 && !globalPtrRefreshing) {
             globalPtrStartY = e.touches[0].clientY;
@@ -2046,11 +2061,19 @@ function initGlobalPullToRefresh() {
     document.body.addEventListener('touchmove', (e) => {
         if (!globalPtrActive || globalPtrRefreshing || window.scrollY > 0) return;
         
+        // Verifica novamente se está dentro de um scroll
+        const target = e.target;
+        const scrollableParent = target.closest('#exp-content, .modal-body, .scroll-container');
+        if (scrollableParent && scrollableParent.scrollTop > 0) {
+            globalPtrActive = false;
+            return;
+        }
+        
         const currentY = e.touches[0].clientY;
         const diff = currentY - globalPtrStartY;
         
-        // Se puxou mais de 100px para baixo
-        if (diff > 100) {
+        // Se puxou mais de 150px para baixo
+        if (diff > 150) {
             e.preventDefault();
         }
     }, { passive: false });
@@ -2061,8 +2084,8 @@ function initGlobalPullToRefresh() {
         const endY = e.changedTouches[0].clientY;
         const diff = endY - globalPtrStartY;
         
-        // Se puxou mais de 120px e está no topo
-        if (diff > 120 && window.scrollY === 0) {
+        // Aumentado threshold de 120px para 180px
+        if (diff > 180 && window.scrollY === 0) {
             await executarRefreshGlobal();
         }
         
@@ -2135,6 +2158,9 @@ async function executarRefreshGlobal() {
             
             const apiData = await response.json();
             const novosItens = transformApiData(apiData);
+            
+            // Guardar timestamp real da atualização
+            ultimaAtualizacaoTimestamp = new Date();
             
             setProgresso(85);
             splashText.textContent = 'Atualizando tela...';
@@ -2232,9 +2258,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Atualizar apenas a data de atualização na tela
 function atualizarDataNaTela() {
-    // Atualizar data na tela
-    const now = new Date();
-    const updateText = 'Atualizado: ' + now.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+    // Atualizar data na tela - usa timestamp salvo
+    const dataAtualizacao = ultimaAtualizacaoTimestamp || new Date();
+    const updateText = 'Última atualização: ' + dataAtualizacao.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
     
     const updateEl = document.querySelector('#exp-total-progress .exp-progress-row span[style*="color:#ffc107"]');
     if (updateEl) {
@@ -2487,9 +2513,9 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     pctTotal = totalMeta > 0 ? ((totalEnv / totalMeta) * 100).toFixed(1) : 0;
     const colorTotal = pctTotal >= 100 ? 'green' : 'blue';
     
-    // Data de atualização (sempre mostra horário atual, cache é do Cloudflare)
-    const now = new Date();
-    const updateText = 'Atualizado: ' + now.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+    // Data de atualização - usa timestamp salvo ou hora atual se não tiver
+    const dataAtualizacao = ultimaAtualizacaoTimestamp || new Date();
+    const updateText = 'Última atualização: ' + dataAtualizacao.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
     
     const totalCores = dadosFiltrados.length;
     
