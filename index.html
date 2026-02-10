@@ -125,9 +125,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 @keyframes welcomeFadeIn{from{opacity:0}to{opacity:1}}
 
 /* INITIAL LOGIN */
-.initial-login{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9997;padding:40px 24px;box-sizing:border-box;overflow:visible}
+.initial-login{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9997;padding:40px 20px;box-sizing:border-box}
 .initial-login.active{display:flex}
-.initial-login-logo{width:180px;height:auto;margin-bottom:40px;flex-shrink:0;object-fit:contain}
+.initial-login-logo{display:block;width:200px;height:auto;margin-bottom:40px}
 .initial-login-box{width:100%;max-width:320px}
 .initial-login-title{font-size:14px;color:var(--txt2);text-align:center;margin-bottom:24px}
 
@@ -1849,7 +1849,7 @@ function backFromChangePw(){
 }
 let currentMod=null, currentUser=null;
 const allScreens='.app-screen,.dev-screen,.login-screen,.submenu-screen,.changepw-screen,.geo-screen';
-function hideAll(){document.querySelectorAll(allScreens).forEach(s=>s.classList.remove('active'));document.getElementById('home').classList.add('hidden');document.getElementById('home').classList.remove('visible')}
+function hideAll(){stopAutoRefresh();document.querySelectorAll(allScreens).forEach(s=>s.classList.remove('active'));document.getElementById('home').classList.add('hidden');document.getElementById('home').classList.remove('visible')}
 const modIcons={comercial:'📊',compras:'🛒',financeiro:'💰',expedicao:'📦'};
 const modNames={comercial:'Comercial',compras:'Compras',financeiro:'Financeiro',expedicao:'Expedição'};
 
@@ -1858,6 +1858,40 @@ const EXPEDICAO_INV1 = [{"ref":"BDI26003","desc":"BODY BASIC RENDA","cor":"MARFI
 
 let currentExpDestino = null;
 let ultimaAtualizacaoTimestamp = null; // Guarda quando os dados foram realmente atualizados
+let autoRefreshInterval = null; // Intervalo para auto-refresh a cada 5 minutos
+
+// Auto-refresh: atualiza dados a cada 5 minutos automaticamente
+function startAutoRefresh() {
+    stopAutoRefresh(); // Limpa intervalo anterior se existir
+    autoRefreshInterval = setInterval(async () => {
+        if (currentExpDestino && document.getElementById('expedicao-screen').classList.contains('active')) {
+            console.log('[Auto-Refresh] Atualizando dados...');
+            try {
+                const response = await fetch(API_BASE_URL + currentExpDestino, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (response.ok) {
+                    const apiData = await response.json();
+                    const novosItens = transformApiData(apiData);
+                    ultimaAtualizacaoTimestamp = new Date();
+                    await renderExpedicao(currentExpDestino, novosItens);
+                    console.log('[Auto-Refresh] Dados atualizados às', ultimaAtualizacaoTimestamp.toLocaleTimeString('pt-BR'));
+                }
+            } catch (error) {
+                console.error('[Auto-Refresh] Erro:', error);
+            }
+        }
+    }, 5 * 60 * 1000); // 5 minutos
+    console.log('[Auto-Refresh] Iniciado - intervalo de 5 minutos');
+}
+
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+        console.log('[Auto-Refresh] Parado');
+    }
+}
 
 // =====================================================
 // BUSCAR STATUS DAS CÁPSULAS DO CLOUDFLARE
@@ -2419,7 +2453,7 @@ function backToExpedicaoEstacao() {
     }
 }
 
-function backToExpedicaoDestinos(){goBackTo('sub-expedicao-destinos')}
+function backToExpedicaoDestinos(){stopAutoRefresh(); goBackTo('sub-expedicao-destinos')}
 
 function openExpedicaoDestino(destino){
     currentExpDestino = destino;
@@ -2434,6 +2468,9 @@ function openExpedicaoDestino(destino){
             ptrInitialized = true;
         }, 100);
     }
+    
+    // Iniciar auto-refresh (atualiza dados a cada 5 minutos)
+    startAutoRefresh();
     
     // Carregar dados da API (cache no Cloudflare)
     renderExpedicao(destino);
