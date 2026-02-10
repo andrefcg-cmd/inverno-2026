@@ -2150,17 +2150,36 @@ async function executarRefreshGlobal() {
         // ========================================
         // OUTRAS TELAS: Forçar refresh no Cloudflare
         // ========================================
+        
+        // Se não está logado, apenas recarregar a página
+        const loggedUser = sessionStorage.getItem('logged-user');
+        if (!loggedUser) {
+            splashText.textContent = 'Recarregando...';
+            splashBar.style.width = '100%';
+            await new Promise(r => setTimeout(r, 500));
+            location.reload();
+            return;
+        }
+        
         splashText.textContent = 'Atualizando...';
         splashBar.style.width = '50%';
         
         await new Promise(r => setTimeout(r, 300));
         
-        // Forçar refresh no Cloudflare
+        // Forçar refresh no Cloudflare (com timeout de 5s)
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
             await fetch(`${API_CONFIG.baseUrl}/api/totvs/capsulas/status?refresh=true`, {
-                headers: { 'X-API-Key': API_CONFIG.apiKey || 'Isapaes@2026!X' }
+                headers: { 'X-API-Key': API_CONFIG.apiKey || 'Isapaes@2026!X' },
+                signal: controller.signal
             });
-        } catch(e) {}
+            
+            clearTimeout(timeoutId);
+        } catch(e) {
+            console.log('[Refresh] Timeout ou erro:', e);
+        }
         
         // Resetar flag para recarregar na próxima abertura
         expedicaoCarregada = false;
