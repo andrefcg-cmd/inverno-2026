@@ -980,7 +980,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '2.3.1';
+const APP_VERSION = '2.4.0';
 
 // Verificar se precisa limpar cache (nova versão)
 (function checkAppVersion() {
@@ -2396,54 +2396,126 @@ function initGlobalPullToRefresh() {
 async function executarRefreshGlobal() {
     globalPtrRefreshing = true;
     
-    // Mostrar splash
     const splash = document.getElementById('splash-refresh');
     const splashText = document.getElementById('splash-refresh-text');
     const splashBar = document.getElementById('splash-refresh-bar');
     
     splash.classList.add('active');
     splashBar.style.width = '0%';
-    splashText.textContent = 'Iniciando...';
     
-    await new Promise(r => setTimeout(r, 200));
+    // Verificar se está dentro de uma cápsula (tela app-expedicao ativa)
+    const telaExpedicao = document.getElementById('app-expedicao');
+    const dentroCapsula = telaExpedicao && telaExpedicao.classList.contains('active') && currentExpDestino;
     
-    // Limpar todos os caches
-    splashBar.style.width = '20%';
-    splashText.textContent = 'Limpando cache...';
-    
-    localStorage.removeItem('expedicao_cache_v2');
-    localStorage.removeItem('isa-capsulas-cache-v1');
-    expedicaoCache = {};
-    capsulasStatus = {};
-    expedicaoCarregada = false;
-    backgroundLoadingStarted = false;
-    backgroundLoadingPromise = null;
-    
-    await new Promise(r => setTimeout(r, 300));
-    
-    // Recarregar cápsulas
-    splashBar.style.width = '40%';
-    splashText.textContent = 'Conectando ao TOTVS...';
-    
-    await new Promise(r => setTimeout(r, 300));
-    
-    try {
-        const colecoes = Object.keys(COLECOES_CONFIG);
-        let totalCapsulas = 0;
-        colecoes.forEach(col => totalCapsulas += COLECOES_CONFIG[col].capsulas.length);
+    if (dentroCapsula) {
+        // ========================================
+        // DENTRO DA CÁPSULA: Atualiza só ela
+        // ========================================
+        splashText.textContent = 'Atualizando cápsula...';
+        splashBar.style.width = '20%';
         
-        let capsulaIdx = 0;
+        await new Promise(r => setTimeout(r, 200));
         
-        for (const colecao of colecoes) {
-            const config = COLECOES_CONFIG[colecao];
+        // Limpar cache desta cápsula
+        const cacheKey = getCacheKey();
+        if (expedicaoCache[cacheKey]) {
+            delete expedicaoCache[cacheKey];
+            saveExpedicaoCache();
+        }
+        
+        splashBar.style.width = '40%';
+        splashText.textContent = 'Conectando ao TOTVS...';
+        
+        await new Promise(r => setTimeout(r, 200));
+        
+        try {
+            // Buscar dados atualizados da API
+            splashBar.style.width = '60%';
+            splashText.textContent = 'Buscando dados...';
             
-            for (const capsula of config.capsulas) {
-                capsulaIdx++;
-                const progresso = 40 + Math.round((capsulaIdx / totalCapsulas) * 50);
-                splashBar.style.width = progresso + '%';
-                splashText.textContent = `Verificando ${config.nome} ${config.ano} - Cápsula ${capsula}...`;
-                
-                const key = `${colecao}-${capsula}`;
+            const apiData = await fetchExpedicaoFromAPI(currentExpDestino);
+            const novosItens = transformApiData(apiData);
+            
+            splashBar.style.width = '80%';
+            splashText.textContent = 'Atualizando tela...';
+            
+            // Salvar no cache
+            setCachedData(currentExpDestino, novosItens);
+            
+            // Atualizar a tela com dados já carregados
+            await renderExpedicao(currentExpDestino, novosItens);
+            
+            splashBar.style.width = '100%';
+            splashText.textContent = 'Pronto!';
+            
+        } catch(e) {
+            console.log('[Refresh] Erro:', e);
+            splashBar.style.width = '100%';
+            splashText.textContent = 'Erro ao atualizar';
+        }
+        
+        await new Promise(r => setTimeout(r, 300));
+        
+        // Esconder splash
+        splash.classList.remove('active');
+        globalPtrRefreshing = false;
+        
+        mostrarPtrToast('✅ Cápsula atualizada!');
+        
+        // Atualizar outras cápsulas em segundo plano (silencioso)
+        atualizarOutrasCapsulasBackground();
+        
+    } else {
+        // ========================================
+        // OUTRAS TELAS: Só limpa cache (rápido)
+        // ========================================
+        splashText.textContent = 'Limpando cache...';
+        splashBar.style.width = '50%';
+        
+        await new Promise(r => setTimeout(r, 300));
+        
+        // Limpar caches
+        localStorage.removeItem('expedicao_cache_v2');
+        localStorage.removeItem('isa-capsulas-cache-v1');
+        expedicaoCache = {};
+        capsulasStatus = {};
+        expedicaoCarregada = false;
+        backgroundLoadingStarted = false;
+        backgroundLoadingPromise = null;
+        
+        splashBar.style.width = '100%';
+        splashText.textContent = 'Pronto!';
+        
+        await new Promise(r => setTimeout(r, 300));
+        
+        // Esconder splash
+        splash.classList.remove('active');
+        globalPtrRefreshing = false;
+        
+        mostrarPtrToast('✅ Cache limpo!');
+        
+        // Atualizar cápsulas em segundo plano (silencioso)
+        atualizarCapsulasSilenciosamente();
+    }
+}
+
+// Atualizar outras cápsulas em segundo plano (não a atual)
+async function atualizarOutrasCapsulasBackground() {
+    console.log('[Background] Atualizando outras cápsulas silenciosamente...');
+    
+    const capsulaAtualKey = getCacheKey();
+    const colecoes = Object.keys(COLECOES_CONFIG);
+    
+    for (const colecao of colecoes) {
+        const config = COLECOES_CONFIG[colecao];
+        
+        for (const capsula of config.capsulas) {
+            const key = `${colecao}-${capsula}`;
+            
+            // Pular a cápsula atual (já foi atualizada)
+            if (key === capsulaAtualKey) continue;
+            
+            try {
                 const resultado = await verificarCapsulaAPI(colecao, capsula);
                 capsulasStatus[key] = resultado;
                 
@@ -2452,25 +2524,14 @@ async function executarRefreshGlobal() {
                 } else {
                     desabilitarBotaoCapsula(colecao, capsula, 'Em breve');
                 }
+            } catch(e) {
+                console.log(`[Background] Erro na cápsula ${key}:`, e);
             }
         }
-        
-        salvarCacheCapsulas();
-        expedicaoCarregada = true;
-        
-    } catch(e) {
-        console.log('[Refresh] Erro ao carregar cápsulas:', e);
     }
     
-    splashBar.style.width = '100%';
-    splashText.textContent = 'Pronto!';
-    await new Promise(r => setTimeout(r, 400));
-    
-    // Esconder splash
-    splash.classList.remove('active');
-    globalPtrRefreshing = false;
-    
-    mostrarPtrToast('✅ Cache atualizado!');
+    salvarCacheCapsulas();
+    console.log('[Background] ✅ Outras cápsulas atualizadas');
 }
 
 // Inicializar quando DOM carregar
