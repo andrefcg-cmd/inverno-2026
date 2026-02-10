@@ -1009,12 +1009,16 @@ const APP_VERSION = '3.0.0';
 // Dados são atualizados a cada 5 minutos via Cron Trigger
 const API_CONFIG = {
     baseUrl: 'https://isapaes-api.andrefcg.workers.dev',
-    apiKey: null
+    apiKey: 'Isapaes@2026!X' // Valor padrão
 };
 
 // Inicializar API Key
 (function initApiKey() {
-    API_CONFIG.apiKey = sessionStorage.getItem('isa-api-key') || 'Isapaes@2026!X';
+    const savedKey = sessionStorage.getItem('isa-api-key');
+    if (savedKey) {
+        API_CONFIG.apiKey = savedKey;
+    }
+    console.log('[API] Config inicializada, baseUrl:', API_CONFIG.baseUrl);
 })();
 
 // ===== BUSCAR DADOS DA API (cache no Cloudflare) =====
@@ -1922,14 +1926,20 @@ async function openExpedicao(){
     
     // Buscar status das cápsulas do Cloudflare (já vem do cache KV)
     console.log('[API] Buscando status das cápsulas...');
+    console.log('[API] URL:', `${API_CONFIG.baseUrl}/api/totvs/capsulas/status`);
+    console.log('[API] Key:', API_CONFIG.apiKey ? 'presente' : 'AUSENTE');
     
     try {
         const response = await fetch(`${API_CONFIG.baseUrl}/api/totvs/capsulas/status`, {
-            headers: { 'X-API-Key': API_CONFIG.apiKey || 'Isapaes@2026!X' }
+            headers: { 'X-API-Key': API_CONFIG.apiKey || 'Isapaes@2026!X' },
+            mode: 'cors'
         });
+        
+        console.log('[API] Response status:', response.status);
         
         if (response.ok) {
             const data = await response.json();
+            console.log('[API] Dados recebidos:', data);
             
             if (data.fromCache) {
                 console.log('[API] ✅ Dados do cache Cloudflare KV');
@@ -1952,9 +1962,11 @@ async function openExpedicao(){
             
             expedicaoCarregada = true;
             console.log(`[API] ${data.capsulas?.length || 0} cápsulas carregadas`);
+        } else {
+            console.log('[API] Erro HTTP:', response.status, response.statusText);
         }
     } catch(e) {
-        console.log('[API] Erro ao carregar cápsulas:', e);
+        console.log('[API] Erro ao carregar cápsulas:', e.message || e);
         showExpedicaoToast('Erro ao conectar', 'error');
     }
 }
