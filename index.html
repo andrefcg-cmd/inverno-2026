@@ -2,6 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="theme-color" content="#000000"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Isa Paes"><link rel="manifest" href="/inverno-2026/manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png"><title>Isa Paes</title>
@@ -942,8 +945,29 @@ html, body { overscroll-behavior-y: contain; }
 <script>
 // ==========================================
 // INTEGRAÇÃO API TOTVS - EXPEDIÇÃO
-// ISA|PAES PWA v2.0
+// ISA|PAES PWA v2.1
 // ==========================================
+
+// VERSÃO DO APP - Incrementar para forçar limpeza de cache
+const APP_VERSION = '2.1.0';
+
+// Verificar se precisa limpar cache (nova versão)
+(function checkAppVersion() {
+    const savedVersion = localStorage.getItem('isa-app-version');
+    if (savedVersion !== APP_VERSION) {
+        console.log(`[App] Nova versão detectada: ${savedVersion} → ${APP_VERSION}`);
+        // Limpar caches antigos
+        localStorage.removeItem('expedicao_cache_v2');
+        localStorage.removeItem('isa-capsulas-cache-v1');
+        // Salvar nova versão
+        localStorage.setItem('isa-app-version', APP_VERSION);
+        // Forçar reload limpo se não for primeira vez
+        if (savedVersion) {
+            console.log('[App] Recarregando para aplicar atualizações...');
+            location.reload(true);
+        }
+    }
+})();
 
 const API_CONFIG = {
     baseUrl: 'https://isapaes-api.andrefcg.workers.dev',
