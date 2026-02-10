@@ -934,9 +934,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 const API_CONFIG = {
     baseUrl: 'https://isapaes-api.andrefcg.workers.dev',
-    apiKey: 'Isapaes@2026!X',
+    // API Key será obtida após autenticação
+    apiKey: null,
     cacheTimeout: 30 * 60 * 1000  // 30 minutos
 };
+
+// Função para obter API Key após login
+async function obterApiKey() {
+    // Por enquanto, usar key local até implementar auth no Worker
+    // TODO: Implementar endpoint /auth no Worker
+    API_CONFIG.apiKey = sessionStorage.getItem('isa-api-key') || 'Isapaes@2026!X';
+    return API_CONFIG.apiKey;
+}
+
+// Inicializar API Key
+(function initApiKey() {
+    API_CONFIG.apiKey = sessionStorage.getItem('isa-api-key') || 'Isapaes@2026!X';
+})();
 
 // Cache organizado por cápsula: { 'I26-1': { showroom: {...}, lastUpdate: {...} }, ... }
 let expedicaoCache = {};
@@ -1274,29 +1288,55 @@ async function tryInitialBiometric(){
     setTimeout(()=>document.getElementById('initial-user').focus(),100);
 }
 
-function doInitialLogin(){
+async function doInitialLogin(){
     const user = document.getElementById('initial-user').value.trim().toLowerCase();
     const pw = document.getElementById('initial-pw').value;
-    const u = USERS[user];
-    if(!u || u.pw !== pw){
-        document.getElementById('initial-error').textContent = 'Usuário ou senha incorretos';
-        document.getElementById('initial-pw').value = '';
-        return;
-    }
-    sessionStorage.setItem('logged-user', user);
-    document.getElementById('initial-error').textContent = '';
-    document.getElementById('initial-login').classList.remove('active');
     
-    // Oferecer biometria se disponível e não cadastrada
-    if(!localStorage.getItem('bio-user') && window.PublicKeyCredential){
-        setTimeout(()=>{
-            if(confirm('Deseja ativar o login por biometria/Face ID?')){
-                registerInitialBiometric(user);
-            }
-        },100);
-    }
+    // Mostrar loading
+    const btn = document.querySelector('#initial-login .login-btn');
+    const originalText = btn.textContent;
+    btn.textContent = 'Autenticando...';
+    btn.disabled = true;
     
-    getWeatherAndShowWelcome(user);
+    try {
+        const result = await autenticarViaAPI(user, pw);
+        
+        if (!result.success) {
+            document.getElementById('initial-error').textContent = result.error || 'Usuário ou senha incorretos';
+            document.getElementById('initial-pw').value = '';
+            btn.textContent = originalText;
+            btn.disabled = false;
+            return;
+        }
+        
+        // Salvar dados do usuário na sessão
+        sessionStorage.setItem('logged-user', user);
+        if (result.user) {
+            sessionStorage.setItem('logged-user-data', JSON.stringify(result.user));
+            // Atualizar USERS local com dados da API
+            USERS[user] = { ...result.user, pw: pw };
+        }
+        
+        document.getElementById('initial-error').textContent = '';
+        document.getElementById('initial-login').classList.remove('active');
+        
+        // Oferecer biometria se disponível e não cadastrada
+        if(!localStorage.getItem('bio-user') && window.PublicKeyCredential){
+            setTimeout(()=>{
+                if(confirm('Deseja ativar o login por biometria/Face ID?')){
+                    registerInitialBiometric(user);
+                }
+            },100);
+        }
+        
+        getWeatherAndShowWelcome(user);
+        
+    } catch (e) {
+        console.error('[Auth] Erro:', e);
+        document.getElementById('initial-error').textContent = 'Erro de conexão. Tente novamente.';
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
 }
 
 async function registerInitialBiometric(user){
@@ -1507,6 +1547,10 @@ function showWelcomeScreen(user, weather = null){
 
 // Função para obter localização e clima
 async function getWeatherAndShowWelcome(user){
+    // INICIAR CARREGAMENTO DA EXPEDIÇÃO EM SEGUNDO PLANO
+    // Isso vai rodar enquanto o usuário vê a tela de boas-vindas
+    iniciarCarregamentoExpedicaoBackground();
+    
     // Verificar se GPS foi negado anteriormente
     const gpsNegado = localStorage.getItem('gps-negado');
     
@@ -1545,6 +1589,53 @@ async function getWeatherAndShowWelcome(user){
             showWelcomeScreen(user, weather);
         }).catch(() => showWelcomeScreen(user, null));
     }
+}
+
+// ===== CARREGAMENTO EM SEGUNDO PLANO =====
+let backgroundLoadingPromise = null;
+let backgroundLoadingStarted = false;
+
+async function iniciarCarregamentoExpedicaoBackground() {
+    if (backgroundLoadingStarted) return; // Já iniciou
+    backgroundLoadingStarted = true;
+    
+    console.log('[Background] Iniciando carregamento silencioso de cápsulas...');
+    
+    // Carrega silenciosamente, sem mostrar nada na tela
+    backgroundLoadingPromise = verificarTodasCapsulasBackground();
+}
+
+async function verificarTodasCapsulasBackground() {
+    console.log('[Background] Verificando status de todas as cápsulas...');
+    
+    let erroAPI = false;
+    const colecoes = Object.keys(COLECOES_CONFIG);
+    
+    for (const colecao of colecoes) {
+        const config = COLECOES_CONFIG[colecao];
+        
+        for (const capsula of config.capsulas) {
+            const key = `${colecao}-${capsula}`;
+            const resultado = await verificarCapsulaAPI(colecao, capsula);
+            
+            capsulasStatus[key] = resultado;
+            
+            if (resultado.erro) {
+                erroAPI = true;
+            } else if (resultado.habilitada) {
+                habilitarBotaoCapsula(colecao, capsula);
+                console.log(`[Background] ✅ ${colecao} Cápsula ${capsula}: ${resultado.enviado} peças`);
+            } else {
+                desabilitarBotaoCapsula(colecao, capsula, 'Em breve');
+                console.log(`[Background] ⏳ ${colecao} Cápsula ${capsula}: aguardando`);
+            }
+        }
+    }
+    
+    expedicaoCarregada = true;
+    console.log('[Background] ✅ Carregamento concluído!');
+    
+    return { erroAPI };
 }
 
 // ===== NAVEGAÇÃO COM HISTORY API (BOTÃO VOLTAR NATIVO) =====
@@ -1674,12 +1765,43 @@ window.addEventListener('popstate', function(e) {
 history.pushState({screen: 'home'}, '', '');
 
 // ===== USUÁRIOS E PERMISSÕES =====
-const USERS = {
-    'andre':   {pw:'736221', nome:'André',    role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce','geolocator']},
-    'rafael':  {pw:'3022',   nome:'Rafael',   role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce','geolocator']},
-    'isabella':{pw:'Isa',    nome:'Isabella', role:'admin', access:['comercial','compras','financeiro'], channels:['showroom','outlet','ecommerce','geolocator']},
-    'mariana.s':{pw:'1402',  nome:'Mariana',role:'user', access:['comercial'], channels:['showroom','geolocator']}
-};
+// =====================================================
+// AUTENTICAÇÃO DE USUÁRIOS
+// =====================================================
+// Usuários são autenticados via API (/auth endpoint)
+// Credenciais ficam seguras no Cloudflare (APP_USERS)
+// =====================================================
+
+let USERS = {};
+
+// Função para autenticar via API
+async function autenticarViaAPI(usuario, senha) {
+    try {
+        const response = await fetch(`${API_CONFIG.baseUrl}/auth`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario, senha })
+        });
+        const data = await response.json();
+        
+        if (data.authenticated) {
+            // Salvar API Key na sessão
+            if (data.apiKey) {
+                API_CONFIG.apiKey = data.apiKey;
+                sessionStorage.setItem('isa-api-key', data.apiKey);
+            }
+            // Retornar dados do usuário
+            return {
+                success: true,
+                user: data.user
+            };
+        }
+        return { success: false, error: data.error || 'Credenciais inválidas' };
+    } catch (e) {
+        console.error('[Auth] Erro na API:', e);
+        return { success: false, error: 'Erro de conexão. Verifique sua internet.' };
+    }
+}
 
 // ===== SENHAS PERSISTENTES (localStorage) =====
 (function loadSavedPasswords(){
@@ -1754,17 +1876,44 @@ let currentExpDestino = null;
 // Flag para controlar se já carregou os dados
 let expedicaoCarregada = false;
 
-function openExpedicao(){
+async function openExpedicao(){
+    // Caso 1: Já terminou de carregar - vai direto
     if (expedicaoCarregada) {
-        // Já carregou, vai direto
         hideAll();
         document.getElementById('sub-expedicao').classList.add('active');
         pushState('sub-expedicao');
-    } else {
-        // Primeira vez - mostrar loading e carregar
-        mostrarLoadingAPI();
-        verificarTodasCapsulasComLoading();
+        return;
     }
+    
+    // Caso 2: Carregamento em segundo plano está em andamento
+    if (backgroundLoadingPromise) {
+        // Mostrar loading e aguardar finalização
+        mostrarLoadingAPI();
+        atualizarLoadingAPI(60, 'Finalizando carregamento...');
+        
+        try {
+            const result = await backgroundLoadingPromise;
+            atualizarLoadingAPI(100, 'Concluído!');
+            await new Promise(r => setTimeout(r, 300));
+            esconderLoadingAPI();
+            
+            if (result?.erroAPI) {
+                mostrarAvisoAPIIndisponivel();
+            }
+        } catch (e) {
+            console.error('[Expedição] Erro:', e);
+            esconderLoadingAPI();
+        }
+        
+        hideAll();
+        document.getElementById('sub-expedicao').classList.add('active');
+        pushState('sub-expedicao');
+        return;
+    }
+    
+    // Caso 3: Nenhum carregamento iniciado - iniciar com loading visual
+    mostrarLoadingAPI();
+    await verificarTodasCapsulasComLoading();
 }
 
 // Mostrar overlay de loading
