@@ -492,6 +492,19 @@ html, body { overscroll-behavior-y: contain; }
 .ptr-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#4caf50;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:9999;opacity:0;transition:opacity .3s ease;pointer-events:none}
 .ptr-toast.show{opacity:1}
 .ptr-toast.warning{background:#ff9800}
+
+/* Splash Refresh Global */
+.splash-refresh{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.splash-refresh.active{opacity:1;pointer-events:auto}
+.splash-refresh .splash-logo{width:120px;opacity:0.9}
+.splash-refresh .splash-icons{margin-top:20px;display:flex;gap:15px;font-size:20px}
+.splash-refresh .splash-icon{opacity:0.3;animation:splashIcon 0.6s ease-in-out infinite}
+.splash-refresh .splash-icon:nth-child(1){animation-delay:0s}
+.splash-refresh .splash-icon:nth-child(2){animation-delay:0.15s}
+.splash-refresh .splash-icon:nth-child(3){animation-delay:0.3s}
+.splash-refresh .splash-icon:nth-child(4){animation-delay:0.45s}
+.splash-refresh .splash-icon:nth-child(5){animation-delay:0.6s}
+.splash-refresh-text{margin-top:20px;color:#666;font-size:12px}
 </style></head><body>
 
 <!-- SPLASH -->
@@ -792,6 +805,19 @@ html, body { overscroll-behavior-y: contain; }
 </div>
 <div class="ptr-toast" id="ptr-toast"></div>
 
+<!-- SPLASH REFRESH GLOBAL -->
+<div class="splash-refresh" id="splash-refresh">
+    <img src="data:image/png;base64,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" class="splash-logo" alt="Isa Paes">
+    <div class="splash-icons">
+        <span class="splash-icon">👗</span>
+        <span class="splash-icon">✂️</span>
+        <span class="splash-icon">🧵</span>
+        <span class="splash-icon">🪡</span>
+        <span class="splash-icon">👘</span>
+    </div>
+    <div class="splash-refresh-text" id="splash-refresh-text">Atualizando...</div>
+</div>
+
 <!-- GEOLOCALIZADOR -->
 <div class="geo-screen" id="geo-screen">
     <div class="geo-header">
@@ -949,23 +975,18 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '2.1.1';
+const APP_VERSION = '2.3.0';
 
 // Verificar se precisa limpar cache (nova versão)
 (function checkAppVersion() {
     const savedVersion = localStorage.getItem('isa-app-version');
     if (savedVersion !== APP_VERSION) {
-        console.log(`[App] Nova versão detectada: ${savedVersion} → ${APP_VERSION}`);
+        console.log(`[App] Nova versão: ${savedVersion || 'primeira'} → ${APP_VERSION}`);
         // Limpar caches antigos
         localStorage.removeItem('expedicao_cache_v2');
         localStorage.removeItem('isa-capsulas-cache-v1');
         // Salvar nova versão
         localStorage.setItem('isa-app-version', APP_VERSION);
-        // Forçar reload limpo se não for primeira vez
-        if (savedVersion) {
-            console.log('[App] Recarregando para aplicar atualizações...');
-            location.reload(true);
-        }
     }
 })();
 
@@ -1357,60 +1378,41 @@ async function doInitialLogin(){
         document.getElementById('initial-error').textContent = '';
         document.getElementById('initial-login').classList.remove('active');
         
-        // Verificar se biometria está disponível
-        let biometriaDisponivel = false;
-        console.log('[Bio] Verificando disponibilidade...');
-        console.log('[Bio] window.PublicKeyCredential:', !!window.PublicKeyCredential);
+        // Verificar se biometria está disponível e NÃO está cadastrada ainda
+        const bioUserAtual = localStorage.getItem('bio-user');
         
+        // Se já tem biometria cadastrada (para qualquer usuário), não perguntar
+        if (bioUserAtual) {
+            console.log('[Bio] Já tem biometria cadastrada para:', bioUserAtual);
+            getWeatherAndShowWelcome(user);
+            return;
+        }
+        
+        // Verificar se dispositivo suporta biometria
+        let biometriaDisponivel = false;
         if (window.PublicKeyCredential) {
             try {
-                // Tentar método moderno primeiro
                 if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function') {
                     biometriaDisponivel = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-                    console.log('[Bio] isUserVerifyingPlatformAuthenticatorAvailable:', biometriaDisponivel);
                 } else {
-                    // Fallback: assumir disponível se PublicKeyCredential existir
                     biometriaDisponivel = true;
-                    console.log('[Bio] Fallback: assumindo disponível');
                 }
             } catch(e) {
-                console.log('[Bio] Erro ao verificar:', e);
-                // Em caso de erro, tentar mesmo assim
                 biometriaDisponivel = true;
             }
         }
         
-        console.log('[Bio] Disponível:', biometriaDisponivel);
-        
-        // SEMPRE oferecer biometria se disponível
+        // Oferecer biometria apenas se disponível e não cadastrada
         if (biometriaDisponivel) {
-            const bioUserAtual = localStorage.getItem('bio-user');
-            console.log('[Bio] Usuário atual com bio:', bioUserAtual);
-            let mensagem = 'Deseja ativar o login por biometria/Face ID?';
-            
-            // Se já tem biometria cadastrada para este usuário, não perguntar
-            if (bioUserAtual === user) {
-                console.log('[Bio] Já cadastrado para este usuário, pulando...');
-                getWeatherAndShowWelcome(user);
-                return;
-            }
-            
-            // Se já tem biometria cadastrada para outro usuário
-            if (bioUserAtual && bioUserAtual !== user) {
-                mensagem = `A biometria está cadastrada para "${bioUserAtual}". Deseja recadastrar para "${user}"?`;
-            }
-            
-            console.log('[Bio] Mostrando confirm...');
             setTimeout(() => {
-                if (confirm(mensagem)) {
+                if (confirm('Deseja ativar o login por biometria/Face ID?')) {
                     registerInitialBiometric(user);
                 }
                 getWeatherAndShowWelcome(user);
-            }, 500);
+            }, 300);
             return;
         }
         
-        console.log('[Bio] Não disponível, seguindo sem biometria');
         getWeatherAndShowWelcome(user);
         
     } catch (e) {
@@ -2325,7 +2327,7 @@ async function forcarAtualizacaoExpedicao() {
         // Atualizar cache
         setCachedData(destino, novosItens);
         
-        // Atualizar UI
+        // Atualizar UI com dados já carregados (sem buscar de novo)
         if (houveAlteracao) {
             renderExpedicao(destino, novosItens);
             mostrarPtrToast('✅ Dados atualizados!');
@@ -2340,6 +2342,98 @@ async function forcarAtualizacaoExpedicao() {
         mostrarPtrToast('❌ Erro ao atualizar', 'warning');
     }
 }
+
+// =====================================================
+// PULL-TO-REFRESH GLOBAL - Funciona em todas as telas
+// Mostra splash e limpa todos os caches
+// =====================================================
+let globalPtrStartY = 0;
+let globalPtrActive = false;
+let globalPtrRefreshing = false;
+
+function initGlobalPullToRefresh() {
+    document.body.addEventListener('touchstart', (e) => {
+        // Só ativa se estiver no topo da página
+        if (window.scrollY === 0 && !globalPtrRefreshing) {
+            globalPtrStartY = e.touches[0].clientY;
+            globalPtrActive = true;
+        }
+    }, { passive: true });
+    
+    document.body.addEventListener('touchmove', (e) => {
+        if (!globalPtrActive || globalPtrRefreshing || window.scrollY > 0) return;
+        
+        const currentY = e.touches[0].clientY;
+        const diff = currentY - globalPtrStartY;
+        
+        // Se puxou mais de 100px para baixo
+        if (diff > 100) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    document.body.addEventListener('touchend', async (e) => {
+        if (!globalPtrActive || globalPtrRefreshing) return;
+        
+        const endY = e.changedTouches[0].clientY;
+        const diff = endY - globalPtrStartY;
+        
+        // Se puxou mais de 120px e está no topo
+        if (diff > 120 && window.scrollY === 0) {
+            await executarRefreshGlobal();
+        }
+        
+        globalPtrStartY = 0;
+        globalPtrActive = false;
+    });
+}
+
+async function executarRefreshGlobal() {
+    globalPtrRefreshing = true;
+    
+    // Mostrar splash
+    const splash = document.getElementById('splash-refresh');
+    const splashText = document.getElementById('splash-refresh-text');
+    splash.classList.add('active');
+    splashText.textContent = 'Limpando cache...';
+    
+    await new Promise(r => setTimeout(r, 500));
+    
+    // Limpar todos os caches
+    localStorage.removeItem('expedicao_cache_v2');
+    localStorage.removeItem('isa-capsulas-cache-v1');
+    expedicaoCache = {};
+    capsulasStatus = {};
+    expedicaoCarregada = false;
+    backgroundLoadingStarted = false;
+    backgroundLoadingPromise = null;
+    
+    splashText.textContent = 'Recarregando dados...';
+    await new Promise(r => setTimeout(r, 500));
+    
+    // Recarregar cápsulas em background
+    splashText.textContent = 'Verificando cápsulas...';
+    try {
+        await verificarTodasCapsulasBackground();
+        salvarCacheCapsulas();
+    } catch(e) {
+        console.log('[Refresh] Erro ao carregar cápsulas:', e);
+    }
+    
+    splashText.textContent = 'Pronto!';
+    await new Promise(r => setTimeout(r, 300));
+    
+    // Esconder splash
+    splash.classList.remove('active');
+    globalPtrRefreshing = false;
+    
+    mostrarPtrToast('✅ Cache atualizado!');
+}
+
+// Inicializar quando DOM carregar
+document.addEventListener('DOMContentLoaded', () => {
+    initGlobalPullToRefresh();
+});
 
 // Atualizar apenas a data de atualização na tela
 function atualizarDataNaTela() {
@@ -2532,7 +2626,7 @@ function openExpedicaoDestino(destino){
     
     renderExpedicao(destino);
 }
-async function renderExpedicao(destino){
+async function renderExpedicao(destino, dadosPreCarregados = null){
     const titles = {
         showroom: '🏬 Showroom', 
         ecommerce: '🌐 E-commerce', 
@@ -2549,8 +2643,8 @@ async function renderExpedicao(destino){
         subHeader.textContent = `${capsulaAtual.num}ª Cápsula ${config.nome}`;
     }
     
-    // Buscar dados da API (ou cache)
-    const dadosAPI = await getExpedicaoData(destino);
+    // Usar dados passados ou buscar da API/cache
+    const dadosAPI = dadosPreCarregados || await getExpedicaoData(destino);
     
     const refsExcluidas = ['SHI26023', 'SAI26012'];
     let dadosFiltrados = dadosAPI.filter(item => !refsExcluidas.includes(item.ref));
