@@ -980,7 +980,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '2.4.0';
+const APP_VERSION = '2.4.1';
 
 // Verificar se precisa limpar cache (nova versão)
 (function checkAppVersion() {
@@ -2468,6 +2468,7 @@ async function executarRefreshGlobal() {
     } else {
         // ========================================
         // OUTRAS TELAS: Só limpa cache (rápido)
+        // Não atualiza nada - será feito ao entrar em Expedição
         // ========================================
         splashText.textContent = 'Limpando cache...';
         splashBar.style.width = '50%';
@@ -2483,6 +2484,15 @@ async function executarRefreshGlobal() {
         backgroundLoadingStarted = false;
         backgroundLoadingPromise = null;
         
+        // Resetar botões das cápsulas visualmente
+        const colecoes = Object.keys(COLECOES_CONFIG);
+        for (const colecao of colecoes) {
+            const config = COLECOES_CONFIG[colecao];
+            for (const capsula of config.capsulas) {
+                desabilitarBotaoCapsula(colecao, capsula, 'Verificando...');
+            }
+        }
+        
         splashBar.style.width = '100%';
         splashText.textContent = 'Pronto!';
         
@@ -2493,9 +2503,6 @@ async function executarRefreshGlobal() {
         globalPtrRefreshing = false;
         
         mostrarPtrToast('✅ Cache limpo!');
-        
-        // Atualizar cápsulas em segundo plano (silencioso)
-        atualizarCapsulasSilenciosamente();
     }
 }
 
