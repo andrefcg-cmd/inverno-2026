@@ -2136,7 +2136,7 @@ function atualizarContadorRegressivo() {
     var dataStr = ultimaAtualizacaoTimestamp.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
     var countdown = minutos + ':' + (segundos < 10 ? '0' : '') + segundos;
     
-    updateEl.innerHTML = '🕐 Atualizado: ' + dataStr + ' <span style="color:#4ade80">(⏱️ ' + countdown + ')</span>';
+    updateEl.innerHTML = '🕐 Última atualização: ' + dataStr + '<br><span style="color:#4ade80">Próxima atualização: ⏱️ ' + countdown + '</span>';
 }
 
 // =====================================================
@@ -2694,14 +2694,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Atualizar apenas a data de atualização na tela
 function atualizarDataNaTela() {
-    // Atualizar data na tela - usa timestamp salvo
-    const dataAtualizacao = ultimaAtualizacaoTimestamp || new Date();
-    const updateText = 'Última atualização: ' + dataAtualizacao.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
-    
-    const updateEl = document.querySelector('#exp-total-progress .exp-progress-row span[style*="color:#ffc107"]');
-    if (updateEl) {
-        updateEl.innerHTML = `🕐 ${updateText}`;
-    }
+    // Usa a função atualizarCountdown que já formata corretamente
+    atualizarCountdown();
 }
 
 // Mostrar toast de feedback
