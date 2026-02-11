@@ -2192,8 +2192,8 @@ function initPullToRefresh() {
             indicator.classList.remove('pulling');
             indicator.style.top = '-50px';
             
-            // Mostrar splash de refresh com logo e barra de progresso
-            showSplashRefresh();
+            // Mostrar splash de refresh com logo e barra de progresso (com percentual)
+            showSplashRefresh(true);
             
             // Forçar atualização
             await forcarAtualizacaoExpedicao();
@@ -2224,7 +2224,7 @@ function getEstimatedRefreshTime() {
     return Math.round(avg);
 }
 
-function showSplashRefresh() {
+function showSplashRefresh(showPercent) {
     var splash = document.getElementById('splash-refresh');
     if (!splash) return;
     
@@ -2232,12 +2232,22 @@ function showSplashRefresh() {
     
     // Reset direto nos elementos
     document.getElementById('splash-refresh-bar').style.width = '0%';
-    document.getElementById('splash-refresh-percent').textContent = '0%';
-    document.getElementById('splash-refresh-text').textContent = '🔌 Conectando...';
+    document.getElementById('splash-refresh-text').textContent = 'Atualizando...';
     
-    // Guardar tempo inicial em atributo do elemento (mais seguro que variável global)
+    var percentEl = document.getElementById('splash-refresh-percent');
+    if (percentEl) {
+        if (showPercent) {
+            percentEl.style.display = 'block';
+            percentEl.textContent = '0%';
+        } else {
+            percentEl.style.display = 'none';
+        }
+    }
+    
+    // Guardar configuração
     splash.setAttribute('data-start', Date.now());
     splash.setAttribute('data-estimate', getEstimatedRefreshTime());
+    splash.setAttribute('data-show-percent', showPercent ? 'true' : 'false');
     
     // Parar animação anterior se existir
     if (window.splashAnimFrame) {
@@ -2251,6 +2261,7 @@ function showSplashRefresh() {
         
         var startTime = parseInt(splashEl.getAttribute('data-start')) || Date.now();
         var estimatedTime = parseInt(splashEl.getAttribute('data-estimate')) || 3000;
+        var shouldShowPercent = splashEl.getAttribute('data-show-percent') === 'true';
         var elapsed = Date.now() - startTime;
         var progress = Math.min(Math.floor((elapsed / estimatedTime) * 85), 85);
         
@@ -2258,7 +2269,7 @@ function showSplashRefresh() {
         var pctEl = document.getElementById('splash-refresh-percent');
         
         if (barEl) barEl.style.width = progress + '%';
-        if (pctEl) pctEl.textContent = progress + '%';
+        if (pctEl && shouldShowPercent) pctEl.textContent = progress + '%';
         
         // Continuar animando enquanto não atingir 85%
         if (progress < 85) {
@@ -2295,6 +2306,7 @@ function hideSplashRefresh() {
     }
     
     var splash = document.getElementById('splash-refresh');
+    var shouldShowPercent = splash && splash.getAttribute('data-show-percent') === 'true';
     
     // Salvar tempo real para melhorar estimativa futura
     if (splash) {
@@ -2308,8 +2320,12 @@ function hideSplashRefresh() {
     
     // Completar para 100%
     document.getElementById('splash-refresh-bar').style.width = '100%';
-    document.getElementById('splash-refresh-percent').textContent = '100%';
     document.getElementById('splash-refresh-text').textContent = '✅ Concluído!';
+    
+    var percentEl = document.getElementById('splash-refresh-percent');
+    if (percentEl && shouldShowPercent) {
+        percentEl.textContent = '100%';
+    }
     
     // Esconder após 500ms
     setTimeout(function() {
@@ -2443,9 +2459,13 @@ async function executarRefreshGlobal() {
     const splash = document.getElementById('splash-refresh');
     const splashText = document.getElementById('splash-refresh-text');
     const splashBar = document.getElementById('splash-refresh-bar');
+    const splashPercent = document.getElementById('splash-refresh-percent');
     
     splash.classList.add('active');
     splashBar.style.width = '0%';
+    
+    // Esconder percentual no refresh global (fora da cápsula mostra, dentro não)
+    if (splashPercent) splashPercent.style.display = 'none';
     
     // Animação contínua da barra de progresso
     let progressoAtual = 0;
