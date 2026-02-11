@@ -654,7 +654,7 @@ html, body { overscroll-behavior-y: contain; }
         <div class="install-desc">Adicione à tela inicial para acesso rápido</div>
     </div>
     <div class="home-footer"><span>Isa Paes © 2026</span></div>
-    <button class="settings-btn" onclick="openChangePw(); handleDebugTap();">⚙️</button>
+    <button class="settings-btn" onclick="openChangePw()" ontouchstart="startDebugPress()" ontouchend="endDebugPress()" onmousedown="startDebugPress()" onmouseup="endDebugPress()">⚙️</button>
 </div>
 
 <!-- LOGIN ÚNICO -->
@@ -3190,8 +3190,25 @@ if('serviceWorker' in navigator){
                 }
             });
         });
+        
+        // Forçar atualização do Service Worker se houver nova versão
+        if (reg.waiting) {
+            console.log('[SW] Versão em espera encontrada, ativando...');
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
     }).catch(()=>{})
 }
+
+// Verificar versão do app ao voltar do background
+const APP_VERSION = '3.1.0';
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        // Ao voltar para o app, verificar se há atualização do SW
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type: 'CHECK_UPDATE' });
+        }
+    }
+});
 
 // ========== GEOLOCALIZADOR ==========
 let geoMap,geoGeocoder,geoLocations=[],geoMarkers=[],geoCircles=[],geoShowRadius=true,geoApiKey='AIzaSyARGjgURb7_rNxQVkeV6AZ46XLk4UcPzhc',geoMapInitialized=false;
@@ -4218,30 +4235,29 @@ function _initPhotoZoom(){
 
 <script>
 // =====================================================
-// DEBUG MODE - Ativado com 7 toques no ícone ⚙️
+// DEBUG MODE - Ativado pressionando ⚙️ por 5 segundos
 // =====================================================
-let debugTapCount = 0;
-let debugTapTimer = null;
+let debugPressTimer = null;
 let debugModeEnabled = false;
 
-function handleDebugTap() {
-    debugTapCount++;
-    
-    if (debugTapTimer) clearTimeout(debugTapTimer);
-    
-    debugTapTimer = setTimeout(() => {
-        debugTapCount = 0;
-    }, 2000);
-    
-    if (debugTapCount >= 7) {
-        debugTapCount = 0;
+function startDebugPress() {
+    debugPressTimer = setTimeout(() => {
         enableDebugMode();
+    }, 5000); // 5 segundos
+}
+
+function endDebugPress() {
+    if (debugPressTimer) {
+        clearTimeout(debugPressTimer);
+        debugPressTimer = null;
     }
 }
 
 function enableDebugMode() {
     debugModeEnabled = true;
     document.getElementById('debug-toggle').classList.add('visible');
+    // Vibrar se disponível
+    if (navigator.vibrate) navigator.vibrate(200);
     alert('🐛 Debug Mode Ativado!\n\nO modo debug será desativado ao fechar o app.');
     console.log('[Debug] Modo debug ativado');
 }

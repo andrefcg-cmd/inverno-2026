@@ -1,4 +1,4 @@
-const V = 'v103';
+const V = 'v104';
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => {
@@ -13,4 +13,11 @@ self.addEventListener('fetch', e => {
     e.respondWith(
         fetch(e.request).catch(() => caches.match(e.request))
     );
+});
+
+// Responder a mensagens do app
+self.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });
