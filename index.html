@@ -326,6 +326,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .changepw-input::placeholder{color:#444}
 .changepw-btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px}
 .changepw-btn:active{opacity:0.85}
+.changepw-btn.secondary{background:var(--card);color:var(--txt);border:1px solid var(--brd);margin-top:16px}
+.changepw-btn.danger{background:#c0392b;margin-top:12px}
+.changepw-divider{height:1px;background:var(--brd);margin:24px 0}
+.changepw-section-title{font-size:12px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.bio-status{font-size:13px;color:var(--txt2);margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .changepw-msg{font-size:12px;text-align:center;margin-top:12px;min-height:18px}
 .changepw-msg.error{color:var(--red)}
 .changepw-msg.success{color:var(--green)}
@@ -976,6 +981,12 @@ html, body { overscroll-behavior-y: contain; }
         </div>
         <button class="changepw-btn" onclick="doChangePw()">Salvar Nova Senha</button>
         <div class="changepw-msg" id="changepw-msg"></div>
+        
+        <!-- Seção Biometria -->
+        <div class="changepw-divider"></div>
+        <div class="changepw-section-title">🔐 Biometria</div>
+        <div class="bio-status" id="bio-status">Verificando...</div>
+        <button class="changepw-btn secondary" id="bio-action-btn" onclick="toggleBiometria()">Carregando...</button>
     </div>
     <button class="changepw-back" onclick="backFromChangePw()">←</button>
 </div>
@@ -1847,6 +1858,59 @@ function openChangePw(){
     document.getElementById('changepw-msg').textContent='';
     document.getElementById('changepw-msg').className='changepw-msg';
     setTimeout(()=>document.getElementById('changepw-current').focus(),100);
+    // Atualizar status da biometria
+    atualizarStatusBiometria();
+}
+
+function atualizarStatusBiometria() {
+    const bioUser = localStorage.getItem('bio-user');
+    const statusEl = document.getElementById('bio-status');
+    const btnEl = document.getElementById('bio-action-btn');
+    
+    if (bioUser) {
+        statusEl.innerHTML = '✅ Ativada para: <strong>' + (USERS[bioUser]?.nome || bioUser) + '</strong>';
+        btnEl.textContent = '🗑️ Desativar Biometria';
+        btnEl.className = 'changepw-btn danger';
+        btnEl.onclick = desativarBiometria;
+    } else {
+        statusEl.innerHTML = '❌ Não configurada';
+        btnEl.textContent = '🔐 Ativar Biometria';
+        btnEl.className = 'changepw-btn secondary';
+        btnEl.onclick = ativarBiometria;
+    }
+}
+
+async function ativarBiometria() {
+    if (!currentUser) { alert('Faça login primeiro'); return; }
+    
+    const btn = document.getElementById('bio-action-btn');
+    btn.textContent = 'Aguarde...';
+    btn.disabled = true;
+    
+    try {
+        const success = await registerInitialBiometric(currentUser);
+        if (success) {
+            alert('✅ Biometria ativada com sucesso!');
+        } else {
+            alert('❌ Não foi possível ativar a biometria. Tente novamente.');
+        }
+    } catch (e) {
+        console.log('[Bio] Erro ao ativar:', e);
+        alert('❌ Erro ao ativar biometria: ' + e.message);
+    }
+    
+    btn.disabled = false;
+    atualizarStatusBiometria();
+}
+
+function desativarBiometria() {
+    if (confirm('Deseja realmente desativar a biometria?')) {
+        localStorage.removeItem('bio-user');
+        localStorage.removeItem('bio-cred-id');
+        console.log('[Bio] Biometria desativada');
+        alert('✅ Biometria desativada!');
+        atualizarStatusBiometria();
+    }
 }
 function doChangePw(){
     const msg=document.getElementById('changepw-msg');
