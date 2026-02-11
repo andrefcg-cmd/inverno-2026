@@ -1286,11 +1286,9 @@ async function tryInitialBiometric(){
     console.log('[Bio] Verificando biometria inicial...');
     console.log('[Bio] bioUser:', bioUser);
     console.log('[Bio] credId existe:', !!credId);
-    console.log('[Bio] USERS[bioUser] existe:', bioUser ? !!USERS[bioUser] : 'N/A');
-    console.log('[Bio] USERS keys:', Object.keys(USERS));
     console.log('[Bio] PublicKeyCredential:', !!window.PublicKeyCredential);
     
-    // Verificar se tem biometria cadastrada (não precisa verificar USERS aqui, só no login)
+    // Verificar se tem biometria cadastrada
     if(bioUser && credId && window.PublicKeyCredential){
         try{
             console.log('[Bio] Tentando autenticar com biometria...');
@@ -1302,6 +1300,30 @@ async function tryInitialBiometric(){
             }});
             if(a){
                 console.log('[Bio] ✅ Autenticação biométrica bem sucedida!');
+                
+                // Carregar dados do usuário do sessionStorage (salvos no último login)
+                const savedUserData = sessionStorage.getItem('logged-user-data');
+                if (savedUserData) {
+                    try {
+                        const userData = JSON.parse(savedUserData);
+                        USERS[bioUser] = { ...userData, pw: '' };
+                        console.log('[Bio] Dados do usuário carregados do sessionStorage');
+                    } catch(e) {
+                        console.log('[Bio] Erro ao carregar dados do usuário:', e);
+                    }
+                }
+                
+                // Se ainda não tem dados do usuário, criar um básico
+                if (!USERS[bioUser]) {
+                    USERS[bioUser] = { 
+                        nome: bioUser.charAt(0).toUpperCase() + bioUser.slice(1),
+                        access: ['comercial', 'expedicao'],
+                        channels: ['showroom', 'ecommerce'],
+                        pw: ''
+                    };
+                    console.log('[Bio] Criado usuário básico');
+                }
+                
                 sessionStorage.setItem('logged-user', bioUser);
                 getWeatherAndShowWelcome(bioUser);
                 return;
