@@ -307,7 +307,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .ref-search-input::placeholder{color:var(--txt2)}
 .ref-search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--txt2);font-size:16px;cursor:pointer;padding:8px;display:none}
 .ref-search-clear.visible{display:block}
-.ref-item.highlight{animation:refHighlight 2s ease-out}
+.ref-item.highlight,.exp-item.highlight{animation:refHighlight 2s ease-out}
 @keyframes refHighlight{0%{background:rgba(233,69,96,0.3)}100%{background:transparent}}
 .rank-number{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
 .rank-1{background:linear-gradient(135deg,#FFD700,#FFA500);color:#000}.rank-2{background:linear-gradient(135deg,#C0C0C0,#A0A0A0);color:#000}
@@ -2226,45 +2226,48 @@ function getEstimatedRefreshTime() {
 
 function showSplashRefresh() {
     var splash = document.getElementById('splash-refresh');
-    var progressBar = document.getElementById('splash-refresh-bar');
-    var text = document.getElementById('splash-refresh-text');
-    var percent = document.getElementById('splash-refresh-percent');
+    if (!splash) return;
     
-    console.log('[Refresh] Iniciando splash refresh');
+    splash.classList.add('active');
     
-    if (splash) {
-        splash.classList.add('active');
-        if (progressBar) {
-            progressBar.style.width = '0%';
-        }
-        if (text) text.textContent = '🔌 Conectando...';
-        if (percent) percent.textContent = '0%';
-        
-        window.splashRefreshStartTime = Date.now();
-        window.splashCurrentProgress = 0;
-        var estimatedTime = getEstimatedRefreshTime();
-        console.log('[Refresh] Tempo estimado:', estimatedTime, 'ms');
-        
-        // Limpar intervalo anterior se existir
-        if (window.splashProgressInterval) {
-            clearInterval(window.splashProgressInterval);
-        }
-        
-        // Animar barra de progresso baseado no tempo estimado
-        window.splashProgressInterval = setInterval(function() {
-            var elapsed = Date.now() - window.splashRefreshStartTime;
-            var progress = Math.min(Math.round((elapsed / estimatedTime) * 85), 85);
-            
-            if (progress > window.splashCurrentProgress) {
-                window.splashCurrentProgress = progress;
-                var bar = document.getElementById('splash-refresh-bar');
-                var pct = document.getElementById('splash-refresh-percent');
-                if (bar) bar.style.width = progress + '%';
-                if (pct) pct.textContent = progress + '%';
-                console.log('[Refresh] Progresso:', progress + '%');
-            }
-        }, 100);
+    // Reset direto nos elementos
+    document.getElementById('splash-refresh-bar').style.width = '0%';
+    document.getElementById('splash-refresh-percent').textContent = '0%';
+    document.getElementById('splash-refresh-text').textContent = '🔌 Conectando...';
+    
+    // Guardar tempo inicial em atributo do elemento (mais seguro que variável global)
+    splash.setAttribute('data-start', Date.now());
+    splash.setAttribute('data-estimate', getEstimatedRefreshTime());
+    
+    // Parar animação anterior se existir
+    if (window.splashAnimFrame) {
+        cancelAnimationFrame(window.splashAnimFrame);
     }
+    
+    // Usar requestAnimationFrame para animação suave
+    function animateProgress() {
+        var splashEl = document.getElementById('splash-refresh');
+        if (!splashEl || !splashEl.classList.contains('active')) return;
+        
+        var startTime = parseInt(splashEl.getAttribute('data-start')) || Date.now();
+        var estimatedTime = parseInt(splashEl.getAttribute('data-estimate')) || 3000;
+        var elapsed = Date.now() - startTime;
+        var progress = Math.min(Math.floor((elapsed / estimatedTime) * 85), 85);
+        
+        var barEl = document.getElementById('splash-refresh-bar');
+        var pctEl = document.getElementById('splash-refresh-percent');
+        
+        if (barEl) barEl.style.width = progress + '%';
+        if (pctEl) pctEl.textContent = progress + '%';
+        
+        // Continuar animando enquanto não atingir 85%
+        if (progress < 85) {
+            window.splashAnimFrame = requestAnimationFrame(animateProgress);
+        }
+    }
+    
+    // Iniciar animação
+    window.splashAnimFrame = requestAnimationFrame(animateProgress);
 }
 
 function updateSplashRefreshStage(stage) {
@@ -2285,29 +2288,33 @@ function updateSplashRefreshStage(stage) {
 
 // Esconder splash de refresh
 function hideSplashRefresh() {
+    // Parar animação
+    if (window.splashAnimFrame) {
+        cancelAnimationFrame(window.splashAnimFrame);
+        window.splashAnimFrame = null;
+    }
+    
     var splash = document.getElementById('splash-refresh');
-    var progressBar = document.getElementById('splash-refresh-bar');
-    var text = document.getElementById('splash-refresh-text');
-    var percent = document.getElementById('splash-refresh-percent');
     
-    if (window.splashProgressInterval) {
-        clearInterval(window.splashProgressInterval);
-        window.splashProgressInterval = null;
+    // Salvar tempo real para melhorar estimativa futura
+    if (splash) {
+        var startTime = parseInt(splash.getAttribute('data-start'));
+        if (startTime) {
+            var elapsed = Date.now() - startTime;
+            refreshTimeHistory.push(elapsed);
+            if (refreshTimeHistory.length > 5) refreshTimeHistory.shift();
+        }
     }
     
-    // Salvar tempo real para melhorar estimativa
-    if (window.splashRefreshStartTime) {
-        var elapsed = Date.now() - window.splashRefreshStartTime;
-        refreshTimeHistory.push(elapsed);
-        if (refreshTimeHistory.length > 5) refreshTimeHistory.shift();
-    }
+    // Completar para 100%
+    document.getElementById('splash-refresh-bar').style.width = '100%';
+    document.getElementById('splash-refresh-percent').textContent = '100%';
+    document.getElementById('splash-refresh-text').textContent = '✅ Concluído!';
     
-    if (progressBar) progressBar.style.width = '100%';
-    if (percent) percent.textContent = '100%';
-    if (text) text.textContent = '✅ Concluído!';
-    
+    // Esconder após 500ms
     setTimeout(function() {
-        if (splash) splash.classList.remove('active');
+        var splashEl = document.getElementById('splash-refresh');
+        if (splashEl) splashEl.classList.remove('active');
     }, 500);
 }
 
@@ -4338,46 +4345,61 @@ function clearDebugLogs() {
 // BUSCA DE REFERÊNCIAS
 // =====================================================
 function filtrarReferencias(termo) {
-    const clearBtn = document.getElementById('ref-search-clear');
-    clearBtn.classList.toggle('visible', termo.length > 0);
+    var clearBtn = document.getElementById('ref-search-clear');
+    if (clearBtn) clearBtn.classList.toggle('visible', termo.length > 0);
     
-    if (!termo) {
-        // Mostrar todas as referências
-        document.querySelectorAll('.ref-item').forEach(item => {
+    // Pegar todos os cards de expedição
+    var items = document.querySelectorAll('.exp-item');
+    
+    if (!termo || termo.trim() === '') {
+        // Mostrar todos
+        items.forEach(function(item) {
             item.style.display = '';
         });
         return;
     }
     
+    // Normalizar termo (minúsculo e sem espaços extras)
     termo = termo.toLowerCase().trim();
-    let encontrou = false;
-    let primeiroMatch = null;
+    var primeiroMatch = null;
     
-    document.querySelectorAll('.ref-item').forEach(item => {
-        const refCode = item.querySelector('.ref-code')?.textContent?.toLowerCase() || '';
-        const refDesc = item.querySelector('.ref-desc')?.textContent?.toLowerCase() || '';
+    items.forEach(function(item) {
+        // Pegar referência e descrição do card
+        var refEl = item.querySelector('.exp-item-ref');
+        var descEl = item.querySelector('.exp-item-name');
+        var corEl = item.querySelector('.exp-item-cor');
         
-        if (refCode.includes(termo) || refDesc.includes(termo)) {
+        var refText = refEl ? refEl.textContent.toLowerCase() : '';
+        var descText = descEl ? descEl.textContent.toLowerCase() : '';
+        var corText = corEl ? corEl.textContent.toLowerCase() : '';
+        
+        // Verificar se o termo está em algum campo
+        if (refText.includes(termo) || descText.includes(termo) || corText.includes(termo)) {
             item.style.display = '';
             if (!primeiroMatch) primeiroMatch = item;
-            encontrou = true;
         } else {
             item.style.display = 'none';
         }
     });
     
-    // Scroll até o primeiro resultado
+    // Scroll até o primeiro resultado encontrado
     if (primeiroMatch) {
-        primeiroMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        primeiroMatch.classList.add('highlight');
-        setTimeout(() => primeiroMatch.classList.remove('highlight'), 2000);
+        setTimeout(function() {
+            primeiroMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            primeiroMatch.classList.add('highlight');
+            setTimeout(function() { 
+                primeiroMatch.classList.remove('highlight'); 
+            }, 2000);
+        }, 100);
     }
 }
 
 function limparBuscaReferencia() {
-    const input = document.getElementById('ref-search');
-    input.value = '';
-    filtrarReferencias('');
+    var input = document.getElementById('ref-search');
+    if (input) {
+        input.value = '';
+        filtrarReferencias('');
+    }
     input.focus();
 }
 </script>
