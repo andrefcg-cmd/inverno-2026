@@ -2225,28 +2225,24 @@ function getEstimatedRefreshTime() {
 }
 
 function showSplashRefresh() {
-    const splash = document.getElementById('splash-refresh');
-    const progressBar = document.getElementById('splash-refresh-bar');
-    const text = document.getElementById('splash-refresh-text');
-    const percent = document.getElementById('splash-refresh-percent');
+    var splash = document.getElementById('splash-refresh');
+    var progressBar = document.getElementById('splash-refresh-bar');
+    var text = document.getElementById('splash-refresh-text');
+    var percent = document.getElementById('splash-refresh-percent');
     
     console.log('[Refresh] Iniciando splash refresh');
     
     if (splash) {
         splash.classList.add('active');
         if (progressBar) {
-            progressBar.style.transition = 'none';
             progressBar.style.width = '0%';
-            // Forçar reflow para aplicar width 0 antes de animar
-            progressBar.offsetHeight;
-            progressBar.style.transition = 'width 0.15s linear';
         }
-        if (text) text.textContent = '🔌 Conectando ao servidor...';
+        if (text) text.textContent = '🔌 Conectando...';
         if (percent) percent.textContent = '0%';
         
         window.splashRefreshStartTime = Date.now();
         window.splashCurrentProgress = 0;
-        const estimatedTime = getEstimatedRefreshTime();
+        var estimatedTime = getEstimatedRefreshTime();
         console.log('[Refresh] Tempo estimado:', estimatedTime, 'ms');
         
         // Limpar intervalo anterior se existir
@@ -2255,64 +2251,54 @@ function showSplashRefresh() {
         }
         
         // Animar barra de progresso baseado no tempo estimado
-        window.splashProgressInterval = setInterval(() => {
-            const elapsed = Date.now() - window.splashRefreshStartTime;
-            let progress = Math.min(Math.round((elapsed / estimatedTime) * 85), 85);
+        window.splashProgressInterval = setInterval(function() {
+            var elapsed = Date.now() - window.splashRefreshStartTime;
+            var progress = Math.min(Math.round((elapsed / estimatedTime) * 85), 85);
             
             if (progress > window.splashCurrentProgress) {
                 window.splashCurrentProgress = progress;
-                const bar = document.getElementById('splash-refresh-bar');
-                const pct = document.getElementById('splash-refresh-percent');
+                var bar = document.getElementById('splash-refresh-bar');
+                var pct = document.getElementById('splash-refresh-percent');
                 if (bar) bar.style.width = progress + '%';
                 if (pct) pct.textContent = progress + '%';
+                console.log('[Refresh] Progresso:', progress + '%');
             }
-        }, 150);
+        }, 100);
     }
 }
 
-function updateSplashRefreshStage(stage, forceProgress = null) {
-    const text = document.getElementById('splash-refresh-text');
-    const progressBar = document.getElementById('splash-refresh-bar');
-    const percent = document.getElementById('splash-refresh-percent');
+function updateSplashRefreshStage(stage) {
+    var text = document.getElementById('splash-refresh-text');
     
-    const stages = {
-        'connecting': { text: '🔌 Conectando ao servidor...', progress: 10 },
-        'fetching': { text: '📡 Buscando dados...', progress: 30 },
-        'processing': { text: '⚙️ Processando...', progress: 60 },
-        'rendering': { text: '🎨 Atualizando tela...', progress: 85 },
-        'done': { text: '✅ Concluído!', progress: 100 }
+    var stages = {
+        'connecting': '🔌 Conectando...',
+        'fetching': '📡 Buscando dados...',
+        'processing': '⚙️ Processando...',
+        'rendering': '🎨 Atualizando...',
+        'done': '✅ Concluído!'
     };
     
-    const stageInfo = stages[stage];
-    if (stageInfo && text) {
-        text.textContent = stageInfo.text;
-        
-        // Garantir progresso mínimo da etapa
-        const minProgress = forceProgress !== null ? forceProgress : stageInfo.progress;
-        if (minProgress > window.splashCurrentProgress) {
-            window.splashCurrentProgress = minProgress;
-            if (progressBar) progressBar.style.width = minProgress + '%';
-            if (percent) percent.textContent = minProgress + '%';
-        }
+    if (stages[stage] && text) {
+        text.textContent = stages[stage];
     }
 }
 
 // Esconder splash de refresh
 function hideSplashRefresh() {
-    const splash = document.getElementById('splash-refresh');
-    const progressBar = document.getElementById('splash-refresh-bar');
-    const text = document.getElementById('splash-refresh-text');
-    const percent = document.getElementById('splash-refresh-percent');
+    var splash = document.getElementById('splash-refresh');
+    var progressBar = document.getElementById('splash-refresh-bar');
+    var text = document.getElementById('splash-refresh-text');
+    var percent = document.getElementById('splash-refresh-percent');
     
     if (window.splashProgressInterval) {
         clearInterval(window.splashProgressInterval);
+        window.splashProgressInterval = null;
     }
     
     // Salvar tempo real para melhorar estimativa
     if (window.splashRefreshStartTime) {
-        const elapsed = Date.now() - window.splashRefreshStartTime;
+        var elapsed = Date.now() - window.splashRefreshStartTime;
         refreshTimeHistory.push(elapsed);
-        // Manter só os últimos 5 tempos
         if (refreshTimeHistory.length > 5) refreshTimeHistory.shift();
     }
     
@@ -2320,7 +2306,7 @@ function hideSplashRefresh() {
     if (percent) percent.textContent = '100%';
     if (text) text.textContent = '✅ Concluído!';
     
-    setTimeout(() => {
+    setTimeout(function() {
         if (splash) splash.classList.remove('active');
     }, 500);
 }
