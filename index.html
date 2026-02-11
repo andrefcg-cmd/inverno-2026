@@ -654,7 +654,7 @@ html, body { overscroll-behavior-y: contain; }
         <div class="install-desc">Adicione à tela inicial para acesso rápido</div>
     </div>
     <div class="home-footer"><span>Isa Paes © 2026</span></div>
-    <button class="settings-btn" onclick="openChangePw()" ontouchstart="startDebugPress()" ontouchend="endDebugPress()" onmousedown="startDebugPress()" onmouseup="endDebugPress()">⚙️</button>
+    <button class="settings-btn" onclick="openChangePw()" ontouchstart="startDebugPress()" ontouchend="endDebugPress()">⚙️</button>
 </div>
 
 <!-- LOGIN ÚNICO -->
@@ -1043,7 +1043,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '3.1.0';
+const APP_VERSION = '3.0.0';
 
 // ===== CONFIGURAÇÃO DA API =====
 // Cache é gerenciado 100% no Cloudflare (KV + HTTP Cache)
@@ -2088,17 +2088,11 @@ async function openExpedicao(){
     console.log('[API] Key:', API_CONFIG.apiKey ? 'presente' : 'AUSENTE');
     
     try {
-        // Timeout de 10 segundos
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-        
         const response = await fetch(`${API_CONFIG.baseUrl}/api/totvs/capsulas/status`, {
             headers: { 'X-API-Key': API_CONFIG.apiKey || 'Isapaes@2026!X' },
-            mode: 'cors',
-            signal: controller.signal
+            mode: 'cors'
         });
         
-        clearTimeout(timeoutId);
         console.log('[API] Response status:', response.status);
         
         if (response.ok) {
@@ -2130,11 +2124,7 @@ async function openExpedicao(){
             console.log('[API] Erro HTTP:', response.status, response.statusText);
         }
     } catch(e) {
-        if (e.name === 'AbortError') {
-            console.log('[API] Timeout na requisição de cápsulas');
-        } else {
-            console.log('[API] Erro ao carregar cápsulas:', e.message || e);
-        }
+        console.log('[API] Erro ao carregar cápsulas:', e.message || e);
         showExpedicaoToast('Erro ao conectar', 'error');
     }
 }
@@ -2236,97 +2226,101 @@ function getEstimatedRefreshTime() {
 
 function showSplashRefresh() {
     const splash = document.getElementById('splash-refresh');
+    const progressBar = document.getElementById('splash-refresh-bar');
+    const text = document.getElementById('splash-refresh-text');
+    const percent = document.getElementById('splash-refresh-percent');
     
-    if (!splash) return;
+    console.log('[Refresh] Iniciando splash refresh');
     
-    splash.classList.add('active');
-    
-    // Reset inicial
-    const bar = document.getElementById('splash-refresh-bar');
-    const pct = document.getElementById('splash-refresh-percent');
-    const txt = document.getElementById('splash-refresh-text');
-    
-    if (bar) bar.style.width = '0%';
-    if (pct) pct.textContent = '0%';
-    if (txt) txt.textContent = '🔌 Conectando...';
-    
-    // Limpar intervalo anterior
-    if (window.splashProgressInterval) {
-        clearInterval(window.splashProgressInterval);
-        window.splashProgressInterval = null;
+    if (splash) {
+        splash.classList.add('active');
+        if (progressBar) {
+            progressBar.style.transition = 'none';
+            progressBar.style.width = '0%';
+            // Forçar reflow para aplicar width 0 antes de animar
+            progressBar.offsetHeight;
+            progressBar.style.transition = 'width 0.15s linear';
+        }
+        if (text) text.textContent = '🔌 Conectando ao servidor...';
+        if (percent) percent.textContent = '0%';
+        
+        window.splashRefreshStartTime = Date.now();
+        window.splashCurrentProgress = 0;
+        const estimatedTime = getEstimatedRefreshTime();
+        console.log('[Refresh] Tempo estimado:', estimatedTime, 'ms');
+        
+        // Limpar intervalo anterior se existir
+        if (window.splashProgressInterval) {
+            clearInterval(window.splashProgressInterval);
+        }
+        
+        // Animar barra de progresso baseado no tempo estimado
+        window.splashProgressInterval = setInterval(() => {
+            const elapsed = Date.now() - window.splashRefreshStartTime;
+            let progress = Math.min(Math.round((elapsed / estimatedTime) * 85), 85);
+            
+            if (progress > window.splashCurrentProgress) {
+                window.splashCurrentProgress = progress;
+                const bar = document.getElementById('splash-refresh-bar');
+                const pct = document.getElementById('splash-refresh-percent');
+                if (bar) bar.style.width = progress + '%';
+                if (pct) pct.textContent = progress + '%';
+            }
+        }, 150);
     }
-    
-    // Variáveis para controle
-    window.splashStartTime = Date.now();
-    window.splashProgress = 0;
-    
-    const tempoEstimado = getEstimatedRefreshTime();
-    
-    // Iniciar animação
-    window.splashProgressInterval = setInterval(function() {
-        const elapsed = Date.now() - window.splashStartTime;
-        const novoProgresso = Math.min(Math.floor((elapsed / tempoEstimado) * 85), 85);
-        
-        // Log a cada 1 segundo aproximadamente
-        if (novoProgresso % 10 === 0 && novoProgresso !== window.splashProgress) {
-            console.log('[Splash] Progresso:', novoProgresso + '%');
-        }
-        
-        if (novoProgresso > window.splashProgress) {
-            window.splashProgress = novoProgresso;
-            
-            const barEl = document.getElementById('splash-refresh-bar');
-            const pctEl = document.getElementById('splash-refresh-percent');
-            
-            if (barEl) barEl.style.width = novoProgresso + '%';
-            if (pctEl) pctEl.textContent = novoProgresso + '%';
-        }
-    }, 100);
 }
 
-function updateSplashRefreshStage(stage) {
+function updateSplashRefreshStage(stage, forceProgress = null) {
     const text = document.getElementById('splash-refresh-text');
+    const progressBar = document.getElementById('splash-refresh-bar');
+    const percent = document.getElementById('splash-refresh-percent');
     
     const stages = {
-        'connecting': '🔌 Conectando ao servidor...',
-        'fetching': '📡 Buscando dados...',
-        'processing': '⚙️ Processando...',
-        'rendering': '🎨 Atualizando tela...',
-        'done': '✅ Concluído!'
+        'connecting': { text: '🔌 Conectando ao servidor...', progress: 10 },
+        'fetching': { text: '📡 Buscando dados...', progress: 30 },
+        'processing': { text: '⚙️ Processando...', progress: 60 },
+        'rendering': { text: '🎨 Atualizando tela...', progress: 85 },
+        'done': { text: '✅ Concluído!', progress: 100 }
     };
     
-    if (stages[stage] && text) {
-        text.textContent = stages[stage];
+    const stageInfo = stages[stage];
+    if (stageInfo && text) {
+        text.textContent = stageInfo.text;
+        
+        // Garantir progresso mínimo da etapa
+        const minProgress = forceProgress !== null ? forceProgress : stageInfo.progress;
+        if (minProgress > window.splashCurrentProgress) {
+            window.splashCurrentProgress = minProgress;
+            if (progressBar) progressBar.style.width = minProgress + '%';
+            if (percent) percent.textContent = minProgress + '%';
+        }
     }
 }
 
 // Esconder splash de refresh
 function hideSplashRefresh() {
-    // Parar intervalo
+    const splash = document.getElementById('splash-refresh');
+    const progressBar = document.getElementById('splash-refresh-bar');
+    const text = document.getElementById('splash-refresh-text');
+    const percent = document.getElementById('splash-refresh-percent');
+    
     if (window.splashProgressInterval) {
         clearInterval(window.splashProgressInterval);
-        window.splashProgressInterval = null;
     }
     
-    // Salvar tempo real para melhorar estimativa futura
-    if (window.splashStartTime) {
-        const elapsed = Date.now() - window.splashStartTime;
+    // Salvar tempo real para melhorar estimativa
+    if (window.splashRefreshStartTime) {
+        const elapsed = Date.now() - window.splashRefreshStartTime;
         refreshTimeHistory.push(elapsed);
+        // Manter só os últimos 5 tempos
         if (refreshTimeHistory.length > 5) refreshTimeHistory.shift();
     }
     
-    // Completar para 100%
-    const bar = document.getElementById('splash-refresh-bar');
-    const pct = document.getElementById('splash-refresh-percent');
-    const txt = document.getElementById('splash-refresh-text');
+    if (progressBar) progressBar.style.width = '100%';
+    if (percent) percent.textContent = '100%';
+    if (text) text.textContent = '✅ Concluído!';
     
-    if (bar) bar.style.width = '100%';
-    if (pct) pct.textContent = '100%';
-    if (txt) txt.textContent = '✅ Concluído!';
-    
-    // Esconder após delay
-    setTimeout(function() {
-        const splash = document.getElementById('splash-refresh');
+    setTimeout(() => {
         if (splash) splash.classList.remove('active');
     }, 500);
 }
@@ -3196,24 +3190,8 @@ if('serviceWorker' in navigator){
                 }
             });
         });
-        
-        // Forçar atualização do Service Worker se houver nova versão
-        if (reg.waiting) {
-            console.log('[SW] Versão em espera encontrada, ativando...');
-            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-        }
     }).catch(()=>{})
 }
-
-// Verificar versão do app ao voltar do background
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-        // Ao voltar para o app, verificar se há atualização do SW
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({ type: 'CHECK_UPDATE' });
-        }
-    }
-});
 
 // ========== GEOLOCALIZADOR ==========
 let geoMap,geoGeocoder,geoLocations=[],geoMarkers=[],geoCircles=[],geoShowRadius=true,geoApiKey='AIzaSyARGjgURb7_rNxQVkeV6AZ46XLk4UcPzhc',geoMapInitialized=false;
@@ -4246,9 +4224,9 @@ let debugPressTimer = null;
 let debugModeEnabled = false;
 
 function startDebugPress() {
-    debugPressTimer = setTimeout(() => {
+    debugPressTimer = setTimeout(function() {
         enableDebugMode();
-    }, 5000); // 5 segundos
+    }, 5000);
 }
 
 function endDebugPress() {
@@ -4261,7 +4239,6 @@ function endDebugPress() {
 function enableDebugMode() {
     debugModeEnabled = true;
     document.getElementById('debug-toggle').classList.add('visible');
-    // Vibrar se disponível
     if (navigator.vibrate) navigator.vibrate(200);
     alert('🐛 Debug Mode Ativado!\n\nO modo debug será desativado ao fechar o app.');
     console.log('[Debug] Modo debug ativado');
@@ -4273,14 +4250,10 @@ function disableDebugMode() {
     document.getElementById('debug-panel').classList.remove('active');
 }
 
-document.addEventListener('visibilitychange', () => {
+document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'hidden' && debugModeEnabled) {
         disableDebugMode();
     }
-});
-
-window.addEventListener('beforeunload', () => {
-    disableDebugMode();
 });
 
 let debugDragging = false;
