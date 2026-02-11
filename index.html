@@ -2230,26 +2230,41 @@ function showSplashRefresh() {
     const text = document.getElementById('splash-refresh-text');
     const percent = document.getElementById('splash-refresh-percent');
     
+    console.log('[Refresh] Iniciando splash refresh');
+    
     if (splash) {
         splash.classList.add('active');
-        if (progressBar) progressBar.style.width = '0%';
+        if (progressBar) {
+            progressBar.style.transition = 'none';
+            progressBar.style.width = '0%';
+            // Forçar reflow para aplicar width 0 antes de animar
+            progressBar.offsetHeight;
+            progressBar.style.transition = 'width 0.15s linear';
+        }
         if (text) text.textContent = '🔌 Conectando ao servidor...';
         if (percent) percent.textContent = '0%';
         
         window.splashRefreshStartTime = Date.now();
         window.splashCurrentProgress = 0;
         const estimatedTime = getEstimatedRefreshTime();
+        console.log('[Refresh] Tempo estimado:', estimatedTime, 'ms');
+        
+        // Limpar intervalo anterior se existir
+        if (window.splashProgressInterval) {
+            clearInterval(window.splashProgressInterval);
+        }
         
         // Animar barra de progresso baseado no tempo estimado
         window.splashProgressInterval = setInterval(() => {
             const elapsed = Date.now() - window.splashRefreshStartTime;
-            let progress = Math.min(Math.round((elapsed / estimatedTime) * 85), 85); // Máximo 85% até completar
+            let progress = Math.min(Math.round((elapsed / estimatedTime) * 85), 85);
             
-            // Só atualiza se aumentou (evita tremor)
             if (progress > window.splashCurrentProgress) {
                 window.splashCurrentProgress = progress;
-                if (progressBar) progressBar.style.width = progress + '%';
-                if (percent) percent.textContent = progress + '%';
+                const bar = document.getElementById('splash-refresh-bar');
+                const pct = document.getElementById('splash-refresh-percent');
+                if (bar) bar.style.width = progress + '%';
+                if (pct) pct.textContent = progress + '%';
             }
         }, 150);
     }
@@ -2313,7 +2328,12 @@ function hideSplashRefresh() {
 // Forçar atualização (sem cache local)
 async function forcarAtualizacaoExpedicao() {
     const destino = currentExpDestino;
-    if (!destino) return;
+    if (!destino) {
+        console.log('[Refresh] Sem destino definido');
+        return;
+    }
+    
+    console.log('[Refresh] Iniciando atualização forçada para:', destino);
     
     try {
         updateSplashRefreshStage('connecting');
@@ -2330,13 +2350,23 @@ async function forcarAtualizacaoExpedicao() {
         
         updateSplashRefreshStage('fetching');
         const url = `${API_CONFIG.baseUrl}${endpoints[destino]}`;
-        const response = await fetch(url, { headers: { 'X-API-Key': API_CONFIG.apiKey } });
+        console.log('[Refresh] URL:', url);
+        
+        const response = await fetch(url, { 
+            headers: { 'X-API-Key': API_CONFIG.apiKey },
+            mode: 'cors'
+        });
+        
+        console.log('[Refresh] Response status:', response.status);
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         updateSplashRefreshStage('processing');
         const apiData = await response.json();
+        console.log('[Refresh] Dados recebidos:', apiData ? 'OK' : 'VAZIO');
+        
         const novosItens = transformApiData(apiData);
+        console.log('[Refresh] Itens transformados:', novosItens.length);
         
         updateSplashRefreshStage('rendering');
         // Atualizar UI
