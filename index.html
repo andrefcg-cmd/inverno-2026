@@ -1043,7 +1043,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '3.1.0';
 
 // ===== CONFIGURAÇÃO DA API =====
 // Cache é gerenciado 100% no Cloudflare (KV + HTTP Cache)
@@ -2270,30 +2270,19 @@ function showSplashRefresh() {
     }
 }
 
-function updateSplashRefreshStage(stage, forceProgress = null) {
+function updateSplashRefreshStage(stage) {
     const text = document.getElementById('splash-refresh-text');
-    const progressBar = document.getElementById('splash-refresh-bar');
-    const percent = document.getElementById('splash-refresh-percent');
     
     const stages = {
-        'connecting': { text: '🔌 Conectando ao servidor...', progress: 10 },
-        'fetching': { text: '📡 Buscando dados...', progress: 30 },
-        'processing': { text: '⚙️ Processando...', progress: 60 },
-        'rendering': { text: '🎨 Atualizando tela...', progress: 85 },
-        'done': { text: '✅ Concluído!', progress: 100 }
+        'connecting': '🔌 Conectando ao servidor...',
+        'fetching': '📡 Buscando dados...',
+        'processing': '⚙️ Processando...',
+        'rendering': '🎨 Atualizando tela...',
+        'done': '✅ Concluído!'
     };
     
-    const stageInfo = stages[stage];
-    if (stageInfo && text) {
-        text.textContent = stageInfo.text;
-        
-        // Garantir progresso mínimo da etapa
-        const minProgress = forceProgress !== null ? forceProgress : stageInfo.progress;
-        if (minProgress > window.splashCurrentProgress) {
-            window.splashCurrentProgress = minProgress;
-            if (progressBar) progressBar.style.width = minProgress + '%';
-            if (percent) percent.textContent = minProgress + '%';
-        }
+    if (stages[stage] && text) {
+        text.textContent = stages[stage];
     }
 }
 
@@ -3200,7 +3189,6 @@ if('serviceWorker' in navigator){
 }
 
 // Verificar versão do app ao voltar do background
-const APP_VERSION = '3.1.0';
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
         // Ao voltar para o app, verificar se há atualização do SW
