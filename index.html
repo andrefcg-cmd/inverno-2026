@@ -1283,8 +1283,14 @@ setTimeout(()=>{
 async function tryInitialBiometric(){
     const bioUser = localStorage.getItem('bio-user');
     const credId = localStorage.getItem('bio-cred-id');
+    console.log('[Bio] Verificando biometria inicial...');
+    console.log('[Bio] bioUser:', bioUser);
+    console.log('[Bio] credId existe:', !!credId);
+    console.log('[Bio] PublicKeyCredential:', !!window.PublicKeyCredential);
+    
     if(bioUser && credId && USERS[bioUser] && window.PublicKeyCredential){
         try{
+            console.log('[Bio] Tentando autenticar com biometria...');
             const rawId = Uint8Array.from(atob(credId), c=>c.charCodeAt(0));
             const a = await navigator.credentials.get({publicKey:{
                 challenge: crypto.getRandomValues(new Uint8Array(32)),
@@ -1292,13 +1298,19 @@ async function tryInitialBiometric(){
                 userVerification:'required', timeout:60000
             }});
             if(a){
+                console.log('[Bio] ✅ Autenticação biométrica bem sucedida!');
                 sessionStorage.setItem('logged-user', bioUser);
                 getWeatherAndShowWelcome(bioUser);
                 return;
             }
-        }catch(e){console.log('Biometria cancelada/falhou', e)}
+        }catch(e){
+            console.log('[Bio] ❌ Biometria cancelada/falhou:', e.message || e);
+        }
+    } else {
+        console.log('[Bio] Biometria não disponível ou não cadastrada');
     }
     // Sem biometria - mostrar login
+    console.log('[Bio] Mostrando tela de login');
     document.getElementById('initial-login').classList.add('active');
     setTimeout(()=>document.getElementById('initial-user').focus(),100);
 }
@@ -1543,6 +1555,9 @@ function hideAllWeatherElements(){
 }
 
 function showWelcomeScreen(user, weather = null){
+    // Setar usuário atual
+    currentUser = user;
+    
     const u = USERS[user];
     const hour = new Date().getHours();
     let greeting, skyClass;
