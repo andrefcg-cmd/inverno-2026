@@ -2088,11 +2088,17 @@ async function openExpedicao(){
     console.log('[API] Key:', API_CONFIG.apiKey ? 'presente' : 'AUSENTE');
     
     try {
+        // Timeout de 10 segundos
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
         const response = await fetch(`${API_CONFIG.baseUrl}/api/totvs/capsulas/status`, {
             headers: { 'X-API-Key': API_CONFIG.apiKey || 'Isapaes@2026!X' },
-            mode: 'cors'
+            mode: 'cors',
+            signal: controller.signal
         });
         
+        clearTimeout(timeoutId);
         console.log('[API] Response status:', response.status);
         
         if (response.ok) {
@@ -2124,7 +2130,11 @@ async function openExpedicao(){
             console.log('[API] Erro HTTP:', response.status, response.statusText);
         }
     } catch(e) {
-        console.log('[API] Erro ao carregar cápsulas:', e.message || e);
+        if (e.name === 'AbortError') {
+            console.log('[API] Timeout na requisição de cápsulas');
+        } else {
+            console.log('[API] Erro ao carregar cápsulas:', e.message || e);
+        }
         showExpedicaoToast('Erro ao conectar', 'error');
     }
 }
@@ -2256,6 +2266,11 @@ function showSplashRefresh() {
     window.splashProgressInterval = setInterval(function() {
         const elapsed = Date.now() - window.splashStartTime;
         const novoProgresso = Math.min(Math.floor((elapsed / tempoEstimado) * 85), 85);
+        
+        // Log a cada 1 segundo aproximadamente
+        if (novoProgresso % 10 === 0 && novoProgresso !== window.splashProgress) {
+            console.log('[Splash] Progresso:', novoProgresso + '%');
+        }
         
         if (novoProgresso > window.splashProgress) {
             window.splashProgress = novoProgresso;
