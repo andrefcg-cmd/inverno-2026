@@ -2197,6 +2197,16 @@ function initPullToRefresh() {
 }
 
 // Mostrar splash de refresh
+// Histórico de tempos de carregamento para estimar
+let refreshTimeHistory = [];
+const DEFAULT_REFRESH_TIME = 3000; // 3 segundos padrão
+
+function getEstimatedRefreshTime() {
+    if (refreshTimeHistory.length === 0) return DEFAULT_REFRESH_TIME;
+    const avg = refreshTimeHistory.reduce((a, b) => a + b, 0) / refreshTimeHistory.length;
+    return Math.round(avg);
+}
+
 function showSplashRefresh() {
     const splash = document.getElementById('splash-refresh');
     const progressBar = document.getElementById('splash-refresh-bar');
@@ -2205,15 +2215,32 @@ function showSplashRefresh() {
     if (splash) {
         splash.classList.add('active');
         if (progressBar) progressBar.style.width = '0%';
-        if (text) text.textContent = 'Atualizando...';
+        if (text) text.textContent = '🔌 Conectando ao servidor...';
         
-        // Animar barra de progresso
-        let progress = 0;
+        window.splashRefreshStartTime = Date.now();
+        const estimatedTime = getEstimatedRefreshTime();
+        
+        // Animar barra de progresso baseado no tempo estimado
+        let elapsed = 0;
         window.splashProgressInterval = setInterval(() => {
-            progress += Math.random() * 15;
-            if (progress > 90) progress = 90;
+            elapsed += 100;
+            let progress = Math.min((elapsed / estimatedTime) * 90, 90); // Máximo 90% até completar
             if (progressBar) progressBar.style.width = progress + '%';
-        }, 200);
+        }, 100);
+    }
+}
+
+function updateSplashRefreshText(stage) {
+    const text = document.getElementById('splash-refresh-text');
+    if (text) {
+        const stages = {
+            'connecting': '🔌 Conectando ao servidor...',
+            'fetching': '📡 Buscando dados...',
+            'processing': '⚙️ Processando...',
+            'rendering': '🎨 Atualizando tela...',
+            'done': '✅ Concluído!'
+        };
+        text.textContent = stages[stage] || stage;
     }
 }
 
@@ -2221,16 +2248,26 @@ function showSplashRefresh() {
 function hideSplashRefresh() {
     const splash = document.getElementById('splash-refresh');
     const progressBar = document.getElementById('splash-refresh-bar');
+    const text = document.getElementById('splash-refresh-text');
     
     if (window.splashProgressInterval) {
         clearInterval(window.splashProgressInterval);
     }
     
+    // Salvar tempo real para melhorar estimativa
+    if (window.splashRefreshStartTime) {
+        const elapsed = Date.now() - window.splashRefreshStartTime;
+        refreshTimeHistory.push(elapsed);
+        // Manter só os últimos 5 tempos
+        if (refreshTimeHistory.length > 5) refreshTimeHistory.shift();
+    }
+    
     if (progressBar) progressBar.style.width = '100%';
+    if (text) text.textContent = '✅ Concluído!';
     
     setTimeout(() => {
         if (splash) splash.classList.remove('active');
-    }, 300);
+    }, 400);
 }
 
 // Forçar atualização (sem cache local)
@@ -2239,6 +2276,8 @@ async function forcarAtualizacaoExpedicao() {
     if (!destino) return;
     
     try {
+        updateSplashRefreshText('connecting');
+        
         // Buscar novos dados da API (com ?refresh=true para forçar no Cloudflare)
         const colecao = capsulaAtual.colecao || 'I26';
         const capsula = capsulaAtual.num || 1;
@@ -2249,16 +2288,21 @@ async function forcarAtualizacaoExpedicao() {
             'ld': `/api/totvs/expedicao/ld?colecao=${colecao}&capsula=${capsula}&refresh=true`
         };
         
+        updateSplashRefreshText('fetching');
         const url = `${API_CONFIG.baseUrl}${endpoints[destino]}`;
         const response = await fetch(url, { headers: { 'X-API-Key': API_CONFIG.apiKey } });
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
+        updateSplashRefreshText('processing');
         const apiData = await response.json();
         const novosItens = transformApiData(apiData);
         
+        updateSplashRefreshText('rendering');
         // Atualizar UI
-        renderExpedicao(destino, novosItens);
+        await renderExpedicao(destino, novosItens);
+        
+        updateSplashRefreshText('done');
         mostrarPtrToast('✅ Atualizado!');
         
     } catch (error) {
