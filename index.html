@@ -1584,6 +1584,29 @@ function showWelcomeScreen(user, weather = null){
     // Setar usuário atual
     currentUser = user;
     
+    // Garantir que o usuário existe no USERS
+    if (!USERS[user]) {
+        // Tentar carregar do sessionStorage
+        const savedUserData = sessionStorage.getItem('logged-user-data');
+        if (savedUserData) {
+            try {
+                USERS[user] = JSON.parse(savedUserData);
+                console.log('[Welcome] Dados do usuário carregados do sessionStorage');
+            } catch(e) {
+                console.log('[Welcome] Erro ao carregar dados:', e);
+            }
+        }
+        // Se ainda não existe, criar básico
+        if (!USERS[user]) {
+            USERS[user] = { 
+                nome: user.charAt(0).toUpperCase() + user.slice(1),
+                access: ['comercial', 'expedicao'],
+                channels: ['showroom', 'ecommerce']
+            };
+            console.log('[Welcome] Criado usuário básico');
+        }
+    }
+    
     const u = USERS[user];
     const hour = new Date().getHours();
     let greeting, skyClass;
@@ -2147,19 +2170,20 @@ function initPullToRefresh() {
         const diff = ptrCurrentY - ptrStartY;
         
         if (diff > 80 && !ptrRefreshing && container.scrollTop === 0) {
-            // Ativar refresh
+            // Ativar refresh - mostrar splash com logo
             ptrRefreshing = true;
             indicator.classList.remove('pulling');
-            indicator.classList.add('refreshing');
-            indicator.style.top = '10px';
+            indicator.style.top = '-50px';
+            
+            // Mostrar splash de refresh com logo e barra de progresso
+            showSplashRefresh();
             
             // Forçar atualização
             await forcarAtualizacaoExpedicao();
             
-            // Finalizar
+            // Finalizar - esconder splash
+            hideSplashRefresh();
             ptrRefreshing = false;
-            indicator.classList.remove('refreshing');
-            indicator.style.top = '-50px';
         } else {
             // Cancelar
             indicator.classList.remove('pulling');
@@ -2170,6 +2194,43 @@ function initPullToRefresh() {
         ptrCurrentY = 0;
         ptrActive = false;
     });
+}
+
+// Mostrar splash de refresh
+function showSplashRefresh() {
+    const splash = document.getElementById('splash-refresh');
+    const progressBar = document.getElementById('splash-refresh-bar');
+    const text = document.getElementById('splash-refresh-text');
+    
+    if (splash) {
+        splash.classList.add('active');
+        if (progressBar) progressBar.style.width = '0%';
+        if (text) text.textContent = 'Atualizando...';
+        
+        // Animar barra de progresso
+        let progress = 0;
+        window.splashProgressInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90;
+            if (progressBar) progressBar.style.width = progress + '%';
+        }, 200);
+    }
+}
+
+// Esconder splash de refresh
+function hideSplashRefresh() {
+    const splash = document.getElementById('splash-refresh');
+    const progressBar = document.getElementById('splash-refresh-bar');
+    
+    if (window.splashProgressInterval) {
+        clearInterval(window.splashProgressInterval);
+    }
+    
+    if (progressBar) progressBar.style.width = '100%';
+    
+    setTimeout(() => {
+        if (splash) splash.classList.remove('active');
+    }, 300);
 }
 
 // Forçar atualização (sem cache local)
@@ -2989,7 +3050,27 @@ function installApp(){
 }
 window.addEventListener('appinstalled',()=>{ib.classList.remove('visible')});
 
-if('serviceWorker' in navigator){navigator.serviceWorker.register('/inverno-2026/sw.js',{scope:'/inverno-2026/'}).then(reg=>{reg.update()}).catch(()=>{})}
+if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/inverno-2026/sw.js',{scope:'/inverno-2026/'}).then(reg=>{
+        // Verificar atualizações imediatamente
+        reg.update();
+        
+        // Verificar atualizações a cada 5 minutos
+        setInterval(() => reg.update(), 5 * 60 * 1000);
+        
+        // Quando houver uma nova versão, atualizar automaticamente
+        reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // Nova versão disponível - recarregar automaticamente
+                    console.log('[SW] Nova versão detectada, atualizando...');
+                    window.location.reload();
+                }
+            });
+        });
+    }).catch(()=>{})
+}
 
 // ========== GEOLOCALIZADOR ==========
 let geoMap,geoGeocoder,geoLocations=[],geoMarkers=[],geoCircles=[],geoShowRadius=true,geoApiKey='AIzaSyARGjgURb7_rNxQVkeV6AZ46XLk4UcPzhc',geoMapInitialized=false;
