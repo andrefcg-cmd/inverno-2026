@@ -2123,7 +2123,7 @@ function atualizarContadorRegressivo() {
     var agora = Date.now();
     var diff = agora - ultimaAtualizacaoTimestamp.getTime();
     var segundosPassados = Math.floor(diff / 1000);
-    var segundosRestantes = (5 * 60) - segundosPassados; // 5 minutos = 300 segundos
+    var segundosRestantes = (10 * 60) - segundosPassados; // 10 minutos = 600 segundos
     
     if (segundosRestantes <= 0) {
         updateEl.innerHTML = '🔄 Atualizando...';
