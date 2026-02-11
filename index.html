@@ -1286,9 +1286,12 @@ async function tryInitialBiometric(){
     console.log('[Bio] Verificando biometria inicial...');
     console.log('[Bio] bioUser:', bioUser);
     console.log('[Bio] credId existe:', !!credId);
+    console.log('[Bio] USERS[bioUser] existe:', bioUser ? !!USERS[bioUser] : 'N/A');
+    console.log('[Bio] USERS keys:', Object.keys(USERS));
     console.log('[Bio] PublicKeyCredential:', !!window.PublicKeyCredential);
     
-    if(bioUser && credId && USERS[bioUser] && window.PublicKeyCredential){
+    // Verificar se tem biometria cadastrada (não precisa verificar USERS aqui, só no login)
+    if(bioUser && credId && window.PublicKeyCredential){
         try{
             console.log('[Bio] Tentando autenticar com biometria...');
             const rawId = Uint8Array.from(atob(credId), c=>c.charCodeAt(0));
@@ -1308,6 +1311,7 @@ async function tryInitialBiometric(){
         }
     } else {
         console.log('[Bio] Biometria não disponível ou não cadastrada');
+        console.log('[Bio] Detalhes: bioUser=' + !!bioUser + ', credId=' + !!credId + ', PKC=' + !!window.PublicKeyCredential);
     }
     // Sem biometria - mostrar login
     console.log('[Bio] Mostrando tela de login');
