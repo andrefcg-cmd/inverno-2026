@@ -2920,9 +2920,12 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     });
     
     let totalEcomm = 0;
+    let envEcomm = 0;
     dadosFiltrados.forEach(item => {
         const p = item.prod || {};
+        const e = item.envShow || {};
         totalEcomm += ['PP','P','M','G'].filter(t => p[t] > 0).length;
+        envEcomm += (e.PP||0) + (e.P||0) + (e.M||0) + (e.G||0);
     });
     
     let metaIsabella = 0;
@@ -2947,7 +2950,7 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         totalEnv = totalEnvShow;
     } else if(destino === 'ecommerce'){
         totalMeta = totalEcomm;
-        totalEnv = totalEcomm;
+        totalEnv = envEcomm;
     } else if(destino === 'mostruario'){
         totalMeta = metaIsabella;
         totalEnv = envIsabella;
@@ -2975,8 +2978,8 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     } else {
         statsHtml = `
             <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Total de Referências</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalCores}</div><div class="exp-stat-label">Variantes de Cores</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalMeta.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças a Receber</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalCores}</div><div class="exp-stat-label">Variantes de Cor</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalMeta.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Previsão de Peças a Receber</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${totalEnv.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Recebidas</div></div>
         `;
     }
