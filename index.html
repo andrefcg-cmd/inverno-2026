@@ -518,8 +518,9 @@ html, body { overscroll-behavior-y: contain; }
 .splash-refresh .splash-icons{display:none}
 .splash-refresh-text{margin-top:20px;color:#666;font-size:12px}
 .splash-refresh-progress{margin-top:16px;width:200px;height:4px;background:#222;border-radius:2px;overflow:hidden}
-.splash-refresh-progress-bar{height:100%;background:linear-gradient(90deg,#e94560,#ff6b8a);width:0%;transition:width .3s ease;position:relative}
+.splash-refresh-progress-bar{height:100%;background:linear-gradient(90deg,#e94560,#ff6b8a);width:0%;position:relative}
 .splash-refresh-progress-bar::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);animation:progressShine 1.5s infinite}
+.splash-refresh-percent{margin-top:12px;font-size:16px;color:#e94560;font-weight:700}
 @keyframes progressShine{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
 
 /* Modal Biometria */
@@ -847,6 +848,7 @@ html, body { overscroll-behavior-y: contain; }
     <div class="splash-refresh-progress">
         <div class="splash-refresh-progress-bar" id="splash-refresh-bar"></div>
     </div>
+    <div class="splash-refresh-percent" id="splash-refresh-percent">0%</div>
 </div>
 
 <!-- GEOLOCALIZADOR -->
@@ -2211,36 +2213,57 @@ function showSplashRefresh() {
     const splash = document.getElementById('splash-refresh');
     const progressBar = document.getElementById('splash-refresh-bar');
     const text = document.getElementById('splash-refresh-text');
+    const percent = document.getElementById('splash-refresh-percent');
     
     if (splash) {
         splash.classList.add('active');
         if (progressBar) progressBar.style.width = '0%';
         if (text) text.textContent = '🔌 Conectando ao servidor...';
+        if (percent) percent.textContent = '0%';
         
         window.splashRefreshStartTime = Date.now();
+        window.splashCurrentProgress = 0;
         const estimatedTime = getEstimatedRefreshTime();
         
         // Animar barra de progresso baseado no tempo estimado
-        let elapsed = 0;
         window.splashProgressInterval = setInterval(() => {
-            elapsed += 100;
-            let progress = Math.min((elapsed / estimatedTime) * 90, 90); // Máximo 90% até completar
-            if (progressBar) progressBar.style.width = progress + '%';
-        }, 100);
+            const elapsed = Date.now() - window.splashRefreshStartTime;
+            let progress = Math.min(Math.round((elapsed / estimatedTime) * 85), 85); // Máximo 85% até completar
+            
+            // Só atualiza se aumentou (evita tremor)
+            if (progress > window.splashCurrentProgress) {
+                window.splashCurrentProgress = progress;
+                if (progressBar) progressBar.style.width = progress + '%';
+                if (percent) percent.textContent = progress + '%';
+            }
+        }, 150);
     }
 }
 
-function updateSplashRefreshText(stage) {
+function updateSplashRefreshStage(stage, forceProgress = null) {
     const text = document.getElementById('splash-refresh-text');
-    if (text) {
-        const stages = {
-            'connecting': '🔌 Conectando ao servidor...',
-            'fetching': '📡 Buscando dados...',
-            'processing': '⚙️ Processando...',
-            'rendering': '🎨 Atualizando tela...',
-            'done': '✅ Concluído!'
-        };
-        text.textContent = stages[stage] || stage;
+    const progressBar = document.getElementById('splash-refresh-bar');
+    const percent = document.getElementById('splash-refresh-percent');
+    
+    const stages = {
+        'connecting': { text: '🔌 Conectando ao servidor...', progress: 10 },
+        'fetching': { text: '📡 Buscando dados...', progress: 30 },
+        'processing': { text: '⚙️ Processando...', progress: 60 },
+        'rendering': { text: '🎨 Atualizando tela...', progress: 85 },
+        'done': { text: '✅ Concluído!', progress: 100 }
+    };
+    
+    const stageInfo = stages[stage];
+    if (stageInfo && text) {
+        text.textContent = stageInfo.text;
+        
+        // Garantir progresso mínimo da etapa
+        const minProgress = forceProgress !== null ? forceProgress : stageInfo.progress;
+        if (minProgress > window.splashCurrentProgress) {
+            window.splashCurrentProgress = minProgress;
+            if (progressBar) progressBar.style.width = minProgress + '%';
+            if (percent) percent.textContent = minProgress + '%';
+        }
     }
 }
 
@@ -2249,6 +2272,7 @@ function hideSplashRefresh() {
     const splash = document.getElementById('splash-refresh');
     const progressBar = document.getElementById('splash-refresh-bar');
     const text = document.getElementById('splash-refresh-text');
+    const percent = document.getElementById('splash-refresh-percent');
     
     if (window.splashProgressInterval) {
         clearInterval(window.splashProgressInterval);
@@ -2263,11 +2287,12 @@ function hideSplashRefresh() {
     }
     
     if (progressBar) progressBar.style.width = '100%';
+    if (percent) percent.textContent = '100%';
     if (text) text.textContent = '✅ Concluído!';
     
     setTimeout(() => {
         if (splash) splash.classList.remove('active');
-    }, 400);
+    }, 500);
 }
 
 // Forçar atualização (sem cache local)
@@ -2276,7 +2301,7 @@ async function forcarAtualizacaoExpedicao() {
     if (!destino) return;
     
     try {
-        updateSplashRefreshText('connecting');
+        updateSplashRefreshStage('connecting');
         
         // Buscar novos dados da API (com ?refresh=true para forçar no Cloudflare)
         const colecao = capsulaAtual.colecao || 'I26';
@@ -2288,21 +2313,21 @@ async function forcarAtualizacaoExpedicao() {
             'ld': `/api/totvs/expedicao/ld?colecao=${colecao}&capsula=${capsula}&refresh=true`
         };
         
-        updateSplashRefreshText('fetching');
+        updateSplashRefreshStage('fetching');
         const url = `${API_CONFIG.baseUrl}${endpoints[destino]}`;
         const response = await fetch(url, { headers: { 'X-API-Key': API_CONFIG.apiKey } });
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
-        updateSplashRefreshText('processing');
+        updateSplashRefreshStage('processing');
         const apiData = await response.json();
         const novosItens = transformApiData(apiData);
         
-        updateSplashRefreshText('rendering');
+        updateSplashRefreshStage('rendering');
         // Atualizar UI
         await renderExpedicao(destino, novosItens);
         
-        updateSplashRefreshText('done');
+        updateSplashRefreshStage('done');
         mostrarPtrToast('✅ Atualizado!');
         
     } catch (error) {
