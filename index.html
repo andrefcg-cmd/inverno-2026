@@ -3186,48 +3186,30 @@ window.addEventListener('appinstalled',()=>{ib.classList.remove('visible')});
 
 if('serviceWorker' in navigator){
     // Cache-busting: adiciona timestamp para forçar verificação
-    var swUrl = '/inverno-2026/sw.js?v=' + Date.now();
-    navigator.serviceWorker.register(swUrl, {scope:'/inverno-2026/'}).then(function(reg){
-        console.log('[SW] Registrado, verificando atualizações...');
+    var swUrl = '/inverno-2026/sw.js';
+    navigator.serviceWorker.register(swUrl, {scope:'/inverno-2026/', updateViaCache: 'none'}).then(function(reg){
+        console.log('[SW] Registrado');
         
-        // Verificar atualizações imediatamente
+        // Verificar atualizações
         reg.update();
         
-        // Verificar atualizações a cada 2 minutos
-        setInterval(function() { reg.update(); }, 2 * 60 * 1000);
+        // Se já tem um SW esperando, ativar
+        if (reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
         
-        // Quando houver uma nova versão, atualizar automaticamente
+        // Quando houver nova versão
         reg.addEventListener('updatefound', function() {
             var newWorker = reg.installing;
-            console.log('[SW] Nova versão encontrada, instalando...');
-            
             newWorker.addEventListener('statechange', function() {
-                if (newWorker.state === 'installed') {
-                    if (navigator.serviceWorker.controller) {
-                        // Nova versão pronta - recarregar
-                        console.log('[SW] Nova versão instalada, recarregando...');
-                        window.location.reload();
-                    } else {
-                        // Primeira instalação
-                        console.log('[SW] Service Worker instalado pela primeira vez');
-                    }
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('[SW] Nova versão pronta');
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
                 }
             });
         });
-        
-        // Se já tem um SW esperando, ativar imediatamente
-        if (reg.waiting) {
-            console.log('[SW] Versão em espera, ativando...');
-            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-        }
     }).catch(function(err){
-        console.log('[SW] Erro no registro:', err);
-    });
-    
-    // Recarregar quando o SW assumir controle
-    navigator.serviceWorker.addEventListener('controllerchange', function() {
-        console.log('[SW] Novo controller, recarregando...');
-        window.location.reload();
+        console.log('[SW] Erro:', err);
     });
 }
 
