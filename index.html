@@ -2181,7 +2181,8 @@ async function openExpedicao(){
                 const key = `${item.colecao}-${item.capsula}`;
                 capsulasStatus[key] = {
                     habilitada: item.habilitada,
-                    enviado: item.enviado || 0
+                    enviado: item.enviado || 0,
+                    produzido: item.produzido || 0
                 };
                 
                 if (item.habilitada) {
@@ -2755,7 +2756,7 @@ async function verificarCapsulaAPI(colecao, capsula) {
         return { habilitada: enviado > 0, enviado, erro: false };
     } catch (e) {
         console.log(`[API] Erro verificar ${colecao}-${capsula}:`, e);
-        return { habilitada: false, enviado: 0, erro: true };
+        return { habilitada: false, enviado: 0, produzido: 0, erro: true };
     }
 }
 
@@ -2825,7 +2826,7 @@ function openExpedicaoCapsula(colecao, num) {
     const titulo = `${num}ª Cápsula ${config.nome}`;
     
     document.getElementById('destinos-title').textContent = titulo;
-    document.getElementById('destinos-update').textContent = `📅 ${status.enviado} peças enviadas`;
+    document.getElementById('destinos-update').textContent = `📦 ${status.produzido?.toLocaleString('pt-BR') || 0} peças produzidas`;
     
     // Configurar botão de voltar baseado na estação
     const backBtn = document.getElementById('destinos-back-btn');
