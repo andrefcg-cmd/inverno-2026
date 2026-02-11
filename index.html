@@ -151,7 +151,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .home-logo{width:90px;margin-bottom:24px;opacity:0.85;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3))}
 
 /* Debug Panel */
-.debug-panel{position:fixed;bottom:0;left:0;right:0;height:40vh;background:rgba(0,0,0,0.95);z-index:99999;display:none;flex-direction:column;font-family:monospace;font-size:11px}
+.debug-panel{position:fixed;bottom:0;left:0;right:0;height:25vh;background:rgba(0,0,0,0.95);z-index:99999;display:none;flex-direction:column;font-family:monospace;font-size:11px}
 .debug-panel.active{display:flex}
 .debug-header{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#1a1a1a;border-bottom:1px solid #333}
 .debug-header span{color:#0f0;font-weight:bold}
@@ -2575,6 +2575,9 @@ function openExpedicaoDestino(destino){
     hideAll();
     document.getElementById('app-expedicao').classList.add('active');
     pushState('app-expedicao');
+    
+    // Limpar dados anteriores imediatamente e mostrar loading
+    document.getElementById('exp-items-list').innerHTML = '<div style="text-align:center;padding:40px;color:#888;">⏳ Carregando...</div>';
     
     // Inicializar pull-to-refresh se ainda não foi
     if (!ptrInitialized) {
