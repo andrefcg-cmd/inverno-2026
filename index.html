@@ -1161,16 +1161,24 @@ async function revalidateInBackground(destino, cacheKey) {
         
         if (response.ok) {
             const data = await response.json();
-            if (!data.error) {
+            
+            // Verificar se dados são válidos antes de atualizar
+            if (!data.error && data.items && data.items.length > 0) {
                 setLocalCache(cacheKey, data);
-                console.log('[Background] Cache atualizado:', cacheKey);
+                console.log('[Background] Cache atualizado:', cacheKey, '- Items:', data.items.length);
                 
                 // Se ainda estiver na mesma tela, atualizar UI silenciosamente
                 if (currentExpDestino === destino) {
                     const transformed = transformApiData(data);
-                    await renderExpedicao(destino, transformed);
-                    console.log('[Background] UI atualizada silenciosamente');
+                    if (transformed.items && transformed.items.length > 0) {
+                        await renderExpedicao(destino, transformed);
+                        console.log('[Background] UI atualizada silenciosamente');
+                    } else {
+                        console.log('[Background] Dados transformados vazios, mantendo UI atual');
+                    }
                 }
+            } else {
+                console.log('[Background] Dados inválidos ou vazios, mantendo cache atual');
             }
         }
     } catch (e) {
