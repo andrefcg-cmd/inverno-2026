@@ -224,6 +224,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .exp-update-date{font-size:11px;color:var(--accent);margin-bottom:24px;padding:8px 16px;background:var(--card);border-radius:8px;display:inline-block}
 .submenu-grid{display:flex;flex-direction:column;gap:14px;width:100%;max-width:360px}
 .sub-btn{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all .15s}
+.sub-btn-highlight{background:linear-gradient(135deg,rgba(236,72,153,0.1),rgba(59,130,246,0.1));border-color:var(--accent)}
 .sub-btn:active{transform:scale(0.98);background:var(--card2)}
 .sub-btn.disabled{opacity:0.4;cursor:default}
 .sub-btn.disabled:active{transform:none}
@@ -265,6 +266,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .exp-canal-icon{font-size:16px}
 .exp-canal-nome{flex:1;font-size:12px;color:var(--txt2)}
 .exp-canal-valor{font-size:14px;font-weight:700;color:var(--txt)}
+.exp-canal-destaque{display:flex;align-items:center;gap:16px;background:var(--bg);padding:16px;border-radius:10px}
+.exp-canal-icon-lg{font-size:32px}
+.exp-canal-info{display:flex;flex-direction:column;gap:2px}
+.exp-canal-nome-lg{font-size:14px;color:var(--txt2)}
+.exp-canal-valor-lg{font-size:24px;font-weight:700;color:var(--txt)}
+.exp-resumo-card{background:var(--card);border-radius:12px;padding:16px;margin-top:12px;border:1px solid var(--brd);cursor:pointer;transition:all .2s}
+.exp-resumo-card:active{transform:scale(0.98);background:var(--card2)}
+.exp-resumo-card-header{display:flex;align-items:center;justify-content:space-between}
+.exp-resumo-card-title{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;color:var(--txt)}
+.exp-resumo-card-arrow{font-size:18px;color:var(--txt2)}
+.resumo-dia-content{width:100%;max-width:400px;margin-top:24px}
+.resumo-dia-loading{text-align:center;color:var(--txt2);padding:40px}
+.resumo-dia-total{background:linear-gradient(135deg,var(--accent),#8b5cf6);border-radius:16px;padding:24px;margin-bottom:20px;text-align:center}
+.resumo-dia-total-label{font-size:14px;color:rgba(255,255,255,0.8);margin-bottom:4px}
+.resumo-dia-total-valor{font-size:48px;font-weight:700;color:#fff}
+.resumo-dia-total-unidade{font-size:14px;color:rgba(255,255,255,0.8);margin-top:4px}
+.resumo-dia-canais{display:flex;flex-direction:column;gap:12px}
+.resumo-dia-canal{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:16px;display:flex;align-items:center;gap:16px}
+.resumo-dia-canal-icon{font-size:28px}
+.resumo-dia-canal-info{flex:1}
+.resumo-dia-canal-nome{font-size:14px;font-weight:600;color:var(--txt)}
+.resumo-dia-canal-desc{font-size:11px;color:var(--txt2);margin-top:2px}
+.resumo-dia-canal-valor{font-size:20px;font-weight:700;color:var(--txt)}
 .exp-item{background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--brd);cursor:pointer}
 .exp-item-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
 .exp-item-ref{font-size:11px;color:var(--accent);font-weight:600}
@@ -903,8 +927,24 @@ html, body { overscroll-behavior-y: contain; }
             <div class="sub-info"><div class="sub-name">Leves Defeitos</div><div class="sub-desc">Peças com pequenos defeitos</div></div>
             <div class="sub-arrow">›</div>
         </div>
+        <div class="sub-btn sub-btn-highlight" onclick="openResumoEnviosDia()">
+            <div class="sub-icon">📊</div>
+            <div class="sub-info"><div class="sub-name">Resumo do Dia</div><div class="sub-desc">Envios de todos os canais</div></div>
+            <div class="sub-arrow">›</div>
+        </div>
     </div>
     <button class="submenu-back" id="destinos-back-btn" onclick="backToExpedicaoEstacao()">←</button>
+</div>
+
+<!-- TELA: RESUMO ENVIOS DO DIA -->
+<div class="submenu-screen" id="resumo-dia-screen">
+    <div class="login-icon">📊</div>
+    <div class="submenu-title" id="resumo-dia-title">Resumo do Dia</div>
+    <div class="submenu-desc" id="resumo-dia-data">Carregando...</div>
+    <div class="resumo-dia-content" id="resumo-dia-content">
+        <div class="resumo-dia-loading">Carregando dados...</div>
+    </div>
+    <button class="submenu-back" onclick="backToExpedicaoDestinos()">←</button>
 </div>
 
 <!-- TELA: EXPEDIÇÃO - DETALHES -->
@@ -1279,38 +1319,50 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '3.1.0';
+const APP_VERSION = '3.3.0';
 
-// Sistema de versionamento - limpa cache quando versão muda
-(function checkVersion() {
+// Sistema de versionamento AGRESSIVO - limpa TUDO quando versão muda
+(async function checkVersion() {
     const storedVersion = localStorage.getItem('app-version');
+    console.log(`[Version] Atual: ${APP_VERSION}, Armazenada: ${storedVersion}`);
+    
     if (storedVersion !== APP_VERSION) {
-        console.log(`[Version] Atualizando de ${storedVersion} para ${APP_VERSION}`);
+        console.log(`[Version] ATUALIZANDO de ${storedVersion} para ${APP_VERSION}`);
         
-        // Limpar caches do Service Worker
+        // 1. Limpar TODOS os caches
         if ('caches' in window) {
-            caches.keys().then(names => {
-                names.forEach(name => {
-                    console.log('[Version] Limpando cache:', name);
-                    caches.delete(name);
-                });
-            });
+            const names = await caches.keys();
+            console.log('[Version] Caches encontrados:', names);
+            for (const name of names) {
+                await caches.delete(name);
+                console.log('[Version] Cache deletado:', name);
+            }
         }
         
-        // Limpar sessionStorage (mantém localStorage para biometria)
+        // 2. Desregistrar Service Workers antigos
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const reg of registrations) {
+                await reg.unregister();
+                console.log('[Version] SW desregistrado');
+            }
+        }
+        
+        // 3. Limpar sessionStorage
         sessionStorage.clear();
         
-        // Salvar nova versão
+        // 4. Salvar nova versão
         localStorage.setItem('app-version', APP_VERSION);
         
-        // Recarregar para aplicar mudanças (se não for primeira vez)
+        // 5. Recarregar (se não for primeira vez)
         if (storedVersion) {
             console.log('[Version] Recarregando para aplicar atualização...');
-            location.reload(true);
+            // Forçar reload ignorando cache
+            window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now();
+            return;
         }
-    } else {
-        console.log('[Version] App atualizado:', APP_VERSION);
     }
+    console.log('[Version] App OK:', APP_VERSION);
 })();
 
 // ===== CONFIGURAÇÃO DA API =====
@@ -1603,7 +1655,7 @@ document.querySelector('.splash-logo').classList.add(isFirstVisit ? 'first-visit
 let navHistory = ['home'];
 
 // Telas válidas para restauração (mesmas do goToScreen)
-const VALID_SCREENS = ['home','login-screen','sub-comercial','sub-expedicao','sub-expedicao-inverno','sub-expedicao-verao','sub-expedicao-destinos','app-comercial','app-expedicao','geo-screen','changepw-screen','changepw-form-screen','dev-compras','dev-financeiro','users-screen'];
+const VALID_SCREENS = ['home','login-screen','sub-comercial','sub-expedicao','sub-expedicao-inverno','sub-expedicao-verao','sub-expedicao-destinos','resumo-dia-screen','app-comercial','app-expedicao','geo-screen','changepw-screen','changepw-form-screen','dev-compras','dev-financeiro','users-screen'];
 
 // Salvar estado da página antes de sair
 window.addEventListener('beforeunload', function(){
@@ -2199,6 +2251,7 @@ function getCurrentScreen() {
     if (document.getElementById('sub-expedicao-inverno').classList.contains('active')) return 'sub-expedicao-inverno';
     if (document.getElementById('sub-expedicao-verao').classList.contains('active')) return 'sub-expedicao-verao';
     if (document.getElementById('sub-expedicao-destinos').classList.contains('active')) return 'sub-expedicao-destinos';
+    if (document.getElementById('resumo-dia-screen').classList.contains('active')) return 'resumo-dia-screen';
     if (document.getElementById('app-comercial').classList.contains('active')) return 'app-comercial';
     if (document.getElementById('app-expedicao').classList.contains('active')) return 'app-expedicao';
     if (document.getElementById('geo-screen').classList.contains('active')) return 'geo-screen';
@@ -2241,6 +2294,10 @@ function goToScreen(screen, addToHistory = true) {
             break;
         case 'sub-expedicao-destinos':
             document.getElementById('sub-expedicao-destinos').classList.add('active');
+            break;
+        case 'resumo-dia-screen':
+            document.getElementById('resumo-dia-screen').classList.add('active');
+            renderResumoEnviosDia();
             break;
         case 'app-comercial':
             document.getElementById('app-comercial').classList.add('active');
@@ -3355,6 +3412,87 @@ function backToExpedicaoEstacao() {
 
 function backToExpedicaoDestinos(){ goBackTo('sub-expedicao-destinos')}
 
+function openResumoEnviosDia(){
+    hideAll();
+    document.getElementById('resumo-dia-screen').classList.add('active');
+    pushState('resumo-dia-screen');
+    
+    const dataHoje = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+    document.getElementById('resumo-dia-data').textContent = dataHoje.charAt(0).toUpperCase() + dataHoje.slice(1);
+    
+    // Atualizar título com cápsula atual
+    const capInfo = window.currentCapsulaInfo;
+    if (capInfo) {
+        document.getElementById('resumo-dia-title').textContent = `Resumo do Dia - ${capInfo.nome}`;
+    }
+    
+    renderResumoEnviosDia();
+}
+
+function renderResumoEnviosDia(){
+    const contentEl = document.getElementById('resumo-dia-content');
+    const enviosDoDia = window.currentEnviosDoDia;
+    
+    if (!enviosDoDia) {
+        contentEl.innerHTML = `
+            <div class="resumo-dia-loading">
+                <div style="font-size:48px;margin-bottom:16px">📊</div>
+                <div>Dados não disponíveis</div>
+                <div style="font-size:12px;margin-top:8px;color:var(--txt2)">Entre em um canal primeiro para carregar os dados</div>
+            </div>
+        `;
+        return;
+    }
+    
+    const showroom = enviosDoDia.showroom || 0;
+    const ecommerce = enviosDoDia.ecommerce || 0;
+    const mostruario = enviosDoDia.mostruario || 0;
+    const ld = enviosDoDia.ld || 0;
+    const total = showroom + ecommerce + mostruario + ld;
+    
+    contentEl.innerHTML = `
+        <div class="resumo-dia-total">
+            <div class="resumo-dia-total-label">Total Enviado Hoje</div>
+            <div class="resumo-dia-total-valor">${total.toLocaleString('pt-BR')}</div>
+            <div class="resumo-dia-total-unidade">peças</div>
+        </div>
+        <div class="resumo-dia-canais">
+            <div class="resumo-dia-canal">
+                <div class="resumo-dia-canal-icon">🏬</div>
+                <div class="resumo-dia-canal-info">
+                    <div class="resumo-dia-canal-nome">Showroom</div>
+                    <div class="resumo-dia-canal-desc">Envios para loja física</div>
+                </div>
+                <div class="resumo-dia-canal-valor">${showroom.toLocaleString('pt-BR')}</div>
+            </div>
+            <div class="resumo-dia-canal">
+                <div class="resumo-dia-canal-icon">🌐</div>
+                <div class="resumo-dia-canal-info">
+                    <div class="resumo-dia-canal-nome">E-commerce</div>
+                    <div class="resumo-dia-canal-desc">Envios para loja online</div>
+                </div>
+                <div class="resumo-dia-canal-valor">${ecommerce.toLocaleString('pt-BR')}</div>
+            </div>
+            <div class="resumo-dia-canal">
+                <div class="resumo-dia-canal-icon">👗</div>
+                <div class="resumo-dia-canal-info">
+                    <div class="resumo-dia-canal-nome">Isabella</div>
+                    <div class="resumo-dia-canal-desc">Peças de mostruário</div>
+                </div>
+                <div class="resumo-dia-canal-valor">${mostruario.toLocaleString('pt-BR')}</div>
+            </div>
+            <div class="resumo-dia-canal">
+                <div class="resumo-dia-canal-icon">📋</div>
+                <div class="resumo-dia-canal-info">
+                    <div class="resumo-dia-canal-nome">Leves Defeitos</div>
+                    <div class="resumo-dia-canal-desc">Peças com pequenos defeitos</div>
+                </div>
+                <div class="resumo-dia-canal-valor">${ld.toLocaleString('pt-BR')}</div>
+            </div>
+        </div>
+    `;
+}
+
 function openExpedicaoDestino(destino){
     currentExpDestino = destino;
     hideAll();
@@ -3523,33 +3661,48 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     let canaisHtml = '';
     const enviosDoDia = dadosAPI.enviosDoDia;
     
+    // Guardar envios do dia globalmente para o resumo geral
+    window.currentEnviosDoDia = enviosDoDia;
+    
     if (destino !== 'ld' && enviosDoDia) {
         const dataHoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-        const totalDia = (enviosDoDia.showroom || 0) + (enviosDoDia.ecommerce || 0) + (enviosDoDia.mostruario || 0);
+        
+        // Mapear destino para campo do enviosDoDia
+        const canalMap = {
+            'showroom': { key: 'showroom', icon: '🏬', nome: 'Showroom' },
+            'ecommerce': { key: 'ecommerce', icon: '🌐', nome: 'E-commerce' },
+            'mostruario': { key: 'mostruario', icon: '👗', nome: 'Isabella' }
+        };
+        
+        const canalAtual = canalMap[destino];
+        if (canalAtual) {
+            const valorCanal = enviosDoDia[canalAtual.key] || 0;
+            
+            canaisHtml = `
+                <div class="exp-canais-resumo">
+                    <div class="exp-canais-title">📦 Envios de Hoje (${dataHoje})</div>
+                    <div class="exp-canal-destaque">
+                        <span class="exp-canal-icon-lg">${canalAtual.icon}</span>
+                        <div class="exp-canal-info">
+                            <span class="exp-canal-nome-lg">${canalAtual.nome}</span>
+                            <span class="exp-canal-valor-lg">${valorCanal.toLocaleString('pt-BR')} peças</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    } else if (destino === 'ld' && enviosDoDia) {
+        const dataHoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        const valorLd = enviosDoDia.ld || 0;
         
         canaisHtml = `
             <div class="exp-canais-resumo">
-                <div class="exp-canais-title">📦 Envios de Hoje (${dataHoje}) — ${totalDia.toLocaleString('pt-BR')} peças</div>
-                <div class="exp-canais-grid">
-                    <div class="exp-canal-item">
-                        <span class="exp-canal-icon">🏬</span>
-                        <span class="exp-canal-nome">Showroom</span>
-                        <span class="exp-canal-valor">${(enviosDoDia.showroom || 0).toLocaleString('pt-BR')}</span>
-                    </div>
-                    <div class="exp-canal-item">
-                        <span class="exp-canal-icon">🌐</span>
-                        <span class="exp-canal-nome">E-commerce</span>
-                        <span class="exp-canal-valor">${(enviosDoDia.ecommerce || 0).toLocaleString('pt-BR')}</span>
-                    </div>
-                    <div class="exp-canal-item">
-                        <span class="exp-canal-icon">👗</span>
-                        <span class="exp-canal-nome">Isabella</span>
-                        <span class="exp-canal-valor">${(enviosDoDia.mostruario || 0).toLocaleString('pt-BR')}</span>
-                    </div>
-                    <div class="exp-canal-item">
-                        <span class="exp-canal-icon">📋</span>
-                        <span class="exp-canal-nome">Leves Defeitos</span>
-                        <span class="exp-canal-valor">${(enviosDoDia.ld || 0).toLocaleString('pt-BR')}</span>
+                <div class="exp-canais-title">📦 Envios de Hoje (${dataHoje})</div>
+                <div class="exp-canal-destaque">
+                    <span class="exp-canal-icon-lg">📋</span>
+                    <div class="exp-canal-info">
+                        <span class="exp-canal-nome-lg">Leves Defeitos</span>
+                        <span class="exp-canal-valor-lg">${valorLd.toLocaleString('pt-BR')} peças</span>
                     </div>
                 </div>
             </div>
@@ -3560,7 +3713,7 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
             <div class="exp-canais-resumo">
                 <div class="exp-canais-title">📦 Envios de Hoje</div>
                 <div style="text-align:center;padding:12px;color:var(--txt2);font-size:12px">
-                    Dados de envios do dia não disponíveis.<br>Faça um refresh para atualizar.
+                    Dados não disponíveis. Faça um refresh.
                 </div>
             </div>
         `;
