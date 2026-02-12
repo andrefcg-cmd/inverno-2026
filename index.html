@@ -237,7 +237,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .exp-total-stats{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
 .exp-stat{flex:1;min-width:80px;text-align:center;padding:10px;background:var(--card2);border-radius:10px;transition:all .2s ease}
 .exp-stat.exp-stat-clickable{border:2px solid transparent}
-.exp-stat.exp-stat-clickable:hover{background:var(--card);border-color:var(--accent)}
+.exp-stat.exp-stat-clickable:not(.active):hover{background:var(--card)}
 .exp-stat.exp-stat-clickable:active{transform:scale(0.98)}
 .exp-stat.exp-stat-clickable.active{background:var(--accent);border-color:var(--accent);box-shadow:0 0 15px rgba(233,69,96,0.5);transform:scale(1.02)}
 .exp-stat.exp-stat-clickable.active .exp-stat-value{color:#fff;font-size:22px}
@@ -1069,9 +1069,56 @@ const API_CONFIG = {
 })();
 
 // ===== BUSCAR DADOS DA API (cache no Cloudflare) =====
+// ===== CACHE LOCAL PERSISTENTE (localStorage) =====
+const CACHE_EXPIRACAO_MS = 10 * 60 * 1000; // 10 minutos
+
+function getLocalCache(chave) {
+    try {
+        const cached = localStorage.getItem('exp-cache-' + chave);
+        if (!cached) return null;
+        
+        const data = JSON.parse(cached);
+        const agora = Date.now();
+        
+        // Verificar se expirou
+        if (agora - data.ts > CACHE_EXPIRACAO_MS) {
+            console.log('[Cache Local] Expirado:', chave);
+            return null;
+        }
+        
+        console.log('[Cache Local] Hit:', chave, '- Idade:', Math.round((agora - data.ts) / 1000) + 's');
+        return data.payload;
+    } catch (e) {
+        console.error('[Cache Local] Erro ao ler:', e);
+        return null;
+    }
+}
+
+function setLocalCache(chave, payload) {
+    try {
+        const data = {
+            ts: Date.now(),
+            payload: payload
+        };
+        localStorage.setItem('exp-cache-' + chave, JSON.stringify(data));
+        console.log('[Cache Local] Salvo:', chave);
+    } catch (e) {
+        console.error('[Cache Local] Erro ao salvar:', e);
+    }
+}
+
 async function fetchExpedicaoFromAPI(destino, forceRefresh) {
     var colecao = capsulaAtual.colecao || 'I26';
     var capsula = capsulaAtual.num || 1;
+    var cacheKey = colecao + '-' + capsula + '-' + destino;
+    
+    // Tentar cache local primeiro (se não for refresh forçado)
+    if (!forceRefresh) {
+        const cached = getLocalCache(cacheKey);
+        if (cached) {
+            return cached;
+        }
+    }
     
     var baseEndpoints = {
         'showroom': '/api/totvs/expedicao/showroom-liquido?colecao=' + colecao + '&capsula=' + capsula,
@@ -1099,6 +1146,10 @@ async function fetchExpedicaoFromAPI(destino, forceRefresh) {
     }
     
     if (data.error) throw new Error(data.error);
+    
+    // Salvar no cache local
+    setLocalCache(cacheKey, data);
+    
     return data;
 }
 
