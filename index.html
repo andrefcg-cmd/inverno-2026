@@ -1319,15 +1319,20 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '3.3.0';
+const APP_VERSION = '3.4.0';
 
-// Sistema de versionamento AGRESSIVO - limpa TUDO quando versão muda
+// Sistema de versionamento - limpa cache mas preserva navegação
 (async function checkVersion() {
     const storedVersion = localStorage.getItem('app-version');
     console.log(`[Version] Atual: ${APP_VERSION}, Armazenada: ${storedVersion}`);
     
     if (storedVersion !== APP_VERSION) {
         console.log(`[Version] ATUALIZANDO de ${storedVersion} para ${APP_VERSION}`);
+        
+        // Salvar tela atual antes de limpar
+        const currentScreen = sessionStorage.getItem('nav-history');
+        const loggedUser = sessionStorage.getItem('logged-user');
+        const loggedUserData = sessionStorage.getItem('logged-user-data');
         
         // 1. Limpar TODOS os caches
         if ('caches' in window) {
@@ -1348,17 +1353,18 @@ const APP_VERSION = '3.3.0';
             }
         }
         
-        // 3. Limpar sessionStorage
-        sessionStorage.clear();
-        
-        // 4. Salvar nova versão
+        // 3. Salvar nova versão
         localStorage.setItem('app-version', APP_VERSION);
         
-        // 5. Recarregar (se não for primeira vez)
+        // 4. Restaurar dados de navegação
+        if (currentScreen) sessionStorage.setItem('nav-history', currentScreen);
+        if (loggedUser) sessionStorage.setItem('logged-user', loggedUser);
+        if (loggedUserData) sessionStorage.setItem('logged-user-data', loggedUserData);
+        
+        // 5. Recarregar apenas se não for primeira vez (sem mudar URL)
         if (storedVersion) {
             console.log('[Version] Recarregando para aplicar atualização...');
-            // Forçar reload ignorando cache
-            window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now();
+            location.reload();
             return;
         }
     }
