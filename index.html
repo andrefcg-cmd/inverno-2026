@@ -203,11 +203,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .login-icon{font-size:48px;text-align:center;margin-bottom:8px}
 .login-title{font-size:20px;font-weight:600;text-align:center;margin-bottom:4px}
 .login-subtitle{font-size:12px;color:var(--txt2);text-align:center;margin-bottom:32px}
-.login-field{margin-bottom:16px}
+.login-field{margin-bottom:16px;position:relative}
 .login-label{font-size:12px;color:var(--txt2);margin-bottom:6px;display:block}
-.login-input{width:100%;background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:14px 16px;color:var(--txt);font-size:14px;outline:none}
+.login-input{width:100%;background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:14px 40px 14px 16px;color:var(--txt);font-size:14px;outline:none}
 .login-input:focus{border-color:var(--accent)}
 .login-input::placeholder{color:#444}
+.show-pw-btn{position:absolute;right:12px;bottom:10px;background:none;border:none;color:var(--txt2);font-size:18px;cursor:pointer;padding:4px;opacity:0.6;transition:opacity .2s}
+.show-pw-btn:hover,.show-pw-btn:active{opacity:1}
 .login-btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px}
 .login-btn:active{opacity:0.85}
 .login-error{font-size:12px;color:var(--red);text-align:center;margin-top:12px;min-height:18px}
@@ -393,9 +395,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .changepw-icon{font-size:48px;text-align:center;margin-bottom:8px}
 .changepw-title{font-size:20px;font-weight:600;text-align:center;margin-bottom:4px}
 .changepw-subtitle{font-size:12px;color:var(--txt2);text-align:center;margin-bottom:32px}
-.changepw-field{margin-bottom:16px}
+.changepw-field{margin-bottom:16px;position:relative}
 .changepw-label{font-size:12px;color:var(--txt2);margin-bottom:6px;display:block}
-.changepw-input{width:100%;background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:14px 16px;color:var(--txt);font-size:14px;outline:none}
+.changepw-input{width:100%;background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:14px 40px 14px 16px;color:var(--txt);font-size:14px;outline:none}
 .changepw-input:focus{border-color:var(--accent)}
 .changepw-input::placeholder{color:#444}
 .changepw-btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px}
@@ -643,6 +645,7 @@ html, body { overscroll-behavior-y: contain; }
         <div class="login-field">
             <label class="login-label">Senha</label>
             <input type="password" class="login-input" id="initial-pw" placeholder="••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doInitialLogin()">
+            <button type="button" class="show-pw-btn" onclick="toggleShowPassword('initial-pw', this)">👁</button>
         </div>
         <button class="login-btn" onclick="doInitialLogin()">Entrar</button>
         <div class="login-error" id="initial-error"></div>
@@ -733,6 +736,7 @@ html, body { overscroll-behavior-y: contain; }
         <div class="login-field">
             <label class="login-label">Senha</label>
             <input type="password" class="login-input" id="login-pw" placeholder="••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+            <button type="button" class="show-pw-btn" onclick="toggleShowPassword('login-pw', this)">👁</button>
         </div>
         <button class="login-btn" onclick="doLogin()">Entrar</button>
         <div class="login-error" id="login-error"></div>
@@ -1150,6 +1154,24 @@ html, body { overscroll-behavior-y: contain; }
     </div>
 </div>
 
+<!-- MODAL: PRIMEIRO LOGIN (Como quer ser chamado?) -->
+<div class="user-form-modal" id="first-login-modal">
+    <div class="user-form-content" style="max-width:340px">
+        <div class="user-form-body" style="text-align:center;padding:30px 24px">
+            <div style="font-size:48px;margin-bottom:16px">👋</div>
+            <div style="font-size:18px;font-weight:600;color:var(--txt);margin-bottom:8px">Bem-vindo!</div>
+            <div style="font-size:13px;color:var(--txt2);margin-bottom:24px">Como você gostaria de ser chamado?</div>
+            
+            <div class="user-form-field" style="text-align:left">
+                <label>Seu nome ou apelido</label>
+                <input type="text" id="first-login-nome" placeholder="Ex: João, Jô, Maria..." autocomplete="off" style="text-align:center;font-size:16px">
+            </div>
+            
+            <button class="user-form-btn primary" style="width:100%;margin-top:16px" onclick="confirmFirstLoginName()">Continuar</button>
+        </div>
+    </div>
+</div>
+
 <!-- ALTERAR SENHA -->
 <div class="changepw-screen" id="changepw-screen">
     <div class="changepw-box">
@@ -1190,14 +1212,17 @@ html, body { overscroll-behavior-y: contain; }
         <div class="changepw-field">
             <label class="changepw-label">Senha Atual</label>
             <input type="password" class="changepw-input" id="changepw-current" placeholder="••••••" autocomplete="current-password">
+            <button type="button" class="show-pw-btn" onclick="toggleShowPassword('changepw-current', this)">👁</button>
         </div>
         <div class="changepw-field">
             <label class="changepw-label">Nova Senha</label>
             <input type="password" class="changepw-input" id="changepw-new" placeholder="••••••" autocomplete="new-password">
+            <button type="button" class="show-pw-btn" onclick="toggleShowPassword('changepw-new', this)">👁</button>
         </div>
         <div class="changepw-field">
             <label class="changepw-label">Confirmar Nova Senha</label>
             <input type="password" class="changepw-input" id="changepw-confirm" placeholder="••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')doChangePw()">
+            <button type="button" class="show-pw-btn" onclick="toggleShowPassword('changepw-confirm', this)">👁</button>
         </div>
         <button class="changepw-btn" onclick="doChangePw()">Salvar Nova Senha</button>
         <div class="changepw-msg" id="changepw-msg"></div>
@@ -1744,6 +1769,19 @@ async function doInitialLogin(){
         document.getElementById('initial-error').textContent = '';
         document.getElementById('initial-login').classList.remove('active');
         
+        // Verificar se é primeiro login (pedir apelido)
+        if (result.user && result.user.firstLogin) {
+            console.log('[Login] Primeiro login detectado, pedindo apelido');
+            window.pendingFirstLoginUser = user;
+            window.pendingFirstLoginPw = pw;
+            document.getElementById('first-login-nome').value = result.user.nome || '';
+            document.getElementById('first-login-modal').classList.add('active');
+            setTimeout(() => document.getElementById('first-login-nome').focus(), 100);
+            btn.textContent = originalText;
+            btn.disabled = false;
+            return;
+        }
+        
         // Verificar se biometria está disponível e NÃO está cadastrada ainda
         const bioUserAtual = localStorage.getItem('bio-user');
         
@@ -2235,12 +2273,15 @@ history.pushState({screen: 'home'}, '', '');
 let USERS = {};
 
 // Função para autenticar via API
-async function autenticarViaAPI(usuario, senha) {
+async function autenticarViaAPI(usuario, senha, novoNome = null) {
     try {
+        const body = { usuario, senha };
+        if (novoNome) body.novoNome = novoNome;
+        
         const response = await fetch(`${API_CONFIG.baseUrl}/auth`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usuario, senha })
+            body: JSON.stringify(body)
         });
         const data = await response.json();
         
@@ -2338,6 +2379,83 @@ function atualizarStatusBiometria() {
         btnEl.textContent = '🔐 Ativar Biometria';
         btnEl.className = 'changepw-btn secondary';
         btnEl.onclick = ativarBiometria;
+    }
+}
+
+// Toggle mostrar/ocultar senha
+function toggleShowPassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+    } else {
+        input.type = 'password';
+        btn.textContent = '👁';
+    }
+}
+
+// Confirmar nome do primeiro login
+async function confirmFirstLoginName() {
+    const novoNome = document.getElementById('first-login-nome').value.trim();
+    
+    if (!novoNome) {
+        alert('Por favor, digite como quer ser chamado');
+        return;
+    }
+    
+    const user = window.pendingFirstLoginUser;
+    const pw = window.pendingFirstLoginPw;
+    
+    if (!user || !pw) {
+        console.error('[FirstLogin] Dados pendentes não encontrados');
+        document.getElementById('first-login-modal').classList.remove('active');
+        return;
+    }
+    
+    try {
+        // Chamar API novamente com o novo nome
+        const result = await autenticarViaAPI(user, pw, novoNome);
+        
+        if (result.success && result.user) {
+            // Atualizar dados locais
+            USERS[user] = { ...result.user, pw: pw };
+            sessionStorage.setItem('logged-user-data', JSON.stringify(result.user));
+        }
+        
+        // Fechar modal
+        document.getElementById('first-login-modal').classList.remove('active');
+        
+        // Limpar dados pendentes
+        window.pendingFirstLoginUser = null;
+        window.pendingFirstLoginPw = null;
+        
+        // Continuar fluxo normal (verificar biometria ou ir para welcome)
+        const bioUserAtual = localStorage.getItem('bio-user');
+        if (bioUserAtual) {
+            getWeatherAndShowWelcome(user);
+        } else {
+            // Verificar se pode oferecer biometria
+            const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+            let biometriaDisponivel = false;
+            
+            if (window.PublicKeyCredential) {
+                if (isPWA) {
+                    biometriaDisponivel = true;
+                } else if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function') {
+                    biometriaDisponivel = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+                }
+            }
+            
+            if (biometriaDisponivel) {
+                showBiometricOffer(user);
+            } else {
+                getWeatherAndShowWelcome(user);
+            }
+        }
+    } catch (e) {
+        console.error('[FirstLogin] Erro:', e);
+        document.getElementById('first-login-modal').classList.remove('active');
+        getWeatherAndShowWelcome(user);
     }
 }
 
