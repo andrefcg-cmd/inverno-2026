@@ -386,6 +386,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .user-card-btn{padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
 .user-card-btn.edit{background:var(--card2);color:var(--txt)}
 .user-card-btn.delete{background:rgba(255,71,87,0.2);color:var(--red)}
+.user-card-btn.kick{background:rgba(255,165,0,0.2);color:#ffa500}
+.user-online-badge{font-size:11px;color:#22c55e;margin-left:8px}
+.user-offline-badge{font-size:11px;color:#666;margin-left:8px}
 
 /* MODAL FORMULÁRIO USUÁRIO */
 .user-form-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:10000;padding:20px}
@@ -1323,7 +1326,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '3.7.0';
+const APP_VERSION = '3.8.0';
 
 // Sistema de versionamento - limpa cache mas preserva navegação
 (async function checkVersion() {
@@ -1731,6 +1734,10 @@ setTimeout(()=>{
         // Verificar se tem usuário salvo (não depender de USERS local)
         if(savedUser){
             currentUser = savedUser;
+            
+            // Iniciar heartbeat e verificação de kick
+            startHeartbeat();
+            startKickCheck();
             
             // Restaurar dados do usuário se existirem
             if (savedUserData) {
@@ -2739,30 +2746,49 @@ function backFromChangePw(){
 function doLogout(){
     if(!confirm('Deseja realmente sair da conta?')) return;
     
-    // Limpar dados de sessão
-    sessionStorage.removeItem('logged-user');
-    sessionStorage.removeItem('logged-user-data');
-    sessionStorage.removeItem('last-screens');
-    sessionStorage.removeItem('last-exp-destino');
-    sessionStorage.removeItem('last-scroll');
-    sessionStorage.removeItem('nav-history');
-    sessionStorage.removeItem('last-capsula');
+    // Parar heartbeat e verificação de kick
+    stopHeartbeat();
+    stopKickCheck();
+    
+    // Limpar TODOS os dados de sessão
+    sessionStorage.clear();
+    
+    // Limpar cache local de expedição
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('exp-cache-')) {
+            keysToRemove.push(key);
+        }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    // Limpar biometria se quiser logout completo
+    localStorage.removeItem('bio-user');
+    localStorage.removeItem('bio-cred-id');
     
     // Limpar variáveis
     currentUser = null;
+    currentMod = null;
+    currentExpDestino = null;
     navHistory = ['home'];
     capsulaAtual = { colecao: 'I26', num: 1 };
     
-    // Voltar para tela de login
+    // Esconder todas as telas
     hideAll();
+    
+    // Mostrar tela de login
     document.getElementById('login-screen').classList.add('active');
     
     // Limpar campos de login
-    document.getElementById('login-user').value = '';
-    document.getElementById('login-pass').value = '';
-    document.getElementById('login-msg').textContent = '';
+    const loginUser = document.getElementById('login-user');
+    const loginPass = document.getElementById('login-pass');
+    const loginMsg = document.getElementById('login-msg');
+    if (loginUser) loginUser.value = '';
+    if (loginPass) loginPass.value = '';
+    if (loginMsg) loginMsg.textContent = '';
     
-    console.log('[Logout] Usuário deslogado');
+    console.log('[Logout] Usuário deslogado completamente');
 }
 
 let currentMod=null, currentUser=null;
@@ -3997,6 +4023,9 @@ async function tryBiometric(mod,user){
 }
 function afterLogin(mod,user){
     hideAll();currentUser=user;
+    // Iniciar heartbeat e verificação de kick
+    startHeartbeat();
+    startKickCheck();
     if(mod==='comercial'){document.getElementById('sub-comercial').classList.add('active');pushState('sub-comercial')}
     else if(mod==='compras'){document.getElementById('dev-compras').classList.add('active');pushState('dev-compras')}
     else if(mod==='financeiro'){document.getElementById('dev-financeiro').classList.add('active');pushState('dev-financeiro')}
@@ -5514,6 +5543,111 @@ async function openUsers() {
     document.getElementById('users-screen').classList.add('active');
     pushState('users-screen');
     await loadUsers();
+    await loadActiveSessions();
+}
+
+// Sessões ativas
+let activeSessions = {};
+
+async function loadActiveSessions() {
+    try {
+        const response = await fetch(`${API_CONFIG.baseUrl}/sessions/active`, {
+            headers: { 'X-API-Key': API_CONFIG.apiKey }
+        });
+        const data = await response.json();
+        activeSessions = data.sessions || {};
+        console.log('[Sessions] Sessões ativas:', data.count);
+        renderUsers(); // Re-renderizar com status online
+    } catch (e) {
+        console.log('[Sessions] Erro ao carregar sessões:', e.message);
+    }
+}
+
+async function kickUser(userId, nome) {
+    if (!confirm(`Deseja desconectar ${nome} (@${userId})?\n\nO usuário será forçado a fazer login novamente.`)) return;
+    
+    try {
+        const response = await fetch(`${API_CONFIG.baseUrl}/sessions/kick`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-API-Key': API_CONFIG.apiKey 
+            },
+            body: JSON.stringify({ userId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`✅ ${nome} foi desconectado!`);
+            await loadActiveSessions();
+        } else {
+            alert(`❌ Erro: ${data.error}`);
+        }
+    } catch (e) {
+        alert(`❌ Erro: ${e.message}`);
+    }
+}
+
+// Heartbeat - envia a cada 2 minutos para registrar que está online
+let heartbeatInterval = null;
+
+function startHeartbeat() {
+    if (heartbeatInterval) return;
+    
+    const sendHeartbeat = async () => {
+        if (!currentUser) return;
+        try {
+            await fetch(`${API_CONFIG.baseUrl}/sessions/heartbeat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: currentUser })
+            });
+        } catch (e) {
+            // Silencioso
+        }
+    };
+    
+    sendHeartbeat(); // Enviar imediatamente
+    heartbeatInterval = setInterval(sendHeartbeat, 2 * 60 * 1000); // A cada 2 minutos
+}
+
+function stopHeartbeat() {
+    if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
+    }
+}
+
+// Verificar se foi derrubado - a cada 30 segundos
+let kickCheckInterval = null;
+
+function startKickCheck() {
+    if (kickCheckInterval) return;
+    
+    const checkKick = async () => {
+        if (!currentUser) return;
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/sessions/check-kick?userId=${currentUser}`);
+            const data = await response.json();
+            
+            if (data.kicked) {
+                alert('⚠️ Você foi desconectado pelo administrador.');
+                doLogout();
+            }
+        } catch (e) {
+            // Silencioso
+        }
+    };
+    
+    kickCheckInterval = setInterval(checkKick, 30 * 1000); // A cada 30 segundos
+}
+
+function stopKickCheck() {
+    if (kickCheckInterval) {
+        clearInterval(kickCheckInterval);
+        kickCheckInterval = null;
+    }
 }
 
 async function loadUsers() {
@@ -5597,12 +5731,14 @@ function renderUsers() {
         }).join('');
         
         const isCurrentUser = user.id === currentUser;
+        const isOnline = activeSessions[user.id];
+        const onlineInfo = isOnline ? `<span class="user-online-badge">🟢 Online${isOnline.minutesAgo > 0 ? ` (${isOnline.minutesAgo}min)` : ''}</span>` : '<span class="user-offline-badge">⚫ Offline</span>';
         
         return `
             <div class="user-card">
                 <div class="user-card-header">
                     <div class="user-card-info">
-                        <div class="user-card-nome">${user.nome}${isCurrentUser ? ' (você)' : ''}</div>
+                        <div class="user-card-nome">${user.nome}${isCurrentUser ? ' (você)' : ''} ${onlineInfo}</div>
                         <div class="user-card-id">@${user.id}</div>
                     </div>
                     <span class="user-card-badge ${user.role}">${user.role === 'admin' ? 'Admin' : 'Usuário'}</span>
@@ -5610,6 +5746,7 @@ function renderUsers() {
                 <div class="user-card-access">${accessTags}${channelTags}</div>
                 <div class="user-card-actions">
                     <button class="user-card-btn edit" onclick="editUser('${user.id}')">✏️ Editar</button>
+                    ${!isCurrentUser && isOnline ? `<button class="user-card-btn kick" onclick="kickUser('${user.id}', '${user.nome}')">🚫 Derrubar</button>` : ''}
                     ${!isCurrentUser ? `<button class="user-card-btn delete" onclick="deleteUser('${user.id}', '${user.nome}')">🗑️ Excluir</button>` : ''}
                 </div>
             </div>
