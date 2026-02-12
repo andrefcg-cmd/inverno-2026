@@ -1253,6 +1253,10 @@ html, body { overscroll-behavior-y: contain; }
         <div class="changepw-section-title">🔐 Biometria</div>
         <div class="bio-status" id="bio-status">Verificando...</div>
         <button class="changepw-btn secondary" id="bio-action-btn" onclick="toggleBiometria()">Carregando...</button>
+        
+        <!-- Botão Logout -->
+        <div class="changepw-divider"></div>
+        <button class="changepw-btn danger" onclick="doLogout()">🚪 Sair da Conta</button>
     </div>
     <button class="changepw-back" onclick="backFromChangePw()">←</button>
 </div>
@@ -2704,6 +2708,34 @@ function backFromChangePw(){
     }else{goBackTo('home')}
     changePwReturnTo=null;
 }
+
+function doLogout(){
+    if(!confirm('Deseja realmente sair da conta?')) return;
+    
+    // Limpar dados de sessão
+    sessionStorage.removeItem('logged-user');
+    sessionStorage.removeItem('logged-user-data');
+    sessionStorage.removeItem('last-screens');
+    sessionStorage.removeItem('last-exp-destino');
+    sessionStorage.removeItem('last-scroll');
+    sessionStorage.removeItem('nav-history');
+    
+    // Limpar variáveis
+    currentUser = null;
+    navHistory = ['home'];
+    
+    // Voltar para tela de login
+    hideAll();
+    document.getElementById('login-screen').classList.add('active');
+    
+    // Limpar campos de login
+    document.getElementById('login-user').value = '';
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-msg').textContent = '';
+    
+    console.log('[Logout] Usuário deslogado');
+}
+
 let currentMod=null, currentUser=null;
 const allScreens='.app-screen,.dev-screen,.login-screen,.submenu-screen,.changepw-screen,.geo-screen,.users-screen';
 function hideAll(){document.querySelectorAll(allScreens).forEach(s=>s.classList.remove('active'));document.getElementById('home').classList.add('hidden');document.getElementById('home').classList.remove('visible')}
@@ -3691,6 +3723,9 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     // ========================================
     let canaisHtml = '';
     const enviosDoDia = dadosAPI.enviosDoDia;
+    
+    console.log('[PWA] dadosAPI.enviosDoDia:', enviosDoDia);
+    console.log('[PWA] dadosAPI keys:', Object.keys(dadosAPI));
     
     // Guardar envios do dia globalmente para o resumo geral
     window.currentEnviosDoDia = enviosDoDia;
