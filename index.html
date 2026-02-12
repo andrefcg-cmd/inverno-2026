@@ -235,7 +235,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 /* EXPEDIÇÃO */
 .exp-total-stats{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
-.exp-stat{flex:1;min-width:80px;text-align:center;padding:10px;background:var(--card2);border-radius:10px}
+.exp-stat{flex:1;min-width:80px;text-align:center;padding:10px;background:var(--card2);border-radius:10px;transition:all .2s ease}
+.exp-stat[onclick]:hover{background:var(--card);transform:scale(1.02)}
+.exp-stat[onclick]:active{transform:scale(0.98)}
 .exp-stat-value{font-size:18px;font-weight:700}
 .exp-stat-label{font-size:10px;color:var(--txt2);margin-top:2px}
 .exp-progress-section{margin-top:12px}
@@ -545,6 +547,24 @@ html, body { overscroll-behavior-y: contain; }
 .bio-modal-btn{flex:1;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer}
 .bio-modal-btn.primary{background:#e94560;color:#fff}
 .bio-modal-btn.secondary{background:#333;color:#fff}
+
+/* Modal Lista Referências/Variantes */
+.list-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;z-index:10000;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.list-modal.active{opacity:1;pointer-events:auto}
+.list-modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--brd);background:var(--card)}
+.list-modal-title{font-size:16px;font-weight:600;color:var(--txt)}
+.list-modal-close{width:36px;height:36px;background:var(--card2);border:1px solid var(--brd);border-radius:50%;color:var(--txt);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.list-modal-content{flex:1;overflow-y:auto;padding:16px 20px}
+.list-modal-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--card);border-radius:10px;margin-bottom:10px;border:1px solid var(--brd)}
+.list-modal-item-info{flex:1}
+.list-modal-item-ref{font-size:14px;font-weight:600;color:var(--txt)}
+.list-modal-item-desc{font-size:12px;color:var(--txt2);margin-top:2px}
+.list-modal-item-cor{font-size:11px;color:var(--accent);margin-top:4px}
+.list-modal-item-badge{font-size:12px;font-weight:600;color:var(--green);background:rgba(0,217,165,0.15);padding:4px 10px;border-radius:12px}
+.list-modal-search{padding:12px 20px;border-bottom:1px solid var(--brd);background:var(--card)}
+.list-modal-search input{width:100%;padding:12px 16px;background:var(--bg);border:1px solid var(--brd);border-radius:10px;color:var(--txt);font-size:14px}
+.list-modal-search input::placeholder{color:var(--txt2)}
+.list-modal-count{font-size:12px;color:var(--txt2);padding:8px 20px;background:var(--card);border-bottom:1px solid var(--brd)}
 </style></head><body>
 
 <!-- SPLASH -->
@@ -876,6 +896,19 @@ html, body { overscroll-behavior-y: contain; }
         <div class="bio-modal-text">Use Face ID ou impressão digital para entrar mais rápido na próxima vez.</div>
         <div class="bio-modal-btns">
             <button class="bio-modal-btn secondary" id="bio-modal-no">Agora não</button>
+
+<!-- Modal Lista Referências/Variantes -->
+<div class="list-modal" id="list-modal">
+    <div class="list-modal-header">
+        <span class="list-modal-title" id="list-modal-title">Lista</span>
+        <button class="list-modal-close" onclick="closeListModal()">✕</button>
+    </div>
+    <div class="list-modal-search">
+        <input type="text" id="list-modal-search" placeholder="Buscar..." oninput="filterListModal(this.value)">
+    </div>
+    <div class="list-modal-count" id="list-modal-count"></div>
+    <div class="list-modal-content" id="list-modal-content"></div>
+</div>
             <button class="bio-modal-btn primary" id="bio-modal-yes">Ativar</button>
         </div>
     </div>
@@ -2973,6 +3006,10 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     // ========================================
     // RENDERIZAR RESUMO GERAL
     // ========================================
+    // Guardar dados para os modais
+    window.currentProducaoData = producaoData;
+    window.currentDadosFiltrados = dadosFiltrados;
+    
     let statsHtml;
     if(destino === 'ld') {
         statsHtml = `
@@ -2981,8 +3018,8 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         `;
     } else {
         statsHtml = `
-            <div class="exp-stat"><div class="exp-stat-value">${totalReferencias}</div><div class="exp-stat-label">Total de Referências</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalVariantes}</div><div class="exp-stat-label">Variantes de Cor</div></div>
+            <div class="exp-stat" onclick="openListModal('referencias')" style="cursor:pointer"><div class="exp-stat-value">${totalReferencias}</div><div class="exp-stat-label">Total de Referências</div></div>
+            <div class="exp-stat" onclick="openListModal('variantes')" style="cursor:pointer"><div class="exp-stat-value">${totalVariantes}</div><div class="exp-stat-label">Variantes de Cor</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${previsaoPecas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Previsão de Peças a Receber</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${pecasRecebidas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Recebidas</div></div>
         `;
@@ -4548,6 +4585,188 @@ function limparBuscaReferencia() {
         filtrarReferencias('');
     }
     input.focus();
+}
+
+// =====================================================
+// MODAL DE LISTA (REFERÊNCIAS / VARIANTES)
+// =====================================================
+let listModalData = [];
+
+function openListModal(tipo) {
+    const modal = document.getElementById('list-modal');
+    const title = document.getElementById('list-modal-title');
+    const content = document.getElementById('list-modal-content');
+    const count = document.getElementById('list-modal-count');
+    const searchInput = document.getElementById('list-modal-search');
+    
+    // Limpar busca
+    searchInput.value = '';
+    
+    // Pegar dados da produção ou expedição
+    const producaoData = window.currentProducaoData;
+    const dadosFiltrados = window.currentDadosFiltrados || [];
+    
+    let items = [];
+    
+    if (tipo === 'referencias') {
+        title.textContent = '📦 Referências';
+        
+        // Agrupar por referência
+        const refsMap = new Map();
+        
+        if (producaoData && producaoData.items) {
+            for (const item of producaoData.items) {
+                if (!refsMap.has(item.ref)) {
+                    // Calcular total de peças
+                    const corte = item.corte || {};
+                    const totalPecas = (corte.PP||0) + (corte.P||0) + (corte.M||0) + (corte.G||0) + (corte.GG||0);
+                    
+                    refsMap.set(item.ref, {
+                        ref: item.ref,
+                        desc: item.desc || '',
+                        cores: 1,
+                        pecas: totalPecas
+                    });
+                } else {
+                    const existing = refsMap.get(item.ref);
+                    existing.cores++;
+                    const corte = item.corte || {};
+                    existing.pecas += (corte.PP||0) + (corte.P||0) + (corte.M||0) + (corte.G||0) + (corte.GG||0);
+                }
+            }
+        } else {
+            // Fallback para dados de expedição
+            for (const item of dadosFiltrados) {
+                if (!refsMap.has(item.ref)) {
+                    const p = item.prod || {};
+                    const totalPecas = (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0);
+                    
+                    refsMap.set(item.ref, {
+                        ref: item.ref,
+                        desc: item.desc || '',
+                        cores: 1,
+                        pecas: totalPecas
+                    });
+                } else {
+                    const existing = refsMap.get(item.ref);
+                    existing.cores++;
+                    const p = item.prod || {};
+                    existing.pecas += (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0);
+                }
+            }
+        }
+        
+        items = Array.from(refsMap.values()).sort((a, b) => a.ref.localeCompare(b.ref));
+        count.textContent = `${items.length} referências encontradas`;
+        
+    } else if (tipo === 'variantes') {
+        title.textContent = '🎨 Variantes de Cor';
+        
+        if (producaoData && producaoData.items) {
+            items = producaoData.items.map(item => {
+                const corte = item.corte || {};
+                const totalPecas = (corte.PP||0) + (corte.P||0) + (corte.M||0) + (corte.G||0) + (corte.GG||0);
+                return {
+                    ref: item.ref,
+                    desc: item.desc || '',
+                    cor: item.cor,
+                    pecas: totalPecas
+                };
+            }).sort((a, b) => a.ref.localeCompare(b.ref) || a.cor.localeCompare(b.cor));
+        } else {
+            items = dadosFiltrados.map(item => {
+                const p = item.prod || {};
+                const totalPecas = (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0);
+                return {
+                    ref: item.ref,
+                    desc: item.desc || '',
+                    cor: item.cor,
+                    pecas: totalPecas
+                };
+            }).sort((a, b) => a.ref.localeCompare(b.ref) || a.cor.localeCompare(b.cor));
+        }
+        
+        count.textContent = `${items.length} variantes encontradas`;
+    }
+    
+    // Guardar dados para filtro
+    listModalData = items;
+    window.listModalTipo = tipo;
+    
+    // Renderizar lista
+    renderListModalContent(items, tipo);
+    
+    // Mostrar modal
+    modal.classList.add('active');
+}
+
+function renderListModalContent(items, tipo) {
+    const content = document.getElementById('list-modal-content');
+    
+    if (tipo === 'referencias') {
+        content.innerHTML = items.map(item => `
+            <div class="list-modal-item" onclick="scrollToRef('${item.ref}')">
+                <div class="list-modal-item-info">
+                    <div class="list-modal-item-ref">${item.ref}</div>
+                    <div class="list-modal-item-desc">${item.desc}</div>
+                    <div class="list-modal-item-cor">${item.cores} ${item.cores === 1 ? 'cor' : 'cores'}</div>
+                </div>
+                <div class="list-modal-item-badge">${item.pecas} pçs</div>
+            </div>
+        `).join('');
+    } else {
+        content.innerHTML = items.map(item => `
+            <div class="list-modal-item" onclick="scrollToRef('${item.ref}', '${item.cor}')">
+                <div class="list-modal-item-info">
+                    <div class="list-modal-item-ref">${item.ref}</div>
+                    <div class="list-modal-item-desc">${item.desc}</div>
+                    <div class="list-modal-item-cor">🎨 ${item.cor}</div>
+                </div>
+                <div class="list-modal-item-badge">${item.pecas} pçs</div>
+            </div>
+        `).join('');
+    }
+}
+
+function filterListModal(termo) {
+    const items = listModalData;
+    const tipo = window.listModalTipo;
+    const count = document.getElementById('list-modal-count');
+    
+    if (!termo || termo.trim() === '') {
+        renderListModalContent(items, tipo);
+        count.textContent = `${items.length} ${tipo === 'referencias' ? 'referências' : 'variantes'} encontradas`;
+        return;
+    }
+    
+    termo = termo.toLowerCase().trim();
+    
+    const filtered = items.filter(item => {
+        return item.ref.toLowerCase().includes(termo) || 
+               (item.desc && item.desc.toLowerCase().includes(termo)) ||
+               (item.cor && item.cor.toLowerCase().includes(termo));
+    });
+    
+    renderListModalContent(filtered, tipo);
+    count.textContent = `${filtered.length} de ${items.length} ${tipo === 'referencias' ? 'referências' : 'variantes'}`;
+}
+
+function closeListModal() {
+    document.getElementById('list-modal').classList.remove('active');
+}
+
+function scrollToRef(ref, cor) {
+    // Fechar modal
+    closeListModal();
+    
+    // Buscar na lista de referências
+    const searchInput = document.getElementById('ref-search');
+    if (searchInput) {
+        // Se tem cor, buscar pela combinação
+        const termo = cor ? `${ref}` : ref;
+        searchInput.value = termo;
+        filtrarReferencias(termo);
+    }
 }
 </script>
 
