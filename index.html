@@ -236,8 +236,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 /* EXPEDIÇÃO */
 .exp-total-stats{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
 .exp-stat{flex:1;min-width:80px;text-align:center;padding:10px;background:var(--card2);border-radius:10px;transition:all .2s ease}
-.exp-stat[onclick]:hover{background:var(--card);transform:scale(1.02)}
-.exp-stat[onclick]:active{transform:scale(0.98)}
+.exp-stat.exp-stat-clickable{border:2px solid transparent}
+.exp-stat.exp-stat-clickable:hover{background:var(--card);border-color:var(--accent)}
+.exp-stat.exp-stat-clickable:active{transform:scale(0.98)}
+.exp-stat.exp-stat-clickable.active{background:var(--accent);border-color:var(--accent)}
+.exp-stat.exp-stat-clickable.active .exp-stat-value,.exp-stat.exp-stat-clickable.active .exp-stat-label{color:#fff}
 .exp-stat-value{font-size:18px;font-weight:700}
 .exp-stat-label{font-size:10px;color:var(--txt2);margin-top:2px}
 .exp-progress-section{margin-top:12px}
@@ -547,24 +550,6 @@ html, body { overscroll-behavior-y: contain; }
 .bio-modal-btn{flex:1;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer}
 .bio-modal-btn.primary{background:#e94560;color:#fff}
 .bio-modal-btn.secondary{background:#333;color:#fff}
-
-/* Modal Lista Referências/Variantes */
-.list-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;z-index:10000;opacity:0;pointer-events:none;transition:opacity .3s ease}
-.list-modal.active{opacity:1;pointer-events:auto}
-.list-modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--brd);background:var(--card)}
-.list-modal-title{font-size:16px;font-weight:600;color:var(--txt)}
-.list-modal-close{width:36px;height:36px;background:var(--card2);border:1px solid var(--brd);border-radius:50%;color:var(--txt);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.list-modal-content{flex:1;overflow-y:auto;padding:16px 20px}
-.list-modal-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--card);border-radius:10px;margin-bottom:10px;border:1px solid var(--brd)}
-.list-modal-item-info{flex:1}
-.list-modal-item-ref{font-size:14px;font-weight:600;color:var(--txt)}
-.list-modal-item-desc{font-size:12px;color:var(--txt2);margin-top:2px}
-.list-modal-item-cor{font-size:11px;color:var(--accent);margin-top:4px}
-.list-modal-item-badge{font-size:12px;font-weight:600;color:var(--green);background:rgba(0,217,165,0.15);padding:4px 10px;border-radius:12px}
-.list-modal-search{padding:12px 20px;border-bottom:1px solid var(--brd);background:var(--card)}
-.list-modal-search input{width:100%;padding:12px 16px;background:var(--bg);border:1px solid var(--brd);border-radius:10px;color:var(--txt);font-size:14px}
-.list-modal-search input::placeholder{color:var(--txt2)}
-.list-modal-count{font-size:12px;color:var(--txt2);padding:8px 20px;background:var(--card);border-bottom:1px solid var(--brd)}
 </style></head><body>
 
 <!-- SPLASH -->
@@ -896,19 +881,6 @@ html, body { overscroll-behavior-y: contain; }
         <div class="bio-modal-text">Use Face ID ou impressão digital para entrar mais rápido na próxima vez.</div>
         <div class="bio-modal-btns">
             <button class="bio-modal-btn secondary" id="bio-modal-no">Agora não</button>
-
-<!-- Modal Lista Referências/Variantes -->
-<div class="list-modal" id="list-modal">
-    <div class="list-modal-header">
-        <span class="list-modal-title" id="list-modal-title">Lista</span>
-        <button class="list-modal-close" onclick="closeListModal()">✕</button>
-    </div>
-    <div class="list-modal-search">
-        <input type="text" id="list-modal-search" placeholder="Buscar..." oninput="filterListModal(this.value)">
-    </div>
-    <div class="list-modal-count" id="list-modal-count"></div>
-    <div class="list-modal-content" id="list-modal-content"></div>
-</div>
             <button class="bio-modal-btn primary" id="bio-modal-yes">Ativar</button>
         </div>
     </div>
@@ -3006,9 +2978,10 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     // ========================================
     // RENDERIZAR RESUMO GERAL
     // ========================================
-    // Guardar dados para os modais
+    // Guardar dados para toggle de visualização
     window.currentProducaoData = producaoData;
     window.currentDadosFiltrados = dadosFiltrados;
+    window.currentDestino = destino;
     
     let statsHtml;
     if(destino === 'ld') {
@@ -3017,9 +2990,10 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
             <div class="exp-stat"><div class="exp-stat-value">0</div><div class="exp-stat-label">Peças Reservadas</div></div>
         `;
     } else {
+        const isRefActive = window.viewModeReferencias === true;
         statsHtml = `
-            <div class="exp-stat" onclick="openListModal('referencias')" style="cursor:pointer"><div class="exp-stat-value">${totalReferencias}</div><div class="exp-stat-label">Total de Referências</div></div>
-            <div class="exp-stat" onclick="openListModal('variantes')" style="cursor:pointer"><div class="exp-stat-value">${totalVariantes}</div><div class="exp-stat-label">Variantes de Cor</div></div>
+            <div class="exp-stat exp-stat-clickable ${isRefActive ? 'active' : ''}" id="stat-referencias" onclick="toggleViewReferencias()" style="cursor:pointer"><div class="exp-stat-value">${totalReferencias}</div><div class="exp-stat-label">Total de Referências</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalVariantes}</div><div class="exp-stat-label">Variantes de Cor</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${previsaoPecas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Previsão de Peças a Receber</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${pecasRecebidas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Recebidas</div></div>
         `;
@@ -3094,6 +3068,9 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         // Fallback: usar dados de expedição
         itemsParaLista = dadosFiltrados;
     }
+    
+    // Guardar itemsParaLista para toggle de visualização
+    window.currentItemsParaLista = itemsParaLista;
     
     const items = itemsParaLista.map(item => {
         const p = item.prod || {};
@@ -4588,185 +4565,150 @@ function limparBuscaReferencia() {
 }
 
 // =====================================================
-// MODAL DE LISTA (REFERÊNCIAS / VARIANTES)
+// TOGGLE VIEW REFERÊNCIAS (agrupa cards por ref)
 // =====================================================
-let listModalData = [];
+window.viewModeReferencias = false;
 
-function openListModal(tipo) {
-    const modal = document.getElementById('list-modal');
-    const title = document.getElementById('list-modal-title');
-    const content = document.getElementById('list-modal-content');
-    const count = document.getElementById('list-modal-count');
-    const searchInput = document.getElementById('list-modal-search');
+function toggleViewReferencias() {
+    window.viewModeReferencias = !window.viewModeReferencias;
     
-    // Limpar busca
-    searchInput.value = '';
+    // Atualizar visual do botão
+    const btnRef = document.getElementById('stat-referencias');
+    if (btnRef) {
+        btnRef.classList.toggle('active', window.viewModeReferencias);
+    }
     
-    // Pegar dados da produção ou expedição
+    // Re-renderizar a lista de cards
+    renderListaCards();
+}
+
+function renderListaCards() {
+    const destino = window.currentDestino;
+    const itemsParaLista = window.currentItemsParaLista || [];
     const producaoData = window.currentProducaoData;
     const dadosFiltrados = window.currentDadosFiltrados || [];
     
-    let items = [];
+    let itemsToRender = [];
     
-    if (tipo === 'referencias') {
-        title.textContent = '📦 Referências';
-        
-        // Agrupar por referência
+    if (window.viewModeReferencias) {
+        // MODO REFERÊNCIAS: agrupar por ref, mostrar apenas uma vez cada
         const refsMap = new Map();
         
-        if (producaoData && producaoData.items) {
-            for (const item of producaoData.items) {
-                if (!refsMap.has(item.ref)) {
-                    // Calcular total de peças
-                    const corte = item.corte || {};
-                    const totalPecas = (corte.PP||0) + (corte.P||0) + (corte.M||0) + (corte.G||0) + (corte.GG||0);
-                    
-                    refsMap.set(item.ref, {
-                        ref: item.ref,
-                        desc: item.desc || '',
-                        cores: 1,
-                        pecas: totalPecas
-                    });
-                } else {
-                    const existing = refsMap.get(item.ref);
-                    existing.cores++;
-                    const corte = item.corte || {};
-                    existing.pecas += (corte.PP||0) + (corte.P||0) + (corte.M||0) + (corte.G||0) + (corte.GG||0);
-                }
-            }
-        } else {
-            // Fallback para dados de expedição
-            for (const item of dadosFiltrados) {
-                if (!refsMap.has(item.ref)) {
-                    const p = item.prod || {};
-                    const totalPecas = (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0);
-                    
-                    refsMap.set(item.ref, {
-                        ref: item.ref,
-                        desc: item.desc || '',
-                        cores: 1,
-                        pecas: totalPecas
-                    });
-                } else {
-                    const existing = refsMap.get(item.ref);
-                    existing.cores++;
-                    const p = item.prod || {};
-                    existing.pecas += (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0);
-                }
+        for (const item of itemsParaLista) {
+            const p = item.prod || {};
+            const e = item.envShow || {};
+            
+            if (!refsMap.has(item.ref)) {
+                refsMap.set(item.ref, {
+                    ref: item.ref,
+                    desc: item.desc || '',
+                    cor: null, // não mostrar cor no modo agrupado
+                    coresCount: 1,
+                    prod: { PP: p.PP||0, P: p.P||0, M: p.M||0, G: p.G||0, GG: p.GG||0 },
+                    envShow: { PP: e.PP||0, P: e.P||0, M: e.M||0, G: e.G||0, GG: e.GG||0 }
+                });
+            } else {
+                const existing = refsMap.get(item.ref);
+                existing.coresCount++;
+                // Somar quantidades
+                existing.prod.PP += p.PP||0;
+                existing.prod.P += p.P||0;
+                existing.prod.M += p.M||0;
+                existing.prod.G += p.G||0;
+                existing.prod.GG += p.GG||0;
+                existing.envShow.PP += e.PP||0;
+                existing.envShow.P += e.P||0;
+                existing.envShow.M += e.M||0;
+                existing.envShow.G += e.G||0;
+                existing.envShow.GG += e.GG||0;
             }
         }
         
-        items = Array.from(refsMap.values()).sort((a, b) => a.ref.localeCompare(b.ref));
-        count.textContent = `${items.length} referências encontradas`;
-        
-    } else if (tipo === 'variantes') {
-        title.textContent = '🎨 Variantes de Cor';
-        
-        if (producaoData && producaoData.items) {
-            items = producaoData.items.map(item => {
-                const corte = item.corte || {};
-                const totalPecas = (corte.PP||0) + (corte.P||0) + (corte.M||0) + (corte.G||0) + (corte.GG||0);
-                return {
-                    ref: item.ref,
-                    desc: item.desc || '',
-                    cor: item.cor,
-                    pecas: totalPecas
-                };
-            }).sort((a, b) => a.ref.localeCompare(b.ref) || a.cor.localeCompare(b.cor));
-        } else {
-            items = dadosFiltrados.map(item => {
-                const p = item.prod || {};
-                const totalPecas = (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0);
-                return {
-                    ref: item.ref,
-                    desc: item.desc || '',
-                    cor: item.cor,
-                    pecas: totalPecas
-                };
-            }).sort((a, b) => a.ref.localeCompare(b.ref) || a.cor.localeCompare(b.cor));
-        }
-        
-        count.textContent = `${items.length} variantes encontradas`;
-    }
-    
-    // Guardar dados para filtro
-    listModalData = items;
-    window.listModalTipo = tipo;
-    
-    // Renderizar lista
-    renderListModalContent(items, tipo);
-    
-    // Mostrar modal
-    modal.classList.add('active');
-}
-
-function renderListModalContent(items, tipo) {
-    const content = document.getElementById('list-modal-content');
-    
-    if (tipo === 'referencias') {
-        content.innerHTML = items.map(item => `
-            <div class="list-modal-item" onclick="scrollToRef('${item.ref}')">
-                <div class="list-modal-item-info">
-                    <div class="list-modal-item-ref">${item.ref}</div>
-                    <div class="list-modal-item-desc">${item.desc}</div>
-                    <div class="list-modal-item-cor">${item.cores} ${item.cores === 1 ? 'cor' : 'cores'}</div>
-                </div>
-                <div class="list-modal-item-badge">${item.pecas} pçs</div>
-            </div>
-        `).join('');
+        itemsToRender = Array.from(refsMap.values()).sort((a, b) => a.ref.localeCompare(b.ref));
     } else {
-        content.innerHTML = items.map(item => `
-            <div class="list-modal-item" onclick="scrollToRef('${item.ref}', '${item.cor}')">
-                <div class="list-modal-item-info">
-                    <div class="list-modal-item-ref">${item.ref}</div>
-                    <div class="list-modal-item-desc">${item.desc}</div>
-                    <div class="list-modal-item-cor">🎨 ${item.cor}</div>
-                </div>
-                <div class="list-modal-item-badge">${item.pecas} pçs</div>
-            </div>
-        `).join('');
-    }
-}
-
-function filterListModal(termo) {
-    const items = listModalData;
-    const tipo = window.listModalTipo;
-    const count = document.getElementById('list-modal-count');
-    
-    if (!termo || termo.trim() === '') {
-        renderListModalContent(items, tipo);
-        count.textContent = `${items.length} ${tipo === 'referencias' ? 'referências' : 'variantes'} encontradas`;
-        return;
+        // MODO NORMAL: mostrar todas as variantes
+        itemsToRender = itemsParaLista;
     }
     
-    termo = termo.toLowerCase().trim();
+    // Renderizar cards
+    const items = itemsToRender.map(item => {
+        const p = item.prod || {};
+        const e = item.envShow || {};
+        const totalP = (p.PP||0)+(p.P||0)+(p.M||0)+(p.G||0);
+        const totalE = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
+        if(totalP === 0) return '';
+        
+        let metaItem, envItem;
+        if(destino === 'showroom'){
+            const ecommTams = ['PP','P','M','G'].filter(t => p[t] > 0).length;
+            const isabellaQty = p.P > 0 ? 1 : 0;
+            metaItem = totalP - ecommTams - isabellaQty;
+            envItem = totalE;
+        } else if(destino === 'ecommerce'){
+            metaItem = ['PP','P','M','G'].filter(t => p[t] > 0).length;
+            envItem = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
+        } else if(destino === 'mostruario'){
+            metaItem = p.P > 0 ? 1 : (['PP','M','G'].find(t => p[t] > 0) ? 1 : 0);
+            envItem = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
+        } else if(destino === 'ld'){
+            metaItem = 0;
+            envItem = 0;
+        }
+        
+        const pctItem = metaItem > 0 ? ((envItem / metaItem) * 100).toFixed(0) : 0;
+        const colorItem = pctItem >= 100 ? 'green' : 'blue';
+        
+        let tamanhos;
+        if(destino === 'showroom'){
+            tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
+                const prod = p[t] || 0;
+                const env = e[t] || 0;
+                const descEcomm = 1;
+                const descIsabella = (t === 'P') ? 1 : 0;
+                const meta = prod - descEcomm - descIsabella;
+                const pct = meta > 0 ? Math.min((env/meta)*100, 100) : 0;
+                const col = env >= meta ? 'green' : 'blue';
+                return '<div class="exp-tam-row"><span class="exp-tam-label">'+t+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/'+meta+'</span></div>';
+            }).join('');
+        } else if(destino === 'ecommerce'){
+            tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
+                const env = e[t] || 0;
+                const meta = 1;
+                const pct = env >= meta ? 100 : 0;
+                const col = env >= meta ? 'green' : 'blue';
+                return '<div class="exp-tam-row"><span class="exp-tam-label">'+t+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/'+meta+'</span></div>';
+            }).join('');
+        } else if(destino === 'mostruario'){
+            let tamEsperado = p.P > 0 ? 'P' : ['PP','M','G'].find(t => p[t] > 0) || null;
+            if(tamEsperado){
+                const env = e[tamEsperado] || 0;
+                const meta = 1;
+                const pct = env >= meta ? 100 : 0;
+                const col = env >= meta ? 'green' : 'blue';
+                tamanhos = '<div class="exp-tam-row"><span class="exp-tam-label">'+tamEsperado+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/'+meta+'</span></div>';
+            } else {
+                tamanhos = '<div class="exp-tam-row"><span class="exp-tam-label" style="color:var(--txt2)">Sem tamanho cortado</span></div>';
+            }
+        } else if(destino === 'ld'){
+            tamanhos = '<div class="exp-tam-row"><span class="exp-tam-label" style="color:var(--txt2)">Sem leves defeitos</span></div>';
+        }
+        
+        const descEscaped = (item.desc || '').replace(/'/g, "\\'");
+        
+        // No modo referências, mostrar quantidade de cores ao invés da cor específica
+        let corHtml;
+        if (window.viewModeReferencias && item.coresCount) {
+            corHtml = '<div class="exp-item-cor">🎨 ' + item.coresCount + ' ' + (item.coresCount === 1 ? 'cor' : 'cores') + '</div>';
+        } else if (item.cor) {
+            corHtml = '<div class="exp-item-cor">🎨 ' + item.cor + '</div>';
+        } else {
+            corHtml = '';
+        }
+        
+        return '<div class="exp-item" onclick="openPhoto(\''+item.ref+'\',\''+descEscaped+'\')"><div class="exp-item-header"><div><div class="exp-item-ref">'+item.ref+' <span style="font-weight:400;color:var(--txt2);font-size:11px">('+totalP+' pçs)</span></div><div class="exp-item-name">'+(item.desc || '')+'</div>'+corHtml+'</div><div class="exp-item-badge" style="color:var(--'+colorItem+')">'+pctItem+'%</div></div><div class="exp-tamanhos-grid">'+tamanhos+'</div></div>';
+    }).join('');
     
-    const filtered = items.filter(item => {
-        return item.ref.toLowerCase().includes(termo) || 
-               (item.desc && item.desc.toLowerCase().includes(termo)) ||
-               (item.cor && item.cor.toLowerCase().includes(termo));
-    });
-    
-    renderListModalContent(filtered, tipo);
-    count.textContent = `${filtered.length} de ${items.length} ${tipo === 'referencias' ? 'referências' : 'variantes'}`;
-}
-
-function closeListModal() {
-    document.getElementById('list-modal').classList.remove('active');
-}
-
-function scrollToRef(ref, cor) {
-    // Fechar modal
-    closeListModal();
-    
-    // Buscar na lista de referências
-    const searchInput = document.getElementById('ref-search');
-    if (searchInput) {
-        // Se tem cor, buscar pela combinação
-        const termo = cor ? `${ref}` : ref;
-        searchInput.value = termo;
-        filtrarReferencias(termo);
-    }
+    document.getElementById('exp-items-list').innerHTML = items;
 }
 </script>
 
