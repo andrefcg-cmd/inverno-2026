@@ -1097,8 +1097,9 @@ async function fetchExpedicaoFromAPI(destino, forceRefresh) {
 }
 
 function transformApiData(apiData) {
-    if (!apiData.items) return [];
-    return apiData.items.map(function(item) {
+    if (!apiData.items) return { items: [], producao: null };
+    
+    const items = apiData.items.map(function(item) {
         return {
             ref: item.ref,
             desc: item.desc,
@@ -1117,6 +1118,13 @@ function transformApiData(apiData) {
             }
         };
     });
+    
+    // Retornar também dados de produção se existirem
+    return {
+        items: items,
+        producao: apiData.producao || null,
+        totais: apiData.totais || null
+    };
 }
 
 // Buscar dados - estrategia hibrida: cache primeiro, refresh se vazio
@@ -1127,13 +1135,13 @@ async function getExpedicaoData(destino) {
         var transformed = transformApiData(apiData);
         
         // Se cache retornou vazio mas tem produtos, busca dados frescos
-        if (transformed.length === 0 && apiData.totalProdutos > 0) {
+        if (transformed.items.length === 0 && apiData.totalProdutos > 0) {
             console.log('[API] Cache vazio mas tem ' + apiData.totalProdutos + ' produtos, buscando refresh...');
             apiData = await fetchExpedicaoFromAPI(destino, true);
             transformed = transformApiData(apiData);
         }
         
-        console.log('[API] ' + destino + ': ' + transformed.length + ' itens');
+        console.log('[API] ' + destino + ': ' + transformed.items.length + ' itens');
         
         // Guardar timestamp da atualizacao
         ultimaAtualizacaoTimestamp = new Date();
@@ -1142,7 +1150,7 @@ async function getExpedicaoData(destino) {
     } catch (error) {
         console.error('[API] Erro ' + destino + ':', error);
         showExpedicaoToast('Erro ao carregar dados', 'error');
-        return []; // Retorna vazio ao invés de dados estáticos incorretos
+        return { items: [], producao: null, totais: null }; // Retorna vazio ao invés de dados estáticos incorretos
     }
 }
 
@@ -2449,7 +2457,7 @@ async function forcarAtualizacaoExpedicao() {
         console.log('[Refresh] Dados recebidos:', apiData ? 'OK' : 'VAZIO');
         
         const novosItens = transformApiData(apiData);
-        console.log('[Refresh] Itens transformados:', novosItens.length);
+        console.log('[Refresh] Itens transformados:', novosItens.items?.length || 0);
         
         updateSplashRefreshStage('rendering');
         // Atualizar UI
@@ -2906,70 +2914,65 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     // Usar dados passados ou buscar da API/cache
     const dadosAPI = dadosPreCarregados || await getExpedicaoData(destino);
     
+    // Extrair items e dados de produção
+    const todosItems = dadosAPI.items || dadosAPI || [];
+    const producaoData = dadosAPI.producao || null;
+    const totaisAPI = dadosAPI.totais || null;
+    
     const refsExcluidas = ['SHI26023', 'SAI26012'];
-    let dadosFiltrados = dadosAPI.filter(item => !refsExcluidas.includes(item.ref));
+    let dadosFiltrados = todosItems.filter(item => !refsExcluidas.includes(item.ref));
     
-    let totalProd = 0, totalEnvShow = 0;
-    const refsUnicas = new Set();
+    // ========================================
+    // DADOS DE PRODUÇÃO (para Resumo Geral)
+    // ========================================
+    let totalReferencias = 0;
+    let totalVariantes = 0;
+    let previsaoPecas = 0;
+    let pecasRecebidas = 0;
     
-    dadosFiltrados.forEach(item => {
-        const p = item.prod || {};
-        totalProd += (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0);
-        const e = item.envShow || {};
-        totalEnvShow += (e.PP||0) + (e.P||0) + (e.M||0) + (e.G||0);
-        refsUnicas.add(item.ref);
-    });
-    
-    let totalEcomm = 0;
-    let envEcomm = 0;
-    dadosFiltrados.forEach(item => {
-        const p = item.prod || {};
-        const e = item.envShow || {};
-        totalEcomm += ['PP','P','M','G'].filter(t => p[t] > 0).length;
-        envEcomm += (e.PP||0) + (e.P||0) + (e.M||0) + (e.G||0);
-    });
-    
-    let metaIsabella = 0;
-    dadosFiltrados.forEach(item => {
-        if((item.prod?.P || 0) > 0) metaIsabella++;
-    });
-    
-    const resto = totalProd - totalEnvShow - totalEcomm;
-    const envIsabella = Math.min(resto, metaIsabella);
-    
-    let ecommFiltrado = 0, isabellaFiltrado = 0;
-    dadosFiltrados.forEach(item => {
-        const p = item.prod || {};
-        ecommFiltrado += ['PP','P','M','G'].filter(t => p[t] > 0).length;
-        if((p.P || 0) > 0) isabellaFiltrado++;
-    });
-    const metaShowroom = totalProd - ecommFiltrado - isabellaFiltrado;
-    
-    let totalMeta, totalEnv, pctTotal;
-    if(destino === 'showroom'){
-        totalMeta = metaShowroom;
-        totalEnv = totalEnvShow;
-    } else if(destino === 'ecommerce'){
-        totalMeta = totalEcomm;
-        totalEnv = envEcomm;
-    } else if(destino === 'mostruario'){
-        totalMeta = metaIsabella;
-        totalEnv = envIsabella;
-    } else if(destino === 'ld'){
-        // LD: por enquanto não tem meta definida
-        totalMeta = 0;
-        totalEnv = 0;
+    if (producaoData && producaoData.items) {
+        // Usar dados de produção da API
+        const refsProducao = new Set(producaoData.items.map(i => i.ref));
+        totalReferencias = refsProducao.size;
+        totalVariantes = producaoData.items.length;
+        previsaoPecas = producaoData.totalAReceber || 0;
     }
-    pctTotal = totalMeta > 0 ? ((totalEnv / totalMeta) * 100).toFixed(1) : 0;
+    
+    // Peças recebidas vem do totais.enviado
+    pecasRecebidas = totaisAPI?.enviado || 0;
+    
+    // Se não tem dados de produção, usar dados de expedição como fallback
+    if (totalReferencias === 0 && dadosFiltrados.length > 0) {
+        const refsUnicas = new Set(dadosFiltrados.map(i => i.ref));
+        totalReferencias = refsUnicas.size;
+        totalVariantes = dadosFiltrados.length;
+        
+        // Calcular previsão baseado em prod (fallback)
+        dadosFiltrados.forEach(item => {
+            const p = item.prod || {};
+            previsaoPecas += (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0);
+        });
+        
+        // Calcular recebidas
+        dadosFiltrados.forEach(item => {
+            const e = item.envShow || {};
+            pecasRecebidas += (e.PP||0) + (e.P||0) + (e.M||0) + (e.G||0);
+        });
+    }
+    
+    // ========================================
+    // PROGRESSO (para barra de progresso)
+    // ========================================
+    const pctTotal = previsaoPecas > 0 ? ((pecasRecebidas / previsaoPecas) * 100).toFixed(1) : 0;
     const colorTotal = pctTotal >= 100 ? 'green' : 'blue';
     
     // Data de atualização - usa timestamp salvo ou hora atual se não tiver
     const dataAtualizacao = ultimaAtualizacaoTimestamp || new Date();
     const updateText = 'Última atualização: ' + dataAtualizacao.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
     
-    const totalCores = dadosFiltrados.length;
-    
-    // Stats diferentes para LD
+    // ========================================
+    // RENDERIZAR RESUMO GERAL
+    // ========================================
     let statsHtml;
     if(destino === 'ld') {
         statsHtml = `
@@ -2978,15 +2981,17 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         `;
     } else {
         statsHtml = `
-            <div class="exp-stat"><div class="exp-stat-value">${refsUnicas.size}</div><div class="exp-stat-label">Total de Referências</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalCores}</div><div class="exp-stat-label">Variantes de Cor</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalMeta.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Previsão de Peças a Receber</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalEnv.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Recebidas</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalReferencias}</div><div class="exp-stat-label">Total de Referências</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${totalVariantes}</div><div class="exp-stat-label">Variantes de Cor</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${previsaoPecas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Previsão de Peças a Receber</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${pecasRecebidas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Recebidas</div></div>
         `;
     }
     document.getElementById('exp-total-stats').innerHTML = statsHtml;
     
-    // Progresso diferente para LD
+    // ========================================
+    // RENDERIZAR BARRA DE PROGRESSO
+    // ========================================
     let progressHtml;
     if(destino === 'ld') {
         progressHtml = `
@@ -3003,7 +3008,7 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
             <div class="exp-progress-row">
                 <div class="exp-progress-header">
                     <span class="exp-progress-label">Total Recebido</span>
-                    <span class="exp-progress-value">${totalEnv.toLocaleString('pt-BR')} / ${totalMeta.toLocaleString('pt-BR')}</span>
+                    <span class="exp-progress-value">${pecasRecebidas.toLocaleString('pt-BR')} / ${previsaoPecas.toLocaleString('pt-BR')}</span>
                 </div>
                 <div class="exp-progress-bar">
                     <div class="exp-progress-fill ${colorTotal}" style="width:${Math.min(pctTotal,100)}%"></div>
@@ -3016,8 +3021,44 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         `;
     }
     document.getElementById('exp-total-progress').innerHTML = progressHtml;
+
+    // ========================================
+    // RENDERIZAR LISTA DE REFERÊNCIAS
+    // ========================================
+    // Usar dados de produção para a lista (se disponível)
+    let itemsParaLista = [];
     
-    const items = dadosFiltrados.map(item => {
+    if (producaoData && producaoData.items && producaoData.items.length > 0) {
+        // Usar dados de produção
+        itemsParaLista = producaoData.items.map(item => {
+            // Calcular total de peças
+            const corte = item.corte || {};
+            const totalProd = (corte.PP||0) + (corte.P||0) + (corte.M||0) + (corte.G||0) + (corte.GG||0);
+            
+            // Buscar dados de envio correspondente
+            const envItem = dadosFiltrados.find(d => d.ref === item.ref && d.cor === item.cor);
+            const envShow = envItem?.envShow || { PP: 0, P: 0, M: 0, G: 0, GG: 0 };
+            
+            return {
+                ref: item.ref,
+                desc: item.desc || '',
+                cor: item.cor,
+                prod: {
+                    PP: corte.PP || 0,
+                    P: corte.P || 0,
+                    M: corte.M || 0,
+                    G: corte.G || 0,
+                    GG: corte.GG || 0
+                },
+                envShow: envShow
+            };
+        });
+    } else {
+        // Fallback: usar dados de expedição
+        itemsParaLista = dadosFiltrados;
+    }
+    
+    const items = itemsParaLista.map(item => {
         const p = item.prod || {};
         const e = item.envShow || {};
         const totalP = (p.PP||0)+(p.P||0)+(p.M||0)+(p.G||0);
@@ -3037,7 +3078,6 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
             metaItem = p.P > 0 ? 1 : (['PP','M','G'].find(t => p[t] > 0) ? 1 : 0);
             envItem = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
         } else if(destino === 'ld'){
-            // LD: por enquanto mostra 0, será configurado quando operação for criada
             metaItem = 0;
             envItem = 0;
         }
@@ -3066,7 +3106,6 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
                 return '<div class="exp-tam-row"><span class="exp-tam-label">'+t+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/'+meta+'</span></div>';
             }).join('');
         } else if(destino === 'mostruario'){
-            // Mostruário: 1 peça P padrão, ou outro tamanho se não tiver P
             let tamEsperado = p.P > 0 ? 'P' : ['PP','M','G'].find(t => p[t] > 0) || null;
             if(tamEsperado){
                 const env = e[tamEsperado] || 0;
@@ -3081,8 +3120,8 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
             tamanhos = '<div class="exp-tam-row"><span class="exp-tam-label" style="color:var(--txt2)">Sem leves defeitos</span></div>';
         }
         
-        const descEscaped = item.desc.replace(/'/g, "\\'");
-        return '<div class="exp-item" onclick="openPhoto(\''+item.ref+'\',\''+descEscaped+'\')"><div class="exp-item-header"><div><div class="exp-item-ref">'+item.ref+' <span style="font-weight:400;color:var(--txt2);font-size:11px">('+totalP+' pçs)</span></div><div class="exp-item-name">'+item.desc+'</div><div class="exp-item-cor">🎨 '+item.cor+'</div></div><div class="exp-item-badge" style="color:var(--'+colorItem+')">'+pctItem+'%</div></div><div class="exp-tamanhos-grid">'+tamanhos+'</div></div>';
+        const descEscaped = (item.desc || '').replace(/'/g, "\\'");
+        return '<div class="exp-item" onclick="openPhoto(\''+item.ref+'\',\''+descEscaped+'\')"><div class="exp-item-header"><div><div class="exp-item-ref">'+item.ref+' <span style="font-weight:400;color:var(--txt2);font-size:11px">('+totalP+' pçs)</span></div><div class="exp-item-name">'+(item.desc || '')+'</div><div class="exp-item-cor">🎨 '+item.cor+'</div></div><div class="exp-item-badge" style="color:var(--'+colorItem+')">'+pctItem+'%</div></div><div class="exp-tamanhos-grid">'+tamanhos+'</div></div>';
     }).join('');
     
     document.getElementById('exp-items-list').innerHTML = items;
