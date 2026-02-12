@@ -1069,28 +1069,39 @@ const API_CONFIG = {
 })();
 
 // ===== BUSCAR DADOS DA API (cache no Cloudflare) =====
-// ===== CACHE LOCAL PERSISTENTE (localStorage) =====
-const CACHE_EXPIRACAO_MS = 10 * 60 * 1000; // 10 minutos
+// ===== CACHE LOCAL PERSISTENTE (localStorage) + STALE-WHILE-REVALIDATE =====
+const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 horas - cache máximo
+const CACHE_STALE_MS = 5 * 60 * 1000; // 5 minutos - após isso, revalida em background
 
-function getLocalCache(chave) {
+function getLocalCache(chave, allowStale = false) {
     try {
         const cached = localStorage.getItem('exp-cache-' + chave);
-        if (!cached) return null;
+        if (!cached) return { data: null, isStale: false };
         
-        const data = JSON.parse(cached);
+        const cacheData = JSON.parse(cached);
         const agora = Date.now();
+        const idade = agora - cacheData.ts;
         
-        // Verificar se expirou
-        if (agora - data.ts > CACHE_EXPIRACAO_MS) {
-            console.log('[Cache Local] Expirado:', chave);
-            return null;
+        // Cache expirou completamente (> 24h)
+        if (idade > CACHE_MAX_AGE_MS) {
+            console.log('[Cache Local] Expirado (>' + (CACHE_MAX_AGE_MS/3600000) + 'h):', chave);
+            localStorage.removeItem('exp-cache-' + chave);
+            return { data: null, isStale: false };
         }
         
-        console.log('[Cache Local] Hit:', chave, '- Idade:', Math.round((agora - data.ts) / 1000) + 's');
-        return data.payload;
+        // Cache está "stale" (> 5min) mas ainda válido
+        const isStale = idade > CACHE_STALE_MS;
+        
+        if (isStale) {
+            console.log('[Cache Local] Stale (revalidar em background):', chave, '- Idade:', Math.round(idade / 1000) + 's');
+        } else {
+            console.log('[Cache Local] Fresh:', chave, '- Idade:', Math.round(idade / 1000) + 's');
+        }
+        
+        return { data: cacheData.payload, isStale: isStale };
     } catch (e) {
         console.error('[Cache Local] Erro ao ler:', e);
-        return null;
+        return { data: null, isStale: false };
     }
 }
 
@@ -1104,6 +1115,66 @@ function setLocalCache(chave, payload) {
         console.log('[Cache Local] Salvo:', chave);
     } catch (e) {
         console.error('[Cache Local] Erro ao salvar:', e);
+        // Se localStorage estiver cheio, limpar caches antigos
+        if (e.name === 'QuotaExceededError') {
+            limparCachesAntigos();
+            try {
+                localStorage.setItem('exp-cache-' + chave, JSON.stringify({ ts: Date.now(), payload }));
+            } catch (e2) {
+                console.error('[Cache Local] Falha mesmo após limpeza');
+            }
+        }
+    }
+}
+
+function limparCachesAntigos() {
+    console.log('[Cache Local] Limpando caches antigos...');
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('exp-cache-')) {
+            keysToRemove.push(key);
+        }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    console.log('[Cache Local] Removidos:', keysToRemove.length, 'itens');
+}
+
+// Revalidar em background (não bloqueia UI)
+async function revalidateInBackground(destino, cacheKey) {
+    console.log('[Background] Revalidando:', cacheKey);
+    try {
+        const colecao = capsulaAtual.colecao || 'I26';
+        const capsula = capsulaAtual.num || 1;
+        
+        const baseEndpoints = {
+            'showroom': '/api/totvs/expedicao/showroom-liquido?colecao=' + colecao + '&capsula=' + capsula,
+            'ecommerce': '/api/totvs/expedicao/ecommerce?colecao=' + colecao + '&capsula=' + capsula,
+            'mostruario': '/api/totvs/expedicao/mostruario?colecao=' + colecao + '&capsula=' + capsula,
+            'ld': '/api/totvs/expedicao/ld?colecao=' + colecao + '&capsula=' + capsula
+        };
+        
+        const url = API_CONFIG.baseUrl + baseEndpoints[destino];
+        const response = await fetch(url, {
+            headers: { 'X-API-Key': API_CONFIG.apiKey }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (!data.error) {
+                setLocalCache(cacheKey, data);
+                console.log('[Background] Cache atualizado:', cacheKey);
+                
+                // Se ainda estiver na mesma tela, atualizar UI silenciosamente
+                if (currentExpDestino === destino) {
+                    const transformed = transformApiData(data);
+                    await renderExpedicao(destino, transformed);
+                    console.log('[Background] UI atualizada silenciosamente');
+                }
+            }
+        }
+    } catch (e) {
+        console.log('[Background] Erro ao revalidar (ignorado):', e.message);
     }
 }
 
@@ -1114,8 +1185,12 @@ async function fetchExpedicaoFromAPI(destino, forceRefresh) {
     
     // Tentar cache local primeiro (se não for refresh forçado)
     if (!forceRefresh) {
-        const cached = getLocalCache(cacheKey);
+        const { data: cached, isStale } = getLocalCache(cacheKey);
         if (cached) {
+            // Se cache está stale, revalidar em background (não bloqueia)
+            if (isStale) {
+                setTimeout(() => revalidateInBackground(destino, cacheKey), 100);
+            }
             return cached;
         }
     }
