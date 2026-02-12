@@ -2177,7 +2177,7 @@ function backFromChangePw(){
 }
 let currentMod=null, currentUser=null;
 const allScreens='.app-screen,.dev-screen,.login-screen,.submenu-screen,.changepw-screen,.geo-screen';
-function hideAll(){stopAutoRefresh();document.querySelectorAll(allScreens).forEach(s=>s.classList.remove('active'));document.getElementById('home').classList.add('hidden');document.getElementById('home').classList.remove('visible')}
+function hideAll(){document.querySelectorAll(allScreens).forEach(s=>s.classList.remove('active'));document.getElementById('home').classList.add('hidden');document.getElementById('home').classList.remove('visible')}
 const modIcons={comercial:'📊',compras:'🛒',financeiro:'💰',expedicao:'📦'};
 const modNames={comercial:'Comercial',compras:'Compras',financeiro:'Financeiro',expedicao:'Expedição'};
 
@@ -2186,97 +2186,19 @@ const EXPEDICAO_INV1 = [{"ref":"BDI26003","desc":"BODY BASIC RENDA","cor":"MARFI
 
 let currentExpDestino = null;
 let ultimaAtualizacaoTimestamp = null; // Guarda quando os dados foram realmente atualizados
-let autoRefreshInterval = null; // Intervalo para auto-refresh a cada 5 minutos
 
-// Auto-refresh: atualiza dados a cada 5 minutos automaticamente
-function startAutoRefresh() {
-    stopAutoRefresh(); // Limpa intervalos anteriores
-    
-    // Intervalo para atualizar dados a cada 5 minutos
-    autoRefreshInterval = setInterval(async function() {
-        var telaExp = document.getElementById('app-expedicao');
-        if (!currentExpDestino || !telaExp || !telaExp.classList.contains('active')) {
-            return;
-        }
-        
-        console.log('[Auto-Refresh] Atualizando dados...');
-        
-        try {
-            var colecao = capsulaAtual.colecao || 'I26';
-            var cap = capsulaAtual.num || 1;
-            var endpoints = {
-                'showroom': '/api/totvs/expedicao/showroom-liquido?colecao=' + colecao + '&capsula=' + cap,
-                'ecommerce': '/api/totvs/expedicao/ecommerce?colecao=' + colecao + '&capsula=' + cap,
-                'mostruario': '/api/totvs/expedicao/mostruario?colecao=' + colecao + '&capsula=' + cap,
-                'ld': '/api/totvs/expedicao/ld?colecao=' + colecao + '&capsula=' + cap
-            };
-            
-            var url = API_CONFIG.baseUrl + endpoints[currentExpDestino];
-            var response = await fetch(url, {
-                headers: { 'X-API-Key': API_CONFIG.apiKey }
-            });
-            
-            if (response.ok) {
-                var apiData = await response.json();
-                var novosItens = transformApiData(apiData);
-                ultimaAtualizacaoTimestamp = new Date();
-                await renderExpedicao(currentExpDestino, novosItens);
-                console.log('[Auto-Refresh] ✅ Dados atualizados às ' + ultimaAtualizacaoTimestamp.toLocaleTimeString('pt-BR'));
-            }
-        } catch (error) {
-            console.error('[Auto-Refresh] Erro:', error);
-        }
-    }, 5 * 60 * 1000); // 5 minutos
-    
-    // Intervalo para atualizar contador regressivo a cada segundo
-    window.countdownInterval = setInterval(function() {
-        atualizarContadorRegressivo();
-    }, 1000);
-    
-    console.log('[Auto-Refresh] Iniciado - atualização a cada 5 minutos');
-}
-
-function stopAutoRefresh() {
-    if (autoRefreshInterval) {
-        clearInterval(autoRefreshInterval);
-        autoRefreshInterval = null;
-    }
-    if (window.countdownInterval) {
-        clearInterval(window.countdownInterval);
-        window.countdownInterval = null;
-    }
-    console.log('[Auto-Refresh] Parado');
-}
-
-function atualizarContadorRegressivo() {
-    var telaExp = document.getElementById('app-expedicao');
-    if (!telaExp || !telaExp.classList.contains('active')) return;
-    
+// Função simplificada para mostrar última atualização
+function atualizarDataNaTela() {
     var updateEl = document.getElementById('exp-update-text');
     if (!updateEl) return;
     
     if (!ultimaAtualizacaoTimestamp) {
-        updateEl.innerHTML = '🕐 Aguardando...';
+        updateEl.innerHTML = '🕐 Carregando...';
         return;
     }
-    
-    var agora = Date.now();
-    var diff = agora - ultimaAtualizacaoTimestamp.getTime();
-    var segundosPassados = Math.floor(diff / 1000);
-    var segundosRestantes = (10 * 60) - segundosPassados; // 10 minutos = 600 segundos
-    
-    if (segundosRestantes <= 0) {
-        updateEl.innerHTML = '🔄 Atualizando...';
-        return;
-    }
-    
-    var minutos = Math.floor(segundosRestantes / 60);
-    var segundos = segundosRestantes % 60;
     
     var dataStr = ultimaAtualizacaoTimestamp.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
-    var countdown = minutos + ':' + (segundos < 10 ? '0' : '') + segundos;
-    
-    updateEl.innerHTML = '🕐 Última atualização: ' + dataStr + '<br><span style="color:#4ade80">Próxima atualização automática: ⏱️ ' + countdown + '</span>';
+    updateEl.innerHTML = '🕐 Última atualização: ' + dataStr;
 }
 
 // =====================================================
@@ -2835,8 +2757,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Atualizar apenas a data de atualização na tela
 function atualizarDataNaTela() {
-    // Usa a função atualizarCountdown que já formata corretamente
-    atualizarCountdown();
+    // Usa a função atualizarDataNaTela
+    atualizarDataNaTela();
 }
 
 // Mostrar toast de feedback
@@ -2990,7 +2912,7 @@ function backToExpedicaoEstacao() {
     }
 }
 
-function backToExpedicaoDestinos(){stopAutoRefresh(); goBackTo('sub-expedicao-destinos')}
+function backToExpedicaoDestinos(){ goBackTo('sub-expedicao-destinos')}
 
 function openExpedicaoDestino(destino){
     currentExpDestino = destino;
@@ -3016,17 +2938,11 @@ function openExpedicaoDestino(destino){
         }, 100);
     }
     
-    // Iniciar auto-refresh (atualiza dados a cada 5 minutos)
-    startAutoRefresh();
-    
-    // Carregar dados da API (cache no Cloudflare)
+    // Carregar dados da API (cache local + stale-while-revalidate)
     renderExpedicao(destino);
 }
 
 async function renderExpedicao(destino, dadosPreCarregados = null){
-    // Garantir que auto-refresh está ativo
-    if (!autoRefreshInterval) startAutoRefresh();
-    
     const titles = {
         showroom: '🏬 Showroom', 
         ecommerce: '🌐 E-commerce', 
