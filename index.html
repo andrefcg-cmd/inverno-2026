@@ -648,11 +648,11 @@ html, body { overscroll-behavior-y: contain; }
         <div class="initial-login-title">Faça login para continuar</div>
         <div class="login-field">
             <label class="login-label">Usuário</label>
-            <input type="text" class="login-input" id="initial-user" placeholder="Digite seu usuário" autocomplete="username" autocapitalize="none">
+            <input type="text" class="login-input" id="initial-user" placeholder="Digite seu usuário" autocomplete="off" autocapitalize="none">
         </div>
         <div class="login-field">
             <label class="login-label">Senha</label>
-            <input type="password" class="login-input" id="initial-pw" placeholder="••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doInitialLogin()">
+            <input type="password" class="login-input" id="initial-pw" placeholder="••••••" autocomplete="off" onkeydown="if(event.key==='Enter')doInitialLogin()">
             <button type="button" class="show-pw-btn" onclick="toggleShowPassword('initial-pw', this)"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></button>
         </div>
         <button class="login-btn" onclick="doInitialLogin()">Entrar</button>
@@ -739,11 +739,11 @@ html, body { overscroll-behavior-y: contain; }
         <div class="login-subtitle">Faça login para acessar</div>
         <div class="login-field">
             <label class="login-label">Usuário</label>
-            <input type="text" class="login-input" id="login-user" placeholder="Digite seu usuário" autocomplete="username" autocapitalize="none">
+            <input type="text" class="login-input" id="login-user" placeholder="Digite seu usuário" autocomplete="off" autocapitalize="none">
         </div>
         <div class="login-field">
             <label class="login-label">Senha</label>
-            <input type="password" class="login-input" id="login-pw" placeholder="••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+            <input type="password" class="login-input" id="login-pw" placeholder="••••••" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
             <button type="button" class="show-pw-btn" onclick="toggleShowPassword('login-pw', this)"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></button>
         </div>
         <button class="login-btn" onclick="doLogin()">Entrar</button>
@@ -1219,17 +1219,17 @@ html, body { overscroll-behavior-y: contain; }
         <div class="changepw-subtitle" id="changepw-form-user-label">Logado como: —</div>
         <div class="changepw-field">
             <label class="changepw-label">Senha Atual</label>
-            <input type="password" class="changepw-input" id="changepw-current" placeholder="••••••" autocomplete="current-password">
+            <input type="password" class="changepw-input" id="changepw-current" placeholder="••••••" autocomplete="off">
             <button type="button" class="show-pw-btn" onclick="toggleShowPassword('changepw-current', this)"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></button>
         </div>
         <div class="changepw-field">
             <label class="changepw-label">Nova Senha</label>
-            <input type="password" class="changepw-input" id="changepw-new" placeholder="••••••" autocomplete="new-password">
+            <input type="password" class="changepw-input" id="changepw-new" placeholder="••••••" autocomplete="off">
             <button type="button" class="show-pw-btn" onclick="toggleShowPassword('changepw-new', this)"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></button>
         </div>
         <div class="changepw-field">
             <label class="changepw-label">Confirmar Nova Senha</label>
-            <input type="password" class="changepw-input" id="changepw-confirm" placeholder="••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')doChangePw()">
+            <input type="password" class="changepw-input" id="changepw-confirm" placeholder="••••••" autocomplete="off" onkeydown="if(event.key==='Enter')doChangePw()">
             <button type="button" class="show-pw-btn" onclick="toggleShowPassword('changepw-confirm', this)"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></button>
         </div>
         <button class="changepw-btn" onclick="doChangePw()">Salvar Nova Senha</button>
@@ -3391,7 +3391,7 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         statsHtml = `
             <div class="exp-stat exp-stat-clickable ${isRefActive ? 'active' : ''}" id="stat-referencias" onclick="toggleViewReferencias()" style="cursor:pointer"><div class="exp-stat-value">${totalReferencias}</div><div class="exp-stat-label">Total de Referências</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${totalVariantes}</div><div class="exp-stat-label">Variantes de Cor</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${previsaoPecas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Previsão de Peças a Receber</div></div>
+            <div class="exp-stat"><div class="exp-stat-value">${previsaoPecas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Previsão de Peças a Enviar</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${pecasRecebidas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Enviadas</div></div>
         `;
     }
@@ -5185,15 +5185,32 @@ async function loadUsers() {
     const listEl = document.getElementById('users-list');
     listEl.innerHTML = '<div class="users-loading">Carregando...</div>';
     
+    // Garantir que temos o usuário atual
+    let userId = currentUser;
+    if (!userId) {
+        userId = sessionStorage.getItem('logged-user');
+        console.log('[Users] currentUser vazio, usando sessionStorage:', userId);
+    }
+    
+    console.log('[Users] Carregando usuários...');
+    console.log('[Users] userId para requisição:', userId);
+    console.log('[Users] API Key:', API_CONFIG.apiKey ? 'presente' : 'AUSENTE');
+    
+    if (!userId) {
+        listEl.innerHTML = '<div class="users-loading" style="color:var(--red)">Erro: Usuário não identificado. Faça login novamente.</div>';
+        return;
+    }
+    
     try {
         const response = await fetch(`${API_CONFIG.baseUrl}/api/users`, {
             headers: { 
                 'X-API-Key': API_CONFIG.apiKey,
-                'X-User-Id': currentUser || ''
+                'X-User-Id': userId
             }
         });
         
         const data = await response.json();
+        console.log('[Users] Resposta:', data);
         
         if (data.error) {
             listEl.innerHTML = `<div class="users-loading" style="color:var(--red)">${data.error}</div>`;
@@ -5204,7 +5221,7 @@ async function loadUsers() {
         renderUsers();
     } catch (e) {
         console.error('[Users] Erro:', e);
-        listEl.innerHTML = '<div class="users-loading" style="color:var(--red)">Erro ao carregar usuários</div>';
+        listEl.innerHTML = `<div class="users-loading" style="color:var(--red)">Erro ao carregar usuários: ${e.message}</div>`;
     }
 }
 
@@ -5362,12 +5379,14 @@ async function saveUser() {
         if (!isEditing) body.id = id;
         if (pw) body.pw = pw;
         
+        const userId = currentUser || sessionStorage.getItem('logged-user') || '';
+        
         const response = await fetch(url, {
             method: isEditing ? 'PUT' : 'POST',
             headers: { 
                 'Content-Type': 'application/json',
                 'X-API-Key': API_CONFIG.apiKey,
-                'X-User-Id': currentUser || ''
+                'X-User-Id': userId
             },
             body: JSON.stringify(body)
         });
@@ -5391,12 +5410,14 @@ async function saveUser() {
 async function deleteUser(userId, nome) {
     if (!confirm(`Excluir usuário "${nome}"?`)) return;
     
+    const currentUserId = currentUser || sessionStorage.getItem('logged-user') || '';
+    
     try {
         const response = await fetch(`${API_CONFIG.baseUrl}/api/users/${userId}`, {
             method: 'DELETE',
             headers: { 
                 'X-API-Key': API_CONFIG.apiKey,
-                'X-User-Id': currentUser || ''
+                'X-User-Id': currentUserId
             }
         });
         
