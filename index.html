@@ -1323,7 +1323,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '3.6.0';
+const APP_VERSION = '3.7.0';
 
 // Sistema de versionamento - limpa cache mas preserva navegação
 (async function checkVersion() {
@@ -1355,6 +1355,17 @@ const APP_VERSION = '3.6.0';
                 console.log('[Version] Cache deletado:', name);
             }
         }
+        
+        // 1.5 Limpar cache local de expedição (localStorage)
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('exp-cache-')) {
+                keysToRemove.push(key);
+            }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        console.log('[Version] Cache local de expedição limpo:', keysToRemove.length, 'itens');
         
         // 2. Desregistrar Service Workers antigos
         if ('serviceWorker' in navigator) {
@@ -1575,7 +1586,7 @@ async function fetchExpedicaoFromAPI(destino, forceRefresh) {
 }
 
 function transformApiData(apiData) {
-    if (!apiData.items) return { items: [], producao: null };
+    if (!apiData.items) return { items: [], producao: null, enviosDoDia: apiData.enviosDoDia || null };
     
     const items = apiData.items.map(function(item) {
         return {
@@ -1597,11 +1608,12 @@ function transformApiData(apiData) {
         };
     });
     
-    // Retornar também dados de produção se existirem
+    // Retornar também dados de produção e envios do dia se existirem
     return {
         items: items,
         producao: apiData.producao || null,
-        totais: apiData.totais || null
+        totais: apiData.totais || null,
+        enviosDoDia: apiData.enviosDoDia || null
     };
 }
 
