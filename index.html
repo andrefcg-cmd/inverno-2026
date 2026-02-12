@@ -1279,7 +1279,39 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '3.1.0';
+
+// Sistema de versionamento - limpa cache quando versão muda
+(function checkVersion() {
+    const storedVersion = localStorage.getItem('app-version');
+    if (storedVersion !== APP_VERSION) {
+        console.log(`[Version] Atualizando de ${storedVersion} para ${APP_VERSION}`);
+        
+        // Limpar caches do Service Worker
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                names.forEach(name => {
+                    console.log('[Version] Limpando cache:', name);
+                    caches.delete(name);
+                });
+            });
+        }
+        
+        // Limpar sessionStorage (mantém localStorage para biometria)
+        sessionStorage.clear();
+        
+        // Salvar nova versão
+        localStorage.setItem('app-version', APP_VERSION);
+        
+        // Recarregar para aplicar mudanças (se não for primeira vez)
+        if (storedVersion) {
+            console.log('[Version] Recarregando para aplicar atualização...');
+            location.reload(true);
+        }
+    } else {
+        console.log('[Version] App atualizado:', APP_VERSION);
+    }
+})();
 
 // ===== CONFIGURAÇÃO DA API =====
 // Cache é gerenciado 100% no Cloudflare (KV + HTTP Cache)
@@ -2519,26 +2551,64 @@ function desativarBiometria() {
         atualizarStatusBiometria();
     }
 }
-function doChangePw(){
+async function doChangePw(){
     const msg=document.getElementById('changepw-msg');
     const curr=document.getElementById('changepw-current').value;
     const newP=document.getElementById('changepw-new').value;
     const conf=document.getElementById('changepw-confirm').value;
     msg.textContent='';msg.className='changepw-msg';
+    
     if(!curr||!newP||!conf){msg.textContent='Preencha todos os campos';msg.classList.add('error');return}
-    if(USERS[currentUser].pw!==curr){msg.textContent='Senha atual incorreta';msg.classList.add('error');document.getElementById('changepw-current').value='';return}
     if(newP.length<3){msg.textContent='Nova senha deve ter pelo menos 3 caracteres';msg.classList.add('error');return}
     if(newP!==conf){msg.textContent='As senhas não conferem';msg.classList.add('error');document.getElementById('changepw-confirm').value='';return}
     if(newP===curr){msg.textContent='A nova senha deve ser diferente da atual';msg.classList.add('error');return}
-    // salvar
-    USERS[currentUser].pw=newP;
-    savePasswords();
-    msg.textContent='✓ Senha alterada com sucesso!';msg.classList.add('success');
-    document.getElementById('changepw-current').value='';
-    document.getElementById('changepw-new').value='';
-    document.getElementById('changepw-confirm').value='';
-    // voltar automaticamente após 1.5s
-    setTimeout(()=>backFromChangePw(),1500);
+    
+    // Chamar API para alterar senha
+    msg.textContent='Alterando...';
+    msg.className='changepw-msg';
+    
+    try {
+        const userId = currentUser || sessionStorage.getItem('logged-user');
+        const response = await fetch(`${API_CONFIG.baseUrl}/auth/change-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                usuario: userId,
+                senhaAtual: curr,
+                novaSenha: newP
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            msg.textContent = data.error || 'Erro ao alterar senha';
+            msg.classList.add('error');
+            if (data.error === 'Senha atual incorreta') {
+                document.getElementById('changepw-current').value='';
+            }
+            return;
+        }
+        
+        // Atualizar localmente também
+        if (USERS[currentUser]) {
+            USERS[currentUser].pw = newP;
+        }
+        
+        msg.textContent='✓ Senha alterada com sucesso!';
+        msg.classList.add('success');
+        document.getElementById('changepw-current').value='';
+        document.getElementById('changepw-new').value='';
+        document.getElementById('changepw-confirm').value='';
+        
+        // voltar automaticamente após 1.5s
+        setTimeout(()=>backToSettings(),1500);
+        
+    } catch(e) {
+        console.error('[ChangePw] Erro:', e);
+        msg.textContent='Erro de conexão. Tente novamente.';
+        msg.classList.add('error');
+    }
 }
 function backFromChangePw(){
     if(changePwReturnTo && changePwReturnTo!=='home'){
