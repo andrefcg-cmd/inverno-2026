@@ -1319,7 +1319,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '3.4.0';
+const APP_VERSION = '3.5.0';
 
 // Sistema de versionamento - limpa cache mas preserva navegação
 (async function checkVersion() {
@@ -1329,10 +1329,17 @@ const APP_VERSION = '3.4.0';
     if (storedVersion !== APP_VERSION) {
         console.log(`[Version] ATUALIZANDO de ${storedVersion} para ${APP_VERSION}`);
         
-        // Salvar tela atual antes de limpar
-        const currentScreen = sessionStorage.getItem('nav-history');
-        const loggedUser = sessionStorage.getItem('logged-user');
-        const loggedUserData = sessionStorage.getItem('logged-user-data');
+        // Salvar TODOS os dados de navegação antes de qualquer operação
+        const savedData = {
+            navHistory: sessionStorage.getItem('nav-history'),
+            loggedUser: sessionStorage.getItem('logged-user'),
+            loggedUserData: sessionStorage.getItem('logged-user-data'),
+            lastScreens: sessionStorage.getItem('last-screens'),
+            lastExpDestino: sessionStorage.getItem('last-exp-destino'),
+            lastScroll: sessionStorage.getItem('last-scroll')
+        };
+        
+        console.log('[Version] Dados salvos:', savedData.loggedUser, savedData.lastScreens);
         
         // 1. Limpar TODOS os caches
         if ('caches' in window) {
@@ -1356,10 +1363,15 @@ const APP_VERSION = '3.4.0';
         // 3. Salvar nova versão
         localStorage.setItem('app-version', APP_VERSION);
         
-        // 4. Restaurar dados de navegação
-        if (currentScreen) sessionStorage.setItem('nav-history', currentScreen);
-        if (loggedUser) sessionStorage.setItem('logged-user', loggedUser);
-        if (loggedUserData) sessionStorage.setItem('logged-user-data', loggedUserData);
+        // 4. Restaurar TODOS os dados de navegação
+        if (savedData.navHistory) sessionStorage.setItem('nav-history', savedData.navHistory);
+        if (savedData.loggedUser) sessionStorage.setItem('logged-user', savedData.loggedUser);
+        if (savedData.loggedUserData) sessionStorage.setItem('logged-user-data', savedData.loggedUserData);
+        if (savedData.lastScreens) sessionStorage.setItem('last-screens', savedData.lastScreens);
+        if (savedData.lastExpDestino) sessionStorage.setItem('last-exp-destino', savedData.lastExpDestino);
+        if (savedData.lastScroll) sessionStorage.setItem('last-scroll', savedData.lastScroll);
+        
+        console.log('[Version] Dados restaurados');
         
         // 5. Recarregar apenas se não for primeira vez (sem mudar URL)
         if (storedVersion) {
@@ -1694,8 +1706,21 @@ setTimeout(()=>{
         splash.style.display='none';
         // Verificar se já está logado (refresh)
         const savedUser = sessionStorage.getItem('logged-user');
-        if(savedUser && USERS[savedUser]){
+        const savedUserData = sessionStorage.getItem('logged-user-data');
+        
+        // Verificar se tem usuário salvo (não depender de USERS local)
+        if(savedUser){
             currentUser = savedUser;
+            
+            // Restaurar dados do usuário se existirem
+            if (savedUserData) {
+                try {
+                    USERS[savedUser] = JSON.parse(savedUserData);
+                } catch(e) {
+                    console.log('[Restore] Erro ao restaurar dados do usuário');
+                }
+            }
+            
             // Já logado - restaurar última tela ou ir para home
             const lastScreens = sessionStorage.getItem('last-screens');
             const lastScroll = sessionStorage.getItem('last-scroll');
