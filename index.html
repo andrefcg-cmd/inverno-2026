@@ -1323,7 +1323,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '3.5.0';
+const APP_VERSION = '3.6.0';
 
 // Sistema de versionamento - limpa cache mas preserva navegação
 (async function checkVersion() {
@@ -1340,7 +1340,8 @@ const APP_VERSION = '3.5.0';
             loggedUserData: sessionStorage.getItem('logged-user-data'),
             lastScreens: sessionStorage.getItem('last-screens'),
             lastExpDestino: sessionStorage.getItem('last-exp-destino'),
-            lastScroll: sessionStorage.getItem('last-scroll')
+            lastScroll: sessionStorage.getItem('last-scroll'),
+            lastCapsula: sessionStorage.getItem('last-capsula')
         };
         
         console.log('[Version] Dados salvos:', savedData.loggedUser, savedData.lastScreens);
@@ -1374,6 +1375,7 @@ const APP_VERSION = '3.5.0';
         if (savedData.lastScreens) sessionStorage.setItem('last-screens', savedData.lastScreens);
         if (savedData.lastExpDestino) sessionStorage.setItem('last-exp-destino', savedData.lastExpDestino);
         if (savedData.lastScroll) sessionStorage.setItem('last-scroll', savedData.lastScroll);
+        if (savedData.lastCapsula) sessionStorage.setItem('last-capsula', savedData.lastCapsula);
         
         console.log('[Version] Dados restaurados');
         
@@ -1702,6 +1704,8 @@ window.addEventListener('beforeunload', function(){
     console.log('[NAV-DEBUG] === BEFOREUNLOAD === screens salvas:', JSON.stringify(screenIds), '| navHistory:', JSON.stringify(navHistory));
     // Salvar destino de expedição se estiver ativo
     if(currentExpDestino) sessionStorage.setItem('last-exp-destino', currentExpDestino);
+    // Salvar cápsula atual
+    if(typeof capsulaAtual !== 'undefined') sessionStorage.setItem('last-capsula', JSON.stringify(capsulaAtual));
 });
 
 setTimeout(()=>{
@@ -1730,6 +1734,17 @@ setTimeout(()=>{
             const lastScroll = sessionStorage.getItem('last-scroll');
             const lastExpDestino = sessionStorage.getItem('last-exp-destino');
             const savedNavHistory = sessionStorage.getItem('nav-history');
+            const lastCapsula = sessionStorage.getItem('last-capsula');
+            
+            // Restaurar cápsula atual
+            if (lastCapsula) {
+                try {
+                    capsulaAtual = JSON.parse(lastCapsula);
+                    console.log('[Restore] Cápsula restaurada:', capsulaAtual);
+                } catch(e) {
+                    console.log('[Restore] Erro ao restaurar cápsula');
+                }
+            }
             
             let screens = [];
             try {
@@ -2719,10 +2734,12 @@ function doLogout(){
     sessionStorage.removeItem('last-exp-destino');
     sessionStorage.removeItem('last-scroll');
     sessionStorage.removeItem('nav-history');
+    sessionStorage.removeItem('last-capsula');
     
     // Limpar variáveis
     currentUser = null;
     navHistory = ['home'];
+    capsulaAtual = { colecao: 'I26', num: 1 };
     
     // Voltar para tela de login
     hideAll();
