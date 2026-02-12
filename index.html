@@ -5582,6 +5582,10 @@ async function openUsers() {
     hideAll();
     document.getElementById('users-screen').classList.add('active');
     pushState('users-screen');
+    
+    // Garantir que nosso heartbeat foi enviado antes de carregar
+    await sendHeartbeatNow();
+    
     await loadUsers();
     await loadActiveSessions();
 }
@@ -5636,20 +5640,37 @@ function startHeartbeat() {
     if (heartbeatInterval) return;
     
     const sendHeartbeat = async () => {
-        if (!currentUser) return;
+        if (!currentUser) {
+            console.log('[Heartbeat] Sem usuário logado');
+            return;
+        }
         try {
-            await fetch(`${API_CONFIG.baseUrl}/sessions/heartbeat`, {
+            console.log('[Heartbeat] Enviando para:', currentUser);
+            const resp = await fetch(`${API_CONFIG.baseUrl}/sessions/heartbeat`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-API-Key': API_CONFIG.apiKey },
                 body: JSON.stringify({ userId: currentUser })
             });
+            console.log('[Heartbeat] Resposta:', resp.status);
         } catch (e) {
-            // Silencioso
+            console.log('[Heartbeat] Erro:', e.message);
         }
     };
     
     sendHeartbeat(); // Enviar imediatamente
     heartbeatInterval = setInterval(sendHeartbeat, 2 * 60 * 1000); // A cada 2 minutos
+}
+
+// Função para enviar heartbeat avulso (usado ao abrir gestão)
+async function sendHeartbeatNow() {
+    if (!currentUser) return;
+    try {
+        await fetch(`${API_CONFIG.baseUrl}/sessions/heartbeat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-API-Key': API_CONFIG.apiKey },
+            body: JSON.stringify({ userId: currentUser })
+        });
+    } catch (e) {}
 }
 
 function stopHeartbeat() {
