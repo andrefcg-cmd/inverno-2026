@@ -4570,7 +4570,9 @@ function limparBuscaReferencia() {
 window.viewModeReferencias = false;
 
 function toggleViewReferencias() {
+    console.log('[Toggle] Clicou no botão');
     window.viewModeReferencias = !window.viewModeReferencias;
+    console.log('[Toggle] Modo referências:', window.viewModeReferencias);
     
     // Atualizar visual do botão
     const btnRef = document.getElementById('stat-referencias');
@@ -4579,19 +4581,28 @@ function toggleViewReferencias() {
     }
     
     // Re-renderizar a lista de cards
-    renderListaCards();
+    try {
+        renderListaCards();
+    } catch(e) {
+        console.error('[Toggle] Erro ao renderizar:', e);
+    }
 }
 
 function renderListaCards() {
     const destino = window.currentDestino;
     const itemsParaLista = window.currentItemsParaLista || [];
-    const producaoData = window.currentProducaoData;
-    const dadosFiltrados = window.currentDadosFiltrados || [];
+    
+    console.log('[RenderCards] Destino:', destino, 'Items:', itemsParaLista.length);
+    
+    if (!destino || itemsParaLista.length === 0) {
+        console.log('[RenderCards] Sem dados para renderizar');
+        return;
+    }
     
     let itemsToRender = [];
     
     if (window.viewModeReferencias) {
-        // MODO REFERÊNCIAS: agrupar por ref, mostrar apenas uma vez cada
+        // MODO REFERÊNCIAS: agrupar por ref
         const refsMap = new Map();
         
         for (const item of itemsParaLista) {
@@ -4602,7 +4613,7 @@ function renderListaCards() {
                 refsMap.set(item.ref, {
                     ref: item.ref,
                     desc: item.desc || '',
-                    cor: null, // não mostrar cor no modo agrupado
+                    cor: null,
                     coresCount: 1,
                     prod: { PP: p.PP||0, P: p.P||0, M: p.M||0, G: p.G||0, GG: p.GG||0 },
                     envShow: { PP: e.PP||0, P: e.P||0, M: e.M||0, G: e.G||0, GG: e.GG||0 }
@@ -4610,7 +4621,6 @@ function renderListaCards() {
             } else {
                 const existing = refsMap.get(item.ref);
                 existing.coresCount++;
-                // Somar quantidades
                 existing.prod.PP += p.PP||0;
                 existing.prod.P += p.P||0;
                 existing.prod.M += p.M||0;
@@ -4630,15 +4640,19 @@ function renderListaCards() {
         itemsToRender = itemsParaLista;
     }
     
+    console.log('[RenderCards] Itens a renderizar:', itemsToRender.length);
+    
     // Renderizar cards
-    const items = itemsToRender.map(item => {
+    let html = '';
+    for (const item of itemsToRender) {
         const p = item.prod || {};
         const e = item.envShow || {};
         const totalP = (p.PP||0)+(p.P||0)+(p.M||0)+(p.G||0);
         const totalE = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
-        if(totalP === 0) return '';
         
-        let metaItem, envItem;
+        if(totalP === 0) continue;
+        
+        let metaItem = 0, envItem = 0;
         if(destino === 'showroom'){
             const ecommTams = ['PP','P','M','G'].filter(t => p[t] > 0).length;
             const isabellaQty = p.P > 0 ? 1 : 0;
@@ -4646,26 +4660,22 @@ function renderListaCards() {
             envItem = totalE;
         } else if(destino === 'ecommerce'){
             metaItem = ['PP','P','M','G'].filter(t => p[t] > 0).length;
-            envItem = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
+            envItem = totalE;
         } else if(destino === 'mostruario'){
             metaItem = p.P > 0 ? 1 : (['PP','M','G'].find(t => p[t] > 0) ? 1 : 0);
-            envItem = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
-        } else if(destino === 'ld'){
-            metaItem = 0;
-            envItem = 0;
+            envItem = totalE;
         }
         
         const pctItem = metaItem > 0 ? ((envItem / metaItem) * 100).toFixed(0) : 0;
         const colorItem = pctItem >= 100 ? 'green' : 'blue';
         
-        let tamanhos;
+        // Tamanhos
+        let tamanhos = '';
         if(destino === 'showroom'){
             tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
                 const prod = p[t] || 0;
                 const env = e[t] || 0;
-                const descEcomm = 1;
-                const descIsabella = (t === 'P') ? 1 : 0;
-                const meta = prod - descEcomm - descIsabella;
+                const meta = prod - 1 - (t === 'P' ? 1 : 0);
                 const pct = meta > 0 ? Math.min((env/meta)*100, 100) : 0;
                 const col = env >= meta ? 'green' : 'blue';
                 return '<div class="exp-tam-row"><span class="exp-tam-label">'+t+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/'+meta+'</span></div>';
@@ -4673,42 +4683,35 @@ function renderListaCards() {
         } else if(destino === 'ecommerce'){
             tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
                 const env = e[t] || 0;
-                const meta = 1;
-                const pct = env >= meta ? 100 : 0;
-                const col = env >= meta ? 'green' : 'blue';
-                return '<div class="exp-tam-row"><span class="exp-tam-label">'+t+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/'+meta+'</span></div>';
+                const pct = env >= 1 ? 100 : 0;
+                const col = env >= 1 ? 'green' : 'blue';
+                return '<div class="exp-tam-row"><span class="exp-tam-label">'+t+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/1</span></div>';
             }).join('');
         } else if(destino === 'mostruario'){
-            let tamEsperado = p.P > 0 ? 'P' : ['PP','M','G'].find(t => p[t] > 0) || null;
+            const tamEsperado = p.P > 0 ? 'P' : ['PP','M','G'].find(t => p[t] > 0) || null;
             if(tamEsperado){
                 const env = e[tamEsperado] || 0;
-                const meta = 1;
-                const pct = env >= meta ? 100 : 0;
-                const col = env >= meta ? 'green' : 'blue';
-                tamanhos = '<div class="exp-tam-row"><span class="exp-tam-label">'+tamEsperado+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/'+meta+'</span></div>';
-            } else {
-                tamanhos = '<div class="exp-tam-row"><span class="exp-tam-label" style="color:var(--txt2)">Sem tamanho cortado</span></div>';
+                const pct = env >= 1 ? 100 : 0;
+                const col = env >= 1 ? 'green' : 'blue';
+                tamanhos = '<div class="exp-tam-row"><span class="exp-tam-label">'+tamEsperado+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/1</span></div>';
             }
-        } else if(destino === 'ld'){
-            tamanhos = '<div class="exp-tam-row"><span class="exp-tam-label" style="color:var(--txt2)">Sem leves defeitos</span></div>';
         }
         
         const descEscaped = (item.desc || '').replace(/'/g, "\\'");
         
-        // No modo referências, mostrar quantidade de cores ao invés da cor específica
-        let corHtml;
+        // Cor ou contagem de cores
+        let corHtml = '';
         if (window.viewModeReferencias && item.coresCount) {
             corHtml = '<div class="exp-item-cor">🎨 ' + item.coresCount + ' ' + (item.coresCount === 1 ? 'cor' : 'cores') + '</div>';
         } else if (item.cor) {
             corHtml = '<div class="exp-item-cor">🎨 ' + item.cor + '</div>';
-        } else {
-            corHtml = '';
         }
         
-        return '<div class="exp-item" onclick="openPhoto(\''+item.ref+'\',\''+descEscaped+'\')"><div class="exp-item-header"><div><div class="exp-item-ref">'+item.ref+' <span style="font-weight:400;color:var(--txt2);font-size:11px">('+totalP+' pçs)</span></div><div class="exp-item-name">'+(item.desc || '')+'</div>'+corHtml+'</div><div class="exp-item-badge" style="color:var(--'+colorItem+')">'+pctItem+'%</div></div><div class="exp-tamanhos-grid">'+tamanhos+'</div></div>';
-    }).join('');
+        html += '<div class="exp-item" onclick="openPhoto(\''+item.ref+'\',\''+descEscaped+'\')"><div class="exp-item-header"><div><div class="exp-item-ref">'+item.ref+' <span style="font-weight:400;color:var(--txt2);font-size:11px">('+totalP+' pçs)</span></div><div class="exp-item-name">'+(item.desc || '')+'</div>'+corHtml+'</div><div class="exp-item-badge" style="color:var(--'+colorItem+')">'+pctItem+'%</div></div><div class="exp-tamanhos-grid">'+tamanhos+'</div></div>';
+    }
     
-    document.getElementById('exp-items-list').innerHTML = items;
+    document.getElementById('exp-items-list').innerHTML = html;
+    console.log('[RenderCards] Renderizado com sucesso');
 }
 </script>
 
