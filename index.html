@@ -5206,6 +5206,7 @@ async function loadUsers() {
     console.log('[Users] Carregando usuários...');
     console.log('[Users] userId para requisição:', userId);
     console.log('[Users] API Key:', API_CONFIG.apiKey ? 'presente' : 'AUSENTE');
+    console.log('[Users] URL:', `${API_CONFIG.baseUrl}/api/users`);
     
     if (!userId) {
         listEl.innerHTML = '<div class="users-loading" style="color:var(--red)">Erro: Usuário não identificado. Faça login novamente.</div>';
@@ -5213,12 +5214,20 @@ async function loadUsers() {
     }
     
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        
         const response = await fetch(`${API_CONFIG.baseUrl}/api/users`, {
             headers: { 
                 'X-API-Key': API_CONFIG.apiKey,
                 'X-User-Id': userId
-            }
+            },
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
+        
+        console.log('[Users] Response status:', response.status);
         
         const data = await response.json();
         console.log('[Users] Resposta:', data);
@@ -5232,7 +5241,15 @@ async function loadUsers() {
         renderUsers();
     } catch (e) {
         console.error('[Users] Erro:', e);
-        listEl.innerHTML = `<div class="users-loading" style="color:var(--red)">Erro ao carregar usuários: ${e.message}</div>`;
+        let errorMsg = 'Erro ao carregar usuários';
+        if (e.name === 'AbortError') {
+            errorMsg = 'Tempo limite excedido. Verifique sua conexão.';
+        } else if (e.message.includes('fetch')) {
+            errorMsg = 'Erro de conexão. Verifique se o servidor está acessível.';
+        } else {
+            errorMsg = e.message;
+        }
+        listEl.innerHTML = `<div class="users-loading" style="color:var(--red)">${errorMsg}</div>`;
     }
 }
 
