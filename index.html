@@ -1326,7 +1326,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '3.9.0';
+const APP_VERSION = '3.9.1';
 
 // Sistema de versionamento - limpa cache mas preserva navegação
 (async function checkVersion() {
@@ -2784,16 +2784,16 @@ function doLogout(){
     // Esconder todas as telas
     hideAll();
     
-    // Mostrar tela de login
-    document.getElementById('login-screen').classList.add('active');
+    // Mostrar tela de login INICIAL (não a de módulo)
+    document.getElementById('initial-login').classList.add('active');
     
-    // Limpar campos de login
-    const loginUser = document.getElementById('login-user');
-    const loginPass = document.getElementById('login-pass');
-    const loginMsg = document.getElementById('login-msg');
-    if (loginUser) loginUser.value = '';
-    if (loginPass) loginPass.value = '';
-    if (loginMsg) loginMsg.textContent = '';
+    // Limpar campos de login inicial
+    const initialUser = document.getElementById('initial-user');
+    const initialPw = document.getElementById('initial-pw');
+    const initialError = document.getElementById('initial-error');
+    if (initialUser) initialUser.value = '';
+    if (initialPw) initialPw.value = '';
+    if (initialError) initialError.textContent = '';
     
     console.log('[Logout] Usuário deslogado completamente');
 }

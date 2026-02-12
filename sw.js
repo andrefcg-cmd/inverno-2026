@@ -1,6 +1,6 @@
 // Service Worker - ISA|PAES PWA
 // VERSÃO: 3.2.0 - Deve ser igual ao APP_VERSION no index.html
-const SW_VERSION = '3.9.0';
+const SW_VERSION = '3.9.1';
 const CACHE_NAME = `isa-paes-v${SW_VERSION}`;
 
 // Arquivos para cachear (NÃO inclui index.html para evitar problemas)
@@ -60,11 +60,16 @@ self.addEventListener('fetch', (event) => {
   }
   
   // Para outros recursos, network first com fallback para cache
+  // Ignorar requisições de extensões do Chrome
+  if (event.request.url.startsWith('chrome-extension://')) {
+    return;
+  }
+  
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Cachear resposta válida
-        if (response && response.status === 200) {
+        // Cachear resposta válida (apenas http/https)
+        if (response && response.status === 200 && event.request.url.startsWith('http')) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
