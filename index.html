@@ -1939,7 +1939,7 @@ async function tryInitialBiometric(){
                 if (!USERS[bioUser]) {
                     USERS[bioUser] = { 
                         nome: bioUser.charAt(0).toUpperCase() + bioUser.slice(1),
-                        access: ['comercial', 'expedicao'],
+                        access: ['comercial', 'estoque'],
                         channels: ['showroom', 'ecommerce'],
                         pw: ''
                     };
@@ -2263,7 +2263,7 @@ function showWelcomeScreen(user, weather = null){
         if (!USERS[user]) {
             USERS[user] = { 
                 nome: user.charAt(0).toUpperCase() + user.slice(1),
-                access: ['comercial', 'expedicao'],
+                access: ['comercial', 'estoque'],
                 channels: ['showroom', 'ecommerce']
             };
             console.log('[Welcome] Criado usuário básico');
@@ -4517,6 +4517,13 @@ function updateModulesVisibility() {
     if (!user || !user.access) {
         // Se não tem dados do usuário, mostrar todos
         document.querySelectorAll('.mod-btn').forEach(btn => btn.style.display = '');
+        return;
+    }
+    
+    // Admin vê todos os módulos
+    if (user.role === 'admin') {
+        document.querySelectorAll('.mod-btn').forEach(btn => btn.style.display = '');
+        console.log('[Modules] Admin - todos os módulos visíveis');
         return;
     }
     
