@@ -5563,31 +5563,39 @@ async function loadAllPhotos() {
     try {
         console.log('[PHOTOS] Buscando fotos de todas as cápsulas...');
         
-        // Abordagem 1: Buscar subpastas da pasta Inverno automaticamente
-        let folderIds = [];
+        // IDs conhecidos das pastas de cápsulas
+        const knownFolders = [
+            { id: '1GncZpD2wlJBDe-lGpe7TC6UsTx3c2frW', name: '1ª Cápsula' },
+            { id: '1BGXAj6Li73C6rDhA7-Kk1g-TpnD7KAfr', name: '2ª Cápsula' },
+            { id: '1ai8ld7H1fgIGRr0lXaQf0wFCtorT3H3q', name: '3ª Cápsula' },
+            { id: '1uABK9gd2jrwNosCb6RFSsdPSR8apfMrU', name: '4ª Cápsula' },
+            { id: '1AbZ1htTR8gB64UyZovkx9K6Q3tM5xxel', name: '5ª Cápsula' }
+        ];
+        
+        // Tentar descobrir subpastas automaticamente
+        let autoFolders = [];
         try {
             const folderQuery = encodeURIComponent(`'${DRIVE_INVERNO_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`);
             const foldersUrl = `https://www.googleapis.com/drive/v3/files?q=${folderQuery}&fields=files(id,name)&key=${DRIVE_API_KEY}`;
             const foldersResp = await fetch(foldersUrl);
             if (foldersResp.ok) {
                 const foldersData = await foldersResp.json();
-                folderIds = (foldersData.files || []).map(f => ({ id: f.id, name: f.name }));
-                console.log('[PHOTOS] Subpastas encontradas:', folderIds.map(f => f.name));
-            } else {
-                console.log('[PHOTOS] Erro ao listar subpastas:', foldersResp.status);
+                autoFolders = (foldersData.files || []).map(f => ({ id: f.id, name: f.name }));
+                console.log('[PHOTOS] Subpastas auto-descobertas:', autoFolders.map(f => f.name));
             }
         } catch(e) {
-            console.log('[PHOTOS] Falha ao buscar subpastas:', e.message);
+            console.log('[PHOTOS] Auto-descoberta falhou:', e.message);
         }
         
-        // Abordagem 2 (fallback): Se não encontrou subpastas, usar IDs conhecidos
-        if (folderIds.length === 0) {
-            console.log('[PHOTOS] Usando pastas conhecidas como fallback');
-            folderIds = [
-                { id: '1GncZpD2wlJBDe-lGpe7TC6UsTx3c2frW', name: '1ª Cápsula' },
-                { id: '1BGXAj6Li73C6rDhA7-Kk1g-TpnD7KAfr', name: '2ª Cápsula' }
-            ];
+        // Mesclar: auto-descobertas + conhecidas (sem duplicatas)
+        const knownIds = new Set(knownFolders.map(f => f.id));
+        const folderIds = [...knownFolders];
+        for (const af of autoFolders) {
+            if (!knownIds.has(af.id)) {
+                folderIds.push(af);
+            }
         }
+        console.log('[PHOTOS] Total de pastas a buscar:', folderIds.map(f => f.name));
         
         // Buscar fotos de cada pasta
         const cache = {};
