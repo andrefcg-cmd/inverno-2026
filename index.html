@@ -5556,29 +5556,48 @@ async function loadAllPhotos() {
         console.log('[PHOTOS] Buscando pastas de cápsulas...');
         
         // 1. Listar subpastas da pasta Inverno
-        const foldersUrl = `https://www.googleapis.com/drive/v3/files?q='${DRIVE_INVERNO_FOLDER_ID}'+in+parents+and+mimeType='application/vnd.google-apps.folder'+and+trashed=false&fields=files(id,name)&key=${DRIVE_API_KEY}`;
+        const folderQuery = encodeURIComponent(`'${DRIVE_INVERNO_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+        const foldersUrl = `https://www.googleapis.com/drive/v3/files?q=${folderQuery}&fields=files(id,name)&key=${DRIVE_API_KEY}`;
+        console.log('[PHOTOS] URL pastas:', foldersUrl);
         const foldersResp = await fetch(foldersUrl);
-        if (!foldersResp.ok) throw new Error('Drive API folders error: ' + foldersResp.status);
+        if (!foldersResp.ok) {
+            const errText = await foldersResp.text();
+            console.error('[PHOTOS] Erro API pastas:', foldersResp.status, errText);
+            throw new Error('Drive API folders error: ' + foldersResp.status);
+        }
         const foldersData = await foldersResp.json();
         
-        console.log('[PHOTOS] Pastas encontradas:', foldersData.files?.map(f => f.name));
+        console.log('[PHOTOS] Pastas encontradas:', JSON.stringify(foldersData.files?.map(f => ({name: f.name, id: f.id}))));
+        
+        if (!foldersData.files || foldersData.files.length === 0) {
+            console.warn('[PHOTOS] Nenhuma subpasta encontrada! Verificar compartilhamento.');
+            return;
+        }
         
         // 2. Para cada subpasta, buscar fotos
         const cache = {};
-        for (const folder of foldersData.files || []) {
+        for (const folder of foldersData.files) {
             let pageToken = '';
+            let folderCount = 0;
             do {
-                const url = `https://www.googleapis.com/drive/v3/files?q='${folder.id}'+in+parents+and+trashed=false+and+mimeType+contains+'image/'&fields=files(id,name),nextPageToken&pageSize=1000&key=${DRIVE_API_KEY}` + (pageToken ? `&pageToken=${pageToken}` : '');
+                const fileQuery = encodeURIComponent(`'${folder.id}' in parents and trashed=false and mimeType contains 'image/'`);
+                let url = `https://www.googleapis.com/drive/v3/files?q=${fileQuery}&fields=files(id,name),nextPageToken&pageSize=1000&key=${DRIVE_API_KEY}`;
+                if (pageToken) url += `&pageToken=${pageToken}`;
                 const resp = await fetch(url);
-                if (!resp.ok) break;
+                if (!resp.ok) {
+                    const errText = await resp.text();
+                    console.error('[PHOTOS] Erro API fotos pasta "' + folder.name + '":', resp.status, errText);
+                    break;
+                }
                 const data = await resp.json();
                 (data.files || []).forEach(f => {
                     const ref = f.name.replace(/\.[^.]+$/, '').toUpperCase();
                     cache[ref] = f.id;
+                    folderCount++;
                 });
                 pageToken = data.nextPageToken || '';
             } while (pageToken);
-            console.log('[PHOTOS] Pasta "' + folder.name + '":', Object.keys(cache).length, 'fotos total');
+            console.log('[PHOTOS] Pasta "' + folder.name + '": ' + folderCount + ' fotos');
         }
         
         photoCache = cache;
