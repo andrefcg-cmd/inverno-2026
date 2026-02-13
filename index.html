@@ -4242,8 +4242,8 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         previsaoPecas = producaoData.totalAReceber || 0;
     }
     
-    // Peças recebidas vem do totais.enviado
-    pecasRecebidas = totaisAPI?.enviado || 0;
+    // Peças recebidas vem do totais.liquido (enviado - devolvido)
+    pecasRecebidas = totaisAPI?.liquido || totaisAPI?.enviado || 0;
     
     // Se não tem dados de produção, usar dados de expedição como fallback
     if (totalReferencias === 0 && dadosFiltrados.length > 0) {
