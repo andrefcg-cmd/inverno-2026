@@ -2365,7 +2365,9 @@ function showWelcomeScreen(user, weather = null){
         setTimeout(()=>{
             ws.classList.remove('active');
             ws.classList.remove('fade-out');
-            document.getElementById('home').classList.add('visible');
+            const homeEl = document.getElementById('home');
+            homeEl.classList.remove('hidden');
+            homeEl.classList.add('visible');
             pushState('home');
             // Atualizar visibilidade dos módulos baseado no acesso do usuário
             updateModulesVisibility();
