@@ -1935,15 +1935,38 @@ async function tryInitialBiometric(){
                     }
                 }
                 
-                // Se ainda não tem dados do usuário, criar um básico
+                // Se não tem dados no sessionStorage, buscar da API
+                if (!USERS[bioUser]) {
+                    try {
+                        console.log('[Bio] Buscando dados do usuário na API...');
+                        const resp = await fetch(`${API_CONFIG.baseUrl}/api/users/${bioUser}`, {
+                            headers: { 
+                                'X-API-Key': API_CONFIG.apiKey || 'Isapaes@2026!X',
+                                'X-User-Id': bioUser
+                            }
+                        });
+                        if (resp.ok) {
+                            const data = await resp.json();
+                            if (data.user) {
+                                USERS[bioUser] = { ...data.user, pw: '' };
+                                sessionStorage.setItem('logged-user-data', JSON.stringify(data.user));
+                                console.log('[Bio] Dados do usuário carregados da API:', data.user.role, data.user.access);
+                            }
+                        }
+                    } catch(e) {
+                        console.log('[Bio] Erro ao buscar dados da API:', e.message);
+                    }
+                }
+                
+                // Último fallback: sem dados da API, não dar acesso
                 if (!USERS[bioUser]) {
                     USERS[bioUser] = { 
                         nome: bioUser.charAt(0).toUpperCase() + bioUser.slice(1),
-                        access: ['comercial', 'estoque'],
-                        channels: ['showroom', 'ecommerce'],
+                        access: [],
+                        channels: [],
                         pw: ''
                     };
-                    console.log('[Bio] Criado usuário básico');
+                    console.log('[Bio] Sem dados da API - acesso bloqueado até verificação');
                 }
                 
                 sessionStorage.setItem('logged-user', bioUser);
@@ -2263,10 +2286,10 @@ function showWelcomeScreen(user, weather = null){
         if (!USERS[user]) {
             USERS[user] = { 
                 nome: user.charAt(0).toUpperCase() + user.slice(1),
-                access: ['comercial', 'estoque'],
-                channels: ['showroom', 'ecommerce']
+                access: [],
+                channels: []
             };
-            console.log('[Welcome] Criado usuário básico');
+            console.log('[Welcome] Sem dados do usuário - acesso bloqueado até verificação');
         }
     }
     
@@ -4439,7 +4462,7 @@ function doLogin(){
     const pw=document.getElementById('login-pw').value;
     const u=USERS[user];
     if(!u||u.pw!==pw){document.getElementById('login-error').textContent='Usuário ou senha incorretos';document.getElementById('login-pw').value='';return}
-    if(!u.access.includes(currentMod)){document.getElementById('login-error').textContent='Sem permissão para este módulo';return}
+    if(u.role!=='admin' && !u.access.includes(currentMod)){document.getElementById('login-error').textContent='Sem permissão para este módulo';return}
     currentUser=user;
     document.getElementById('login-error').textContent='';
     sessionStorage.setItem('auth-'+currentMod,user);
@@ -4475,7 +4498,7 @@ async function tryBiometric(mod,user){
         }});
         if(a){
             currentUser=user;const u=USERS[user];
-            if(!u.access.includes(mod)){alert('Sem permissão para este módulo');goHome();return}
+            if(u.role!=='admin' && !u.access.includes(mod)){alert('Sem permissão para este módulo');goHome();return}
             sessionStorage.setItem('auth-'+mod,user);afterLogin(mod,user);
         }else{showLoginScreen(mod)}
     }catch(e){showLoginScreen(mod)}
@@ -4490,7 +4513,7 @@ function afterLogin(mod,user){
     else if(mod==='financeiro'){document.getElementById('dev-financeiro').classList.add('active');pushState('dev-financeiro')}
 }
 function openChannel(ch){
-    if(currentUser){const u=USERS[currentUser];if(u&&!u.channels.includes(ch)){alert('Sem permissão para este canal');return}}
+    if(currentUser){const u=USERS[currentUser];if(u&&u.role!=='admin'&&!u.channels.includes(ch)){alert('Sem permissão para este canal');return}}
     hideAll();
     if(ch==='showroom'){document.getElementById('app-comercial').classList.add('active');pushState('app-comercial')}
 }
@@ -4515,8 +4538,9 @@ function updateModulesVisibility() {
     
     const user = USERS[currentUser];
     if (!user || !user.access) {
-        // Se não tem dados do usuário, mostrar todos
-        document.querySelectorAll('.mod-btn').forEach(btn => btn.style.display = '');
+        // Se não tem dados do usuário, esconder tudo por segurança
+        document.querySelectorAll('.mod-btn').forEach(btn => btn.style.display = 'none');
+        console.log('[Modules] Sem dados de acesso - módulos ocultos');
         return;
     }
     
