@@ -6143,6 +6143,7 @@ async function kickUser(userId, nome) {
     if (!confirm(`Deseja desconectar ${nome} (@${userId})?\n\nO usuário será forçado a fazer login novamente.`)) return;
     
     try {
+        console.log('[Kick] Derrubando usuário:', userId);
         const response = await fetch(`${API_CONFIG.baseUrl}/sessions/kick`, {
             method: 'POST',
             headers: { 
@@ -6153,14 +6154,16 @@ async function kickUser(userId, nome) {
         });
         
         const data = await response.json();
+        console.log('[Kick] Resposta:', response.status, JSON.stringify(data));
         
         if (data.success) {
-            alert(`✅ ${nome} foi desconectado!`);
+            alert(`✅ ${nome} foi desconectado! O usuário será removido em até 10 segundos.`);
             await loadActiveSessions();
         } else {
-            alert(`❌ Erro: ${data.error}`);
+            alert(`❌ Erro: ${data.error || 'Resposta inesperada do servidor'}`);
         }
     } catch (e) {
+        console.log('[Kick] Erro:', e.message);
         alert(`❌ Erro: ${e.message}`);
     }
 }
@@ -6228,17 +6231,21 @@ function startKickCheck() {
         try {
             const response = await fetch(`${API_CONFIG.baseUrl}/sessions/check-kick?userId=${currentUser}`);
             const data = await response.json();
+            console.log('[KickCheck] Verificação:', JSON.stringify(data));
             
             if (data.kicked) {
+                stopKickCheck();
+                stopHeartbeat();
                 alert('⚠️ Você foi desconectado pelo administrador.');
                 doLogout();
             }
         } catch (e) {
-            // Silencioso
+            console.log('[KickCheck] Erro:', e.message);
         }
     };
     
-    kickCheckInterval = setInterval(checkKick, 30 * 1000); // A cada 30 segundos
+    checkKick(); // Verificar imediatamente
+    kickCheckInterval = setInterval(checkKick, 10 * 1000); // A cada 10 segundos
 }
 
 function stopKickCheck() {
