@@ -2505,7 +2505,11 @@ function goToScreen(screen, addToHistory = true) {
             geoInit();
             break;
         case 'changepw':
+        case 'changepw-screen':
             document.getElementById('changepw-screen').classList.add('active');
+            break;
+        case 'changepw-form-screen':
+            document.getElementById('changepw-form-screen').classList.add('active');
             break;
         case 'dev-compras':
             document.getElementById('dev-compras').classList.add('active');
@@ -6100,14 +6104,7 @@ function renderListaCards() {
 let usersData = [];
 
 function backFromUsers() {
-    // Voltar para a tela anterior no histórico
-    if (navHistory.length > 1) {
-        navHistory.pop();
-        const prevScreen = navHistory[navHistory.length - 1] || 'home';
-        goToScreen(prevScreen, false);
-    } else {
-        goHome();
-    }
+    goBackTo('changepw-screen');
 }
 
 async function openUsers() {
@@ -6401,8 +6398,11 @@ function openUserForm(userId = null) {
 }
 
 function closeUserForm(fromPopstate) {
-    document.getElementById('user-form-modal').classList.remove('active');
+    const modal = document.getElementById('user-form-modal');
+    if (!modal.classList.contains('active')) return;
+    modal.classList.remove('active');
     if (!fromPopstate) {
+        // Consumir o pushState sem navegar
         history.back();
     }
 }
