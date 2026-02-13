@@ -6402,7 +6402,8 @@ function closeUserForm(fromPopstate) {
     if (!modal.classList.contains('active')) return;
     modal.classList.remove('active');
     if (!fromPopstate) {
-        history.back();
+        // Substituir o estado do pushState sem navegar (não dispara popstate)
+        history.replaceState({screen: navHistory[navHistory.length - 1]}, '', '');
     }
 }
 
