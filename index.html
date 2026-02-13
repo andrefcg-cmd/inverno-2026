@@ -2497,6 +2497,14 @@ window.addEventListener('popstate', function(e) {
         return;
     }
     
+    // Se o modal de envios detalhes está aberto, fechar ele
+    const enviosModal = document.getElementById('envios-detalhes-modal');
+    if (enviosModal) {
+        fecharDetalhesEnvios(true);
+        setTimeout(function(){ _handlingPop = false; }, 100);
+        return;
+    }
+    
     // Se o mapa está em fullscreen, sair do fullscreen
     const mapSection = document.querySelector('.geo-map-section.fullscreen');
     if (mapSection) {
@@ -3916,11 +3924,16 @@ function mostrarDetalhesCanal(canal) {
     
     // Adicionar ao body
     document.body.insertAdjacentHTML('beforeend', html);
+    history.pushState({enviosModal: true}, '', '');
 }
 
-function fecharDetalhesEnvios() {
+function fecharDetalhesEnvios(fromPopstate) {
     const modal = document.getElementById('envios-detalhes-modal');
     if (modal) modal.remove();
+    if (!fromPopstate) {
+        // Consumir o pushState
+        history.back();
+    }
 }
 
 // Ver detalhes de envios de um canal específico (chamado da tela de expedição)
@@ -3948,6 +3961,7 @@ async function verDetalhesEnviosCanal(canal) {
     const existente = document.getElementById('envios-detalhes-modal');
     if (existente) existente.remove();
     document.body.insertAdjacentHTML('beforeend', html);
+    history.pushState({enviosModal: true}, '', '');
     
     try {
         const colecao = capsulaAtual.colecao || 'I26';
