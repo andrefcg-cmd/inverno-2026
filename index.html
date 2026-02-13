@@ -2552,8 +2552,11 @@ window.addEventListener('popstate', function(e) {
     const userFormModal = document.getElementById('user-form-modal');
     if (userFormModal && userFormModal.classList.contains('active')) {
         userFormModal.classList.remove('active');
-        // Re-push o estado atual para não navegar
-        history.pushState({screen: navHistory[navHistory.length - 1]}, '', '');
+        // O back() consumiu uma entrada do history. Precisamos repor duas:
+        // uma para o estado que foi consumido e outra para manter a navegação
+        const currentScreen = navHistory[navHistory.length - 1] || 'home';
+        history.pushState({screen: currentScreen}, '', '');
+        history.pushState({screen: currentScreen}, '', '');
         setTimeout(function(){ _handlingPop = false; }, 100);
         return;
     }
