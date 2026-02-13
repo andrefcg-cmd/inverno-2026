@@ -221,6 +221,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .submenu-screen.active{display:flex}
 .submenu-title{font-size:20px;font-weight:600;margin-bottom:6px}
 .submenu-desc{font-size:12px;color:var(--txt2);margin-bottom:16px}
+.submenu-total-produzido{display:none;font-size:13px;font-weight:600;color:var(--accent);background:var(--card);border:1px solid var(--brd);border-radius:20px;padding:8px 16px;margin-bottom:16px;text-align:center}
+.submenu-total-produzido.visible{display:inline-block}
 .exp-update-date{font-size:11px;color:var(--accent);margin-bottom:24px;padding:8px 16px;background:var(--card);border-radius:8px;display:inline-block}
 .submenu-grid{display:flex;flex-direction:column;gap:14px;width:100%;max-width:360px}
 .sub-btn{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all .15s}
@@ -876,6 +878,7 @@ html, body { overscroll-behavior-y: contain; }
     <div class="login-icon">❄️</div>
     <div class="submenu-title">Inverno</div>
     <div class="submenu-desc">Coleção I26 - Selecione a cápsula</div>
+    <div class="submenu-total-produzido" id="total-produzido-I26"></div>
     <div class="submenu-grid">
         <div class="sub-btn disabled" id="btn-I26-1" onclick="openExpedicaoCapsula('I26', 1)">
             <div class="sub-icon">1️⃣</div>
@@ -911,6 +914,7 @@ html, body { overscroll-behavior-y: contain; }
     <div class="login-icon">☀️</div>
     <div class="submenu-title">Verão</div>
     <div class="submenu-desc">Coleção V27 - Selecione a cápsula</div>
+    <div class="submenu-total-produzido" id="total-produzido-V27"></div>
     <div class="submenu-grid">
         <div class="sub-btn disabled" id="btn-V27-1" onclick="openExpedicaoCapsula('V27', 1)">
             <div class="sub-icon">1️⃣</div>
@@ -2994,6 +2998,20 @@ async function openExpedicao(){
             
             expedicaoCarregada = true;
             console.log(`[API] ${data.capsulas?.length || 0} cápsulas carregadas`);
+            
+            // Calcular total de peças produzidas por coleção
+            const totaisPorColecao = {};
+            for (const item of data.capsulas || []) {
+                if (!totaisPorColecao[item.colecao]) totaisPorColecao[item.colecao] = 0;
+                totaisPorColecao[item.colecao] += item.produzido || 0;
+            }
+            for (const [col, total] of Object.entries(totaisPorColecao)) {
+                const el = document.getElementById('total-produzido-' + col);
+                if (el && total > 0) {
+                    el.textContent = '📦 ' + total.toLocaleString('pt-BR') + ' peças produzidas';
+                    el.classList.add('visible');
+                }
+            }
         } else {
             console.log('[API] Erro HTTP:', response.status, response.statusText);
         }
