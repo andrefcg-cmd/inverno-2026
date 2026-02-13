@@ -1376,7 +1376,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '4.2.0';
+const APP_VERSION = '4.2.1';
 
 // Sistema de versionamento - limpa cache mas preserva navegação
 (async function checkVersion() {
@@ -3890,8 +3890,9 @@ function mostrarDetalhesCanal(canal) {
             `<span class="envio-tam">${t}: ${ref.tamanhos[t]}</span>`
         ).join('');
         
+        const descEsc1 = (ref.desc || '').replace(/'/g, "\\'");
         html += `
-            <div class="envio-item">
+            <div class="envio-item" onclick="openPhoto('${ref.ref}','${descEsc1}')" style="cursor:pointer">
                 <div class="envio-item-header">
                     <div class="envio-item-ref">${ref.icon} ${ref.ref}</div>
                     <div class="envio-item-total">${ref.total} pç</div>
@@ -4000,8 +4001,9 @@ async function verDetalhesEnviosCanal(canal) {
                 `<span class="envio-tam">${t}: ${ref.tamanhos[t]}</span>`
             ).join('');
             
+            const descEsc2 = (ref.desc || '').replace(/'/g, "\\'");
             listHtml += `
-                <div class="envio-item">
+                <div class="envio-item" onclick="openPhoto('${ref.ref}','${descEsc2}')" style="cursor:pointer">
                     <div class="envio-item-header">
                         <div class="envio-item-ref">${icons[canal]} ${ref.ref}</div>
                         <div class="envio-item-total">${ref.total} pç</div>
