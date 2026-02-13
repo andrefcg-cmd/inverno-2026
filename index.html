@@ -1380,7 +1380,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '4.3.0';
+const APP_VERSION = '4.3.1';
 
 // Sistema de versionamento - limpa cache mas preserva navegação
 (async function checkVersion() {
@@ -1422,7 +1422,10 @@ const APP_VERSION = '4.3.0';
             }
         }
         keysToRemove.forEach(key => localStorage.removeItem(key));
-        console.log('[Version] Cache local de expedição limpo:', keysToRemove.length, 'itens');
+        // Limpar cache de fotos também
+        localStorage.removeItem('photo-cache');
+        localStorage.removeItem('photo-cache-v2');
+        console.log('[Version] Cache local de expedição e fotos limpo:', keysToRemove.length, 'itens');
         
         // 2. Desregistrar Service Workers antigos
         if ('serviceWorker' in navigator) {
@@ -5556,9 +5559,15 @@ let photoCache = getPhotoCache();
 
 // Buscar fotos de todas as cápsulas
 async function loadAllPhotos() {
-    if (Object.keys(photoCache).length > 0) {
+    // Cache só é válido se tiver pelo menos 10 fotos (evita cache com lixo)
+    if (Object.keys(photoCache).length >= 10) {
         console.log('[PHOTOS] Cache válido:', Object.keys(photoCache).length, 'fotos');
         return;
+    }
+    
+    if (Object.keys(photoCache).length > 0) {
+        console.log('[PHOTOS] Cache com poucas fotos (' + Object.keys(photoCache).length + '), recarregando...');
+        photoCache = {};
     }
     try {
         console.log('[PHOTOS] Buscando fotos de todas as cápsulas...');
@@ -5642,7 +5651,16 @@ async function reloadPhotos() {
 }
 
 // Iniciar carregamento ao abrir o app (não bloqueia)
-loadAllPhotos();
+(async function() {
+    console.log('[PHOTOS] Iniciando sistema de fotos v4.3.0...');
+    console.log('[PHOTOS] API Key:', DRIVE_API_KEY ? 'presente' : 'AUSENTE');
+    console.log('[PHOTOS] Pasta Inverno:', DRIVE_INVERNO_FOLDER_ID);
+    try {
+        await loadAllPhotos();
+    } catch(e) {
+        console.error('[PHOTOS] Erro fatal ao carregar fotos:', e);
+    }
+})();
 
 function getPhotoUrl(ref) {
     const fileId = photoCache[ref.toUpperCase()];
