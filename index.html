@@ -2903,6 +2903,27 @@ function doLogout(){
     stopHeartbeat();
     stopKickCheck();
     
+    // Notificar servidor que o usuário saiu (remove sessão ativa imediatamente)
+    if (currentUser) {
+        try {
+            // Usar sendBeacon para garantir envio mesmo ao fechar
+            const data = JSON.stringify({ userId: currentUser });
+            const sent = navigator.sendBeacon(`${API_CONFIG.baseUrl}/sessions/logout`, data);
+            if (!sent) {
+                // Fallback com fetch
+                fetch(`${API_CONFIG.baseUrl}/sessions/logout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-API-Key': API_CONFIG.apiKey },
+                    body: data,
+                    keepalive: true
+                }).catch(() => {});
+            }
+            console.log('[Logout] Sessão removida do servidor');
+        } catch(e) {
+            console.log('[Logout] Erro ao remover sessão:', e.message);
+        }
+    }
+    
     // Limpar TODOS os dados de sessão
     sessionStorage.clear();
     
