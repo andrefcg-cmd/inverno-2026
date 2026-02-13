@@ -1346,7 +1346,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '4.0.0';
+const APP_VERSION = '4.0.1';
 
 // Sistema de versionamento - limpa cache mas preserva navegação
 (async function checkVersion() {
@@ -1768,6 +1768,9 @@ setTimeout(()=>{
                 }
             }
             
+            // Atualizar dados do usuário em background (buscar permissões atualizadas)
+            atualizarDadosUsuarioBackground(savedUser);
+            
             // Já logado - restaurar última tela ou ir para home
             const lastScreens = sessionStorage.getItem('last-screens');
             const lastScroll = sessionStorage.getItem('last-scroll');
@@ -2100,6 +2103,34 @@ function createSnowflakes(){
         flake.style.animationDuration = Math.random() * 3 + 3 + 's';
         flake.style.animationDelay = Math.random() * 5 + 's';
         snow.appendChild(flake);
+    }
+}
+
+// Atualizar dados do usuário em background (permissões, etc)
+async function atualizarDadosUsuarioBackground(userId) {
+    try {
+        console.log('[Background] Atualizando dados do usuário:', userId);
+        const response = await fetch(`${API_CONFIG.baseUrl}/api/users/${userId}`, {
+            headers: { 
+                'X-API-Key': API_CONFIG.apiKey,
+                'X-User-Id': userId
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.user) {
+                // Atualizar USERS local
+                USERS[userId] = { ...USERS[userId], ...data.user };
+                // Atualizar sessionStorage
+                sessionStorage.setItem('logged-user-data', JSON.stringify(data.user));
+                console.log('[Background] Dados do usuário atualizados:', data.user.access);
+                // Atualizar visibilidade dos módulos
+                updateModulesVisibility();
+            }
+        }
+    } catch (e) {
+        console.log('[Background] Erro ao atualizar dados do usuário:', e.message);
     }
 }
 

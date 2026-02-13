@@ -1,6 +1,6 @@
 // Service Worker - ISA|PAES PWA
 // VERSÃO: 3.2.0 - Deve ser igual ao APP_VERSION no index.html
-const SW_VERSION = '4.0.0';
+const SW_VERSION = '4.0.1';
 const CACHE_NAME = `isa-paes-v${SW_VERSION}`;
 
 // Arquivos para cachear (NÃO inclui index.html para evitar problemas)
