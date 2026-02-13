@@ -6124,12 +6124,15 @@ let activeSessions = {};
 
 async function loadActiveSessions() {
     try {
+        console.log('[Sessions] Buscando sessões ativas...');
         const response = await fetch(`${API_CONFIG.baseUrl}/sessions/active`, {
             headers: { 'X-API-Key': API_CONFIG.apiKey }
         });
+        console.log('[Sessions] Response status:', response.status);
         const data = await response.json();
+        console.log('[Sessions] Dados recebidos:', JSON.stringify(data));
         activeSessions = data.sessions || {};
-        console.log('[Sessions] Sessões ativas:', data.count);
+        console.log('[Sessions] Sessões ativas:', data.count, 'IDs:', Object.keys(activeSessions));
         renderUsers(); // Re-renderizar com status online
     } catch (e) {
         console.log('[Sessions] Erro ao carregar sessões:', e.message);
@@ -6194,12 +6197,17 @@ function startHeartbeat() {
 async function sendHeartbeatNow() {
     if (!currentUser) return;
     try {
-        await fetch(`${API_CONFIG.baseUrl}/sessions/heartbeat`, {
+        console.log('[Heartbeat] Enviando heartbeat agora para:', currentUser);
+        const resp = await fetch(`${API_CONFIG.baseUrl}/sessions/heartbeat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-API-Key': API_CONFIG.apiKey },
             body: JSON.stringify({ userId: currentUser })
         });
-    } catch (e) {}
+        const data = await resp.json();
+        console.log('[Heartbeat] Resposta:', resp.status, JSON.stringify(data));
+    } catch (e) {
+        console.log('[Heartbeat] Erro:', e.message);
+    }
 }
 
 function stopHeartbeat() {
