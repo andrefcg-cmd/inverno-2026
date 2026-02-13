@@ -3256,6 +3256,9 @@ async function forcarAtualizacaoExpedicao() {
         return;
     }
     
+    // Recarregar fotos do Drive também
+    reloadPhotos();
+    
     console.log('[Refresh] Iniciando atualização forçada para:', destino);
     
     try {
@@ -5516,17 +5519,18 @@ document.addEventListener('keydown', function(e) {
 
 // ========== PHOTO MODAL ==========
 // ===== FOTOS DE PRODUTOS VIA GOOGLE DRIVE =====
-const DRIVE_FOLDER_ID = '1GncZpD2wlJBDe-lGpe7TC6UsTx3c2frW';
-const DRIVE_API_KEY = geoApiKey; // Reutiliza a mesma key do GeoLocalizador
+// Pasta "Inverno" contém subpastas: "1ª Cápsula", "2ª Cápsula", etc.
+const DRIVE_INVERNO_FOLDER_ID = '1U4BQ-8FnZlACrDSBQKMgnwtNMXOHNV3t';
+const DRIVE_API_KEY = geoApiKey;
 
 // Cache de fotos no localStorage
 function getPhotoCache() {
     try {
-        const cache = localStorage.getItem('photo-cache');
+        const cache = localStorage.getItem('photo-cache-v2');
         if (cache) {
             const parsed = JSON.parse(cache);
-            // Cache válido por 24h
-            if (parsed.ts && (Date.now() - parsed.ts) < 86400000) {
+            // Cache válido por 1h (para detectar fotos novas rápido)
+            if (parsed.ts && (Date.now() - parsed.ts) < 3600000) {
                 return parsed.data;
             }
         }
@@ -5536,39 +5540,60 @@ function getPhotoCache() {
 
 function setPhotoCache(data) {
     try {
-        localStorage.setItem('photo-cache', JSON.stringify({ ts: Date.now(), data }));
+        localStorage.setItem('photo-cache-v2', JSON.stringify({ ts: Date.now(), data }));
     } catch(e) {}
 }
 
 let photoCache = getPhotoCache();
 
-// Buscar todos os arquivos da pasta de uma vez e cachear
+// Buscar subpastas e depois fotos de cada uma
 async function loadAllPhotos() {
-    if (Object.keys(photoCache).length > 0) return; // Já tem cache válido
+    if (Object.keys(photoCache).length > 0) {
+        console.log('[PHOTOS] Cache válido:', Object.keys(photoCache).length, 'fotos');
+        return;
+    }
     try {
-        let allFiles = [];
-        let pageToken = '';
-        do {
-            const url = `https://www.googleapis.com/drive/v3/files?q='${DRIVE_FOLDER_ID}'+in+parents+and+trashed=false&fields=files(id,name)&pageSize=1000&key=${DRIVE_API_KEY}` + (pageToken ? `&pageToken=${pageToken}` : '');
-            const resp = await fetch(url);
-            if (!resp.ok) throw new Error('Drive API error: ' + resp.status);
-            const data = await resp.json();
-            allFiles = allFiles.concat(data.files || []);
-            pageToken = data.nextPageToken || '';
-        } while (pageToken);
+        console.log('[PHOTOS] Buscando pastas de cápsulas...');
         
+        // 1. Listar subpastas da pasta Inverno
+        const foldersUrl = `https://www.googleapis.com/drive/v3/files?q='${DRIVE_INVERNO_FOLDER_ID}'+in+parents+and+mimeType='application/vnd.google-apps.folder'+and+trashed=false&fields=files(id,name)&key=${DRIVE_API_KEY}`;
+        const foldersResp = await fetch(foldersUrl);
+        if (!foldersResp.ok) throw new Error('Drive API folders error: ' + foldersResp.status);
+        const foldersData = await foldersResp.json();
+        
+        console.log('[PHOTOS] Pastas encontradas:', foldersData.files?.map(f => f.name));
+        
+        // 2. Para cada subpasta, buscar fotos
         const cache = {};
-        allFiles.forEach(f => {
-            // Remove extensão para usar como chave (ex: CJI26013.jpg → CJI26013)
-            const ref = f.name.replace(/\.[^.]+$/, '').toUpperCase();
-            cache[ref] = f.id;
-        });
+        for (const folder of foldersData.files || []) {
+            let pageToken = '';
+            do {
+                const url = `https://www.googleapis.com/drive/v3/files?q='${folder.id}'+in+parents+and+trashed=false+and+mimeType+contains+'image/'&fields=files(id,name),nextPageToken&pageSize=1000&key=${DRIVE_API_KEY}` + (pageToken ? `&pageToken=${pageToken}` : '');
+                const resp = await fetch(url);
+                if (!resp.ok) break;
+                const data = await resp.json();
+                (data.files || []).forEach(f => {
+                    const ref = f.name.replace(/\.[^.]+$/, '').toUpperCase();
+                    cache[ref] = f.id;
+                });
+                pageToken = data.nextPageToken || '';
+            } while (pageToken);
+            console.log('[PHOTOS] Pasta "' + folder.name + '":', Object.keys(cache).length, 'fotos total');
+        }
+        
         photoCache = cache;
         setPhotoCache(cache);
-        console.log('[PHOTOS] Cache carregado:', Object.keys(cache).length, 'fotos');
+        console.log('[PHOTOS] Cache carregado:', Object.keys(cache).length, 'fotos no total');
     } catch(e) {
         console.error('[PHOTOS] Erro ao carregar fotos:', e);
     }
+}
+
+// Forçar recarregamento do cache (usado no pull-to-refresh)
+async function reloadPhotos() {
+    localStorage.removeItem('photo-cache-v2');
+    photoCache = {};
+    await loadAllPhotos();
 }
 
 // Iniciar carregamento ao abrir o app (não bloqueia)
