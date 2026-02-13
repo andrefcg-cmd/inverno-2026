@@ -4191,7 +4191,7 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     // Reset modos de visualização
     window.viewModeReferencias = false;
     window.viewModeCores = false;
-    window.selectedCor = null;
+    window.selectedCores = new Set();
     const coresList = document.getElementById('exp-cores-list');
     if (coresList) coresList.classList.remove('visible');
     
@@ -4747,12 +4747,25 @@ function installApp(){
 window.addEventListener('appinstalled',()=>{ib.classList.remove('visible')});
 
 if('serviceWorker' in navigator){
-    // Cache-busting: adiciona timestamp para forçar verificação
     var swUrl = '/inverno-2026/sw.js';
+    
+    // Detectar reload (pull-to-refresh ou F5) - limpar TUDO e recarregar limpo
+    const isReload = performance.navigation?.type === 1 || performance.getEntriesByType?.('navigation')?.[0]?.type === 'reload';
+    
+    if (isReload) {
+        console.log('[SW] Reload detectado - limpando caches...');
+        // Limpar todos os caches do SW
+        caches.keys().then(names => {
+            return Promise.all(names.map(name => caches.delete(name)));
+        }).then(() => {
+            console.log('[SW] Caches limpos');
+        });
+    }
+    
     navigator.serviceWorker.register(swUrl, {scope:'/inverno-2026/', updateViaCache: 'none'}).then(function(reg){
         console.log('[SW] Registrado');
         
-        // Verificar atualizações
+        // Forçar verificação de atualização
         reg.update();
         
         // Se já tem um SW esperando, ativar
@@ -4765,20 +4778,11 @@ if('serviceWorker' in navigator){
             var newWorker = reg.installing;
             newWorker.addEventListener('statechange', function() {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('[SW] Nova versão pronta');
+                    console.log('[SW] Nova versão pronta - ativando...');
                     newWorker.postMessage({ type: 'SKIP_WAITING' });
                 }
             });
         });
-        
-        // Detectar reload manual (pull-to-refresh ou F5) e forçar atualização
-        if (performance.navigation?.type === 1 || performance.getEntriesByType?.('navigation')?.[0]?.type === 'reload') {
-            console.log('[SW] Reload detectado - forçando atualização...');
-            caches.keys().then(names => {
-                names.forEach(name => caches.delete(name));
-            });
-            reg.update();
-        }
     }).catch(function(err){
         console.log('[SW] Erro:', err);
     });
@@ -6088,7 +6092,7 @@ function limparBuscaReferencia() {
 // =====================================================
 window.viewModeReferencias = false;
 window.viewModeCores = false;
-window.selectedCor = null;
+window.selectedCores = new Set();
 
 function toggleViewReferencias() {
     console.log('[Toggle] Clicou em Referências');
@@ -6097,7 +6101,7 @@ function toggleViewReferencias() {
     // Desativar modo cores se ativar referências
     if (window.viewModeReferencias) {
         window.viewModeCores = false;
-        window.selectedCor = null;
+        window.selectedCores.clear();
         const btnCor = document.getElementById('stat-variantes');
         if (btnCor) btnCor.classList.remove('active');
         document.getElementById('exp-cores-list').classList.remove('visible');
@@ -6116,7 +6120,7 @@ function toggleViewReferencias() {
 function toggleViewCores() {
     console.log('[Toggle] Clicou em Variantes de Cor');
     window.viewModeCores = !window.viewModeCores;
-    window.selectedCor = null;
+    window.selectedCores.clear();
     
     // Desativar modo referências se ativar cores
     if (window.viewModeCores) {
@@ -6162,7 +6166,7 @@ function renderCoresList() {
     
     let html = '';
     for (const [cor, count] of coresOrdenadas) {
-        const isActive = window.selectedCor === cor;
+        const isActive = window.selectedCores.has(cor);
         const corEscaped = cor.replace(/'/g, "\\'");
         html += `<div class="exp-cor-pill ${isActive ? 'active' : ''}" onclick="selecionarCor('${corEscaped}')">${cor}<span class="cor-count">(${count})</span></div>`;
     }
@@ -6171,11 +6175,10 @@ function renderCoresList() {
 }
 
 function selecionarCor(cor) {
-    if (window.selectedCor === cor) {
-        // Desselecionar se clicar na mesma cor
-        window.selectedCor = null;
+    if (window.selectedCores.has(cor)) {
+        window.selectedCores.delete(cor);
     } else {
-        window.selectedCor = cor;
+        window.selectedCores.add(cor);
     }
     
     renderCoresList();
@@ -6234,9 +6237,9 @@ function renderListaCards() {
         itemsToRender = itemsParaLista;
     }
     
-    // Filtrar por cor selecionada (se no modo cores)
-    if (window.viewModeCores && window.selectedCor) {
-        itemsToRender = itemsToRender.filter(item => (item.cor || 'SEM COR') === window.selectedCor);
+    // Filtrar por cores selecionadas (se no modo cores)
+    if (window.viewModeCores && window.selectedCores.size > 0) {
+        itemsToRender = itemsToRender.filter(item => window.selectedCores.has(item.cor || 'SEM COR'));
     }
     
     console.log('[RenderCards] Itens a renderizar:', itemsToRender.length);

@@ -48,27 +48,26 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Para HTML, SEMPRE buscar da rede
+  // Para HTML/navegação, SEMPRE buscar da rede com cache-bust
   if (event.request.mode === 'navigate' || 
       event.request.url.endsWith('.html') ||
       event.request.url.endsWith('/')) {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, { cache: 'no-store' })
         .catch(() => caches.match(event.request))
     );
     return;
   }
   
-  // Para outros recursos, network first com fallback para cache
   // Ignorar requisições de extensões do Chrome
   if (event.request.url.startsWith('chrome-extension://')) {
     return;
   }
   
+  // Para outros recursos, network first com fallback para cache
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Cachear resposta válida (apenas http/https)
         if (response && response.status === 200 && event.request.url.startsWith('http')) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
