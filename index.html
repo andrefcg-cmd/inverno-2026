@@ -251,6 +251,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .exp-stat.exp-stat-clickable.active .exp-stat-label{color:rgba(255,255,255,0.9)}
 .exp-stat-value{font-size:18px;font-weight:700}
 .exp-stat-label{font-size:10px;color:var(--txt2);margin-top:2px}
+.exp-cores-list{display:none;padding:8px 16px;gap:6px;flex-wrap:wrap}
+.exp-cores-list.visible{display:flex}
+.exp-cor-pill{padding:6px 12px;border-radius:20px;background:var(--card2);color:var(--txt);font-size:12px;cursor:pointer;border:2px solid transparent;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.exp-cor-pill:active{transform:scale(0.96)}
+.exp-cor-pill.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 10px rgba(233,69,96,0.4)}
+.exp-cor-pill .cor-count{color:var(--txt2);font-size:10px;margin-left:4px}
+.exp-cor-pill.active .cor-count{color:rgba(255,255,255,0.8)}
 .exp-progress-section{margin-top:12px}
 .exp-progress-row{margin-bottom:12px}
 .exp-progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
@@ -1019,6 +1026,7 @@ html, body { overscroll-behavior-y: contain; }
             <div class="exp-total-stats" id="exp-total-stats"></div>
             <div class="exp-progress-section" id="exp-total-progress"></div>
         </div>
+        <div class="exp-cores-list" id="exp-cores-list"></div>
         <div class="section-title">📦 Referências</div>
         <div class="ref-search-container">
             <input type="text" id="ref-search" class="ref-search-input" placeholder="🔍 Buscar referência..." oninput="filtrarReferencias(this.value)">
@@ -4180,6 +4188,13 @@ function openExpedicaoDestino(destino){
 }
 
 async function renderExpedicao(destino, dadosPreCarregados = null){
+    // Reset modos de visualização
+    window.viewModeReferencias = false;
+    window.viewModeCores = false;
+    window.selectedCor = null;
+    const coresList = document.getElementById('exp-cores-list');
+    if (coresList) coresList.classList.remove('visible');
+    
     const titles = {
         showroom: '🏬 Showroom', 
         ecommerce: '🌐 E-commerce', 
@@ -4273,7 +4288,7 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         const isRefActive = window.viewModeReferencias === true;
         statsHtml = `
             <div class="exp-stat exp-stat-clickable ${isRefActive ? 'active' : ''}" id="stat-referencias" onclick="toggleViewReferencias()" style="cursor:pointer"><div class="exp-stat-value">${totalReferencias}</div><div class="exp-stat-label">Total de Referências</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${totalVariantes}</div><div class="exp-stat-label">Variantes de Cor</div></div>
+            <div class="exp-stat exp-stat-clickable ${window.viewModeCores ? 'active' : ''}" id="stat-variantes" onclick="toggleViewCores()" style="cursor:pointer"><div class="exp-stat-value">${totalVariantes}</div><div class="exp-stat-label">Variantes de Cor</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${previsaoPecas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Previsão de Peças a Enviar</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${pecasRecebidas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Enviadas</div></div>
         `;
@@ -6072,24 +6087,99 @@ function limparBuscaReferencia() {
 // TOGGLE VIEW REFERÊNCIAS (agrupa cards por ref)
 // =====================================================
 window.viewModeReferencias = false;
+window.viewModeCores = false;
+window.selectedCor = null;
 
 function toggleViewReferencias() {
-    console.log('[Toggle] Clicou no botão');
+    console.log('[Toggle] Clicou em Referências');
     window.viewModeReferencias = !window.viewModeReferencias;
-    console.log('[Toggle] Modo referências:', window.viewModeReferencias);
     
-    // Atualizar visual do botão
-    const btnRef = document.getElementById('stat-referencias');
-    if (btnRef) {
-        btnRef.classList.toggle('active', window.viewModeReferencias);
+    // Desativar modo cores se ativar referências
+    if (window.viewModeReferencias) {
+        window.viewModeCores = false;
+        window.selectedCor = null;
+        const btnCor = document.getElementById('stat-variantes');
+        if (btnCor) btnCor.classList.remove('active');
+        document.getElementById('exp-cores-list').classList.remove('visible');
     }
     
-    // Re-renderizar a lista de cards
+    const btnRef = document.getElementById('stat-referencias');
+    if (btnRef) btnRef.classList.toggle('active', window.viewModeReferencias);
+    
     try {
         renderListaCards();
     } catch(e) {
         console.error('[Toggle] Erro ao renderizar:', e);
     }
+}
+
+function toggleViewCores() {
+    console.log('[Toggle] Clicou em Variantes de Cor');
+    window.viewModeCores = !window.viewModeCores;
+    window.selectedCor = null;
+    
+    // Desativar modo referências se ativar cores
+    if (window.viewModeCores) {
+        window.viewModeReferencias = false;
+        const btnRef = document.getElementById('stat-referencias');
+        if (btnRef) btnRef.classList.remove('active');
+    }
+    
+    const btnCor = document.getElementById('stat-variantes');
+    if (btnCor) btnCor.classList.toggle('active', window.viewModeCores);
+    
+    // Mostrar/esconder lista de cores
+    const coresList = document.getElementById('exp-cores-list');
+    if (window.viewModeCores) {
+        renderCoresList();
+        coresList.classList.add('visible');
+    } else {
+        coresList.classList.remove('visible');
+    }
+    
+    try {
+        renderListaCards();
+    } catch(e) {
+        console.error('[Toggle] Erro ao renderizar:', e);
+    }
+}
+
+function renderCoresList() {
+    const itemsParaLista = window.currentItemsParaLista || [];
+    
+    // Contar referências por cor
+    const coresMap = new Map();
+    for (const item of itemsParaLista) {
+        const cor = item.cor || 'SEM COR';
+        if (!coresMap.has(cor)) {
+            coresMap.set(cor, 0);
+        }
+        coresMap.set(cor, coresMap.get(cor) + 1);
+    }
+    
+    // Ordenar por nome da cor
+    const coresOrdenadas = Array.from(coresMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    
+    let html = '';
+    for (const [cor, count] of coresOrdenadas) {
+        const isActive = window.selectedCor === cor;
+        const corEscaped = cor.replace(/'/g, "\\'");
+        html += `<div class="exp-cor-pill ${isActive ? 'active' : ''}" onclick="selecionarCor('${corEscaped}')">${cor}<span class="cor-count">(${count})</span></div>`;
+    }
+    
+    document.getElementById('exp-cores-list').innerHTML = html;
+}
+
+function selecionarCor(cor) {
+    if (window.selectedCor === cor) {
+        // Desselecionar se clicar na mesma cor
+        window.selectedCor = null;
+    } else {
+        window.selectedCor = cor;
+    }
+    
+    renderCoresList();
+    renderListaCards();
 }
 
 function renderListaCards() {
@@ -6142,6 +6232,11 @@ function renderListaCards() {
     } else {
         // MODO NORMAL: mostrar todas as variantes
         itemsToRender = itemsParaLista;
+    }
+    
+    // Filtrar por cor selecionada (se no modo cores)
+    if (window.viewModeCores && window.selectedCor) {
+        itemsToRender = itemsToRender.filter(item => (item.cor || 'SEM COR') === window.selectedCor);
     }
     
     console.log('[RenderCards] Itens a renderizar:', itemsToRender.length);
