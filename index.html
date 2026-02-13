@@ -2551,7 +2551,9 @@ window.addEventListener('popstate', function(e) {
     // Se o modal de formulário de usuário está aberto, fechar ele
     const userFormModal = document.getElementById('user-form-modal');
     if (userFormModal && userFormModal.classList.contains('active')) {
-        closeUserForm(true);
+        userFormModal.classList.remove('active');
+        // Re-push o estado atual para não navegar
+        history.pushState({screen: navHistory[navHistory.length - 1]}, '', '');
         setTimeout(function(){ _handlingPop = false; }, 100);
         return;
     }
@@ -6394,17 +6396,11 @@ function openUserForm(userId = null) {
     }
     
     modal.classList.add('active');
-    history.pushState({userForm: true}, '', '');
 }
 
-function closeUserForm(fromPopstate) {
+function closeUserForm() {
     const modal = document.getElementById('user-form-modal');
-    if (!modal.classList.contains('active')) return;
     modal.classList.remove('active');
-    if (!fromPopstate) {
-        // Consumir o pushState sem navegar
-        history.back();
-    }
 }
 
 function editUser(userId) {
