@@ -297,6 +297,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .resumo-dia-canal-nome{font-size:14px;font-weight:600;color:var(--txt)}
 .resumo-dia-canal-desc{font-size:11px;color:var(--txt2);margin-top:2px}
 .resumo-dia-canal-valor{font-size:20px;font-weight:700;color:var(--txt)}
+.resumo-dia-total.clickable{cursor:pointer;transition:transform 0.2s, box-shadow 0.2s}
+.resumo-dia-total.clickable:active{transform:scale(0.98)}
+.resumo-dia-total-hint{font-size:11px;color:rgba(255,255,255,0.6);margin-top:8px}
+.resumo-dia-canal{cursor:pointer;transition:transform 0.2s}
+.resumo-dia-canal:active{transform:scale(0.98)}
+
+/* Modal de detalhes de envios */
+.envios-detalhes-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;flex-direction:column}
+.envios-detalhes-content{flex:1;display:flex;flex-direction:column;max-width:500px;margin:0 auto;width:100%}
+.envios-detalhes-header{display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid var(--brd)}
+.envios-detalhes-title{font-size:16px;font-weight:600;color:var(--txt)}
+.envios-detalhes-close{background:none;border:none;color:var(--txt2);font-size:20px;cursor:pointer;padding:8px}
+.envios-detalhes-summary{display:flex;justify-content:space-between;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--brd);font-size:13px;color:var(--txt2)}
+.envios-detalhes-list{flex:1;overflow-y:auto;padding:12px}
+.envio-item{background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:12px;margin-bottom:10px}
+.envio-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.envio-item-ref{font-size:13px;font-weight:600;color:var(--accent)}
+.envio-item-total{font-size:14px;font-weight:700;color:var(--txt)}
+.envio-item-desc{font-size:12px;color:var(--txt);margin-bottom:4px}
+.envio-item-cor{font-size:11px;color:var(--txt2);margin-bottom:6px}
+.envio-item-tamanhos{display:flex;gap:8px;flex-wrap:wrap}
+.envio-tam{font-size:11px;background:var(--bg2);padding:3px 8px;border-radius:4px;color:var(--txt)}
 .exp-item{background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--brd);cursor:pointer}
 .exp-item-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
 .exp-item-ref{font-size:11px;color:var(--accent);font-weight:600}
@@ -1346,7 +1368,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '4.0.1';
+const APP_VERSION = '4.1.0';
 
 // Sistema de versionamento - limpa cache mas preserva navegação
 (async function checkVersion() {
@@ -3705,6 +3727,9 @@ function renderResumoEnviosDia(enviosDoDia = null){
         enviosDoDia = window.currentEnviosDoDia;
     }
     
+    // Guardar dados para uso posterior
+    window.currentResumoEnvios = enviosDoDia;
+    
     if (!enviosDoDia) {
         contentEl.innerHTML = `
             <div class="resumo-dia-loading">
@@ -3727,14 +3752,21 @@ function renderResumoEnviosDia(enviosDoDia = null){
     const isHoje = resumoDiaDataSelecionada.toDateString() === hoje.toDateString();
     const labelTotal = isHoje ? 'Total Enviado Hoje' : 'Total Enviado';
     
+    // Verificar se tem detalhes disponíveis
+    const temDetalhes = enviosDoDia.detalhes && Object.keys(enviosDoDia.detalhes).length > 0;
+    const btnClass = temDetalhes ? 'resumo-dia-total clickable' : 'resumo-dia-total';
+    const onClick = temDetalhes ? 'onclick="mostrarDetalhesEnvios()"' : '';
+    const hint = temDetalhes ? '<div class="resumo-dia-total-hint">Toque para ver detalhes</div>' : '';
+    
     contentEl.innerHTML = `
-        <div class="resumo-dia-total">
+        <div class="${btnClass}" ${onClick}>
             <div class="resumo-dia-total-label">${labelTotal}</div>
             <div class="resumo-dia-total-valor">${total.toLocaleString('pt-BR')}</div>
             <div class="resumo-dia-total-unidade">peças</div>
+            ${hint}
         </div>
         <div class="resumo-dia-canais">
-            <div class="resumo-dia-canal">
+            <div class="resumo-dia-canal" onclick="mostrarDetalhesCanal('showroom')">
                 <div class="resumo-dia-canal-icon">🏬</div>
                 <div class="resumo-dia-canal-info">
                     <div class="resumo-dia-canal-nome">Showroom</div>
@@ -3742,7 +3774,7 @@ function renderResumoEnviosDia(enviosDoDia = null){
                 </div>
                 <div class="resumo-dia-canal-valor">${showroom.toLocaleString('pt-BR')}</div>
             </div>
-            <div class="resumo-dia-canal">
+            <div class="resumo-dia-canal" onclick="mostrarDetalhesCanal('ecommerce')">
                 <div class="resumo-dia-canal-icon">🌐</div>
                 <div class="resumo-dia-canal-info">
                     <div class="resumo-dia-canal-nome">E-commerce</div>
@@ -3750,15 +3782,15 @@ function renderResumoEnviosDia(enviosDoDia = null){
                 </div>
                 <div class="resumo-dia-canal-valor">${ecommerce.toLocaleString('pt-BR')}</div>
             </div>
-            <div class="resumo-dia-canal">
+            <div class="resumo-dia-canal" onclick="mostrarDetalhesCanal('mostruario')">
                 <div class="resumo-dia-canal-icon">👗</div>
                 <div class="resumo-dia-canal-info">
-                    <div class="resumo-dia-canal-nome">Isabella</div>
+                    <div class="resumo-dia-canal-nome">Mostruário Isabella</div>
                     <div class="resumo-dia-canal-desc">Peças de mostruário</div>
                 </div>
                 <div class="resumo-dia-canal-valor">${mostruario.toLocaleString('pt-BR')}</div>
             </div>
-            <div class="resumo-dia-canal">
+            <div class="resumo-dia-canal" onclick="mostrarDetalhesCanal('ld')">
                 <div class="resumo-dia-canal-icon">📋</div>
                 <div class="resumo-dia-canal-info">
                     <div class="resumo-dia-canal-nome">Leves Defeitos</div>
@@ -3768,6 +3800,108 @@ function renderResumoEnviosDia(enviosDoDia = null){
             </div>
         </div>
     `;
+}
+
+// Mostrar detalhes de todos os envios
+function mostrarDetalhesEnvios() {
+    mostrarDetalhesCanal('todos');
+}
+
+// Mostrar detalhes de um canal específico
+function mostrarDetalhesCanal(canal) {
+    const envios = window.currentResumoEnvios;
+    if (!envios || !envios.detalhes) {
+        alert('Detalhes não disponíveis. Tente novamente.');
+        return;
+    }
+    
+    let items = [];
+    const icons = { showroom: '🏬', ecommerce: '🌐', mostruario: '👗', ld: '📋' };
+    const nomes = { showroom: 'Showroom', ecommerce: 'E-commerce', mostruario: 'Mostruário Isabella', ld: 'Leves Defeitos' };
+    
+    if (canal === 'todos') {
+        // Combinar todos os canais
+        for (const [c, itens] of Object.entries(envios.detalhes)) {
+            for (const item of itens) {
+                items.push({ ...item, canal: c, icon: icons[c] });
+            }
+        }
+    } else {
+        items = (envios.detalhes[canal] || []).map(item => ({ ...item, canal, icon: icons[canal] }));
+    }
+    
+    if (items.length === 0) {
+        alert('Nenhum envio encontrado para este canal.');
+        return;
+    }
+    
+    // Agrupar por referência
+    const porRef = {};
+    for (const item of items) {
+        const key = `${item.ref}-${item.cor}`;
+        if (!porRef[key]) {
+            porRef[key] = { ref: item.ref, cor: item.cor, desc: item.desc, icon: item.icon, canal: item.canal, tamanhos: {}, total: 0 };
+        }
+        porRef[key].tamanhos[item.tamanho] = (porRef[key].tamanhos[item.tamanho] || 0) + item.qtd;
+        porRef[key].total += item.qtd;
+    }
+    
+    // Ordenar por referência
+    const refsList = Object.values(porRef).sort((a, b) => a.ref.localeCompare(b.ref));
+    
+    // Criar modal de detalhes
+    const dataFormatada = resumoDiaDataSelecionada.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const titulo = canal === 'todos' ? `Todos os Envios - ${dataFormatada}` : `${nomes[canal]} - ${dataFormatada}`;
+    
+    let html = `
+        <div class="envios-detalhes-modal" id="envios-detalhes-modal">
+            <div class="envios-detalhes-content">
+                <div class="envios-detalhes-header">
+                    <span class="envios-detalhes-title">${titulo}</span>
+                    <button class="envios-detalhes-close" onclick="fecharDetalhesEnvios()">✕</button>
+                </div>
+                <div class="envios-detalhes-summary">
+                    <span>${refsList.length} referências</span>
+                    <span>${items.reduce((s, i) => s + i.qtd, 0)} peças</span>
+                </div>
+                <div class="envios-detalhes-list">
+    `;
+    
+    for (const ref of refsList) {
+        const tamanhosHtml = ['PP', 'P', 'M', 'G', 'GG'].filter(t => ref.tamanhos[t]).map(t => 
+            `<span class="envio-tam">${t}: ${ref.tamanhos[t]}</span>`
+        ).join('');
+        
+        html += `
+            <div class="envio-item">
+                <div class="envio-item-header">
+                    <div class="envio-item-ref">${ref.icon} ${ref.ref}</div>
+                    <div class="envio-item-total">${ref.total} pç</div>
+                </div>
+                <div class="envio-item-desc">${ref.desc || ''}</div>
+                <div class="envio-item-cor">🎨 ${ref.cor}</div>
+                <div class="envio-item-tamanhos">${tamanhosHtml}</div>
+            </div>
+        `;
+    }
+    
+    html += `
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover modal existente se houver
+    const existente = document.getElementById('envios-detalhes-modal');
+    if (existente) existente.remove();
+    
+    // Adicionar ao body
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function fecharDetalhesEnvios() {
+    const modal = document.getElementById('envios-detalhes-modal');
+    if (modal) modal.remove();
 }
 
 function openExpedicaoDestino(destino){
@@ -3951,7 +4085,7 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         const canalMap = {
             'showroom': { key: 'showroom', icon: '🏬', nome: 'Showroom' },
             'ecommerce': { key: 'ecommerce', icon: '🌐', nome: 'E-commerce' },
-            'mostruario': { key: 'mostruario', icon: '👗', nome: 'Isabella' }
+            'mostruario': { key: 'mostruario', icon: '👗', nome: 'Mostruário Isabella' }
         };
         
         const canalAtual = canalMap[destino];
