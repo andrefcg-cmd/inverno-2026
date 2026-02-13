@@ -2551,12 +2551,7 @@ window.addEventListener('popstate', function(e) {
     // Se o modal de formulário de usuário está aberto, fechar ele
     const userFormModal = document.getElementById('user-form-modal');
     if (userFormModal && userFormModal.classList.contains('active')) {
-        userFormModal.classList.remove('active');
-        // O back() consumiu uma entrada do history. Precisamos repor duas:
-        // uma para o estado que foi consumido e outra para manter a navegação
-        const currentScreen = navHistory[navHistory.length - 1] || 'home';
-        history.pushState({screen: currentScreen}, '', '');
-        history.pushState({screen: currentScreen}, '', '');
+        closeUserForm(true);
         setTimeout(function(){ _handlingPop = false; }, 100);
         return;
     }
@@ -6399,11 +6394,16 @@ function openUserForm(userId = null) {
     }
     
     modal.classList.add('active');
+    history.pushState({userForm: true}, '', '');
 }
 
-function closeUserForm() {
+function closeUserForm(fromPopstate) {
     const modal = document.getElementById('user-form-modal');
+    if (!modal.classList.contains('active')) return;
     modal.classList.remove('active');
+    if (!fromPopstate) {
+        history.back();
+    }
 }
 
 function editUser(userId) {
