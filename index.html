@@ -1027,6 +1027,7 @@ html, body { overscroll-behavior-y: contain; }
             <div class="exp-progress-section" id="exp-total-progress"></div>
         </div>
         <div class="exp-cores-list" id="exp-cores-list"></div>
+        <div class="exp-cores-list" id="exp-grupos-list"></div>
         <div class="section-title">📦 Referências</div>
         <div class="ref-search-container">
             <input type="text" id="ref-search" class="ref-search-input" placeholder="🔍 Buscar referência..." oninput="filtrarReferencias(this.value)">
@@ -4192,8 +4193,11 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     window.viewModeReferencias = false;
     window.viewModeCores = false;
     window.selectedCores = new Set();
+    window.selectedGrupos = new Set();
     const coresList = document.getElementById('exp-cores-list');
     if (coresList) coresList.classList.remove('visible');
+    const gruposList = document.getElementById('exp-grupos-list');
+    if (gruposList) gruposList.classList.remove('visible');
     
     const titles = {
         showroom: '🏬 Showroom', 
@@ -6093,10 +6097,44 @@ function limparBuscaReferencia() {
 window.viewModeReferencias = false;
 window.viewModeCores = false;
 window.selectedCores = new Set();
+window.selectedGrupos = new Set();
+
+// Mapa de prefixo da referência → nome do grupo
+const GRUPOS_MAP = {
+    'AC': 'Acessório',
+    'BD': 'Body',
+    'BL': 'Blusa',
+    'BZ': 'Blazer',
+    'CA': 'Camisa',
+    'CJ': 'Conjunto',
+    'CL': 'Calça',
+    'CO': 'Colete',
+    'JA': 'Jaqueta',
+    'JQ': 'Jaqueta',
+    'MA': 'Macaquinho',
+    'MC': 'Macaquinho',
+    'SA': 'Saia',
+    'SH': 'Short',
+    'VE': 'Vestido',
+    'TR': 'Tricot',
+    'CR': 'Cropped',
+    'RE': 'Regata',
+    'TO': 'Top',
+    'PA': 'Pantalona',
+    'MI': 'Macacão',
+    'BO': 'Bolsa'
+};
+
+function getGrupo(ref) {
+    if (!ref) return 'Outros';
+    const prefixo = ref.substring(0, 2).toUpperCase();
+    return GRUPOS_MAP[prefixo] || 'Outros';
+}
 
 function toggleViewReferencias() {
     console.log('[Toggle] Clicou em Referências');
     window.viewModeReferencias = !window.viewModeReferencias;
+    window.selectedGrupos.clear();
     
     // Desativar modo cores se ativar referências
     if (window.viewModeReferencias) {
@@ -6109,6 +6147,15 @@ function toggleViewReferencias() {
     
     const btnRef = document.getElementById('stat-referencias');
     if (btnRef) btnRef.classList.toggle('active', window.viewModeReferencias);
+    
+    // Mostrar/esconder lista de grupos
+    const gruposList = document.getElementById('exp-grupos-list');
+    if (window.viewModeReferencias) {
+        renderGruposList();
+        gruposList.classList.add('visible');
+    } else {
+        gruposList.classList.remove('visible');
+    }
     
     try {
         renderListaCards();
@@ -6125,8 +6172,10 @@ function toggleViewCores() {
     // Desativar modo referências se ativar cores
     if (window.viewModeCores) {
         window.viewModeReferencias = false;
+        window.selectedGrupos.clear();
         const btnRef = document.getElementById('stat-referencias');
         if (btnRef) btnRef.classList.remove('active');
+        document.getElementById('exp-grupos-list').classList.remove('visible');
     }
     
     const btnCor = document.getElementById('stat-variantes');
@@ -6185,6 +6234,49 @@ function selecionarCor(cor) {
     renderListaCards();
 }
 
+function renderGruposList() {
+    const itemsParaLista = window.currentItemsParaLista || [];
+    
+    // Contar referências únicas por grupo
+    const gruposMap = new Map();
+    const refsVistas = new Set();
+    
+    for (const item of itemsParaLista) {
+        const grupo = getGrupo(item.ref);
+        if (!gruposMap.has(grupo)) {
+            gruposMap.set(grupo, 0);
+        }
+        // Contar refs únicas, não variantes de cor
+        if (!refsVistas.has(item.ref)) {
+            refsVistas.add(item.ref);
+            gruposMap.set(grupo, gruposMap.get(grupo) + 1);
+        }
+    }
+    
+    // Ordenar por nome do grupo
+    const gruposOrdenados = Array.from(gruposMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    
+    let html = '';
+    for (const [grupo, count] of gruposOrdenados) {
+        const isActive = window.selectedGrupos.has(grupo);
+        const grupoEscaped = grupo.replace(/'/g, "\\'");
+        html += `<div class="exp-cor-pill ${isActive ? 'active' : ''}" onclick="selecionarGrupo('${grupoEscaped}')">${grupo}<span class="cor-count">(${count})</span></div>`;
+    }
+    
+    document.getElementById('exp-grupos-list').innerHTML = html;
+}
+
+function selecionarGrupo(grupo) {
+    if (window.selectedGrupos.has(grupo)) {
+        window.selectedGrupos.delete(grupo);
+    } else {
+        window.selectedGrupos.add(grupo);
+    }
+    
+    renderGruposList();
+    renderListaCards();
+}
+
 function renderListaCards() {
     const destino = window.currentDestino;
     const itemsParaLista = window.currentItemsParaLista || [];
@@ -6240,6 +6332,11 @@ function renderListaCards() {
     // Filtrar por cores selecionadas (se no modo cores)
     if (window.viewModeCores && window.selectedCores.size > 0) {
         itemsToRender = itemsToRender.filter(item => window.selectedCores.has(item.cor || 'SEM COR'));
+    }
+    
+    // Filtrar por grupos selecionados (se no modo referências)
+    if (window.viewModeReferencias && window.selectedGrupos.size > 0) {
+        itemsToRender = itemsToRender.filter(item => window.selectedGrupos.has(getGrupo(item.ref)));
     }
     
     console.log('[RenderCards] Itens a renderizar:', itemsToRender.length);
