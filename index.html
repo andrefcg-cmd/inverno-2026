@@ -266,11 +266,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .exp-canal-icon{font-size:16px}
 .exp-canal-nome{flex:1;font-size:12px;color:var(--txt2)}
 .exp-canal-valor{font-size:14px;font-weight:700;color:var(--txt)}
-.exp-canal-destaque{display:flex;align-items:center;gap:16px;background:var(--bg);padding:16px;border-radius:10px}
+.exp-canal-destaque{display:flex;align-items:center;gap:12px;background:var(--bg);padding:14px;border-radius:10px;flex:1}
 .exp-canal-destaque.clickable{cursor:pointer;transition:transform 0.2s, background 0.2s}
 .exp-canal-destaque.clickable:hover{background:var(--bg2)}
 .exp-canal-destaque.clickable:active{transform:scale(0.98)}
-.exp-canal-arrow{font-size:20px;color:var(--txt2);margin-left:auto}
+.exp-canal-destaque.devolucao{background:rgba(255,71,87,0.1)}
+.exp-canal-arrow{font-size:18px;color:var(--txt2);margin-left:auto}
+.exp-canal-row{display:flex;gap:10px}
 .exp-canal-icon-lg{font-size:32px}
 .exp-canal-info{display:flex;flex-direction:column;gap:2px}
 .exp-canal-nome-lg{font-size:14px;color:var(--txt2)}
@@ -295,7 +297,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .resumo-dia-total-valor{font-size:48px;font-weight:700;color:#fff}
 .resumo-dia-total-unidade{font-size:14px;color:rgba(255,255,255,0.8);margin-top:4px}
 .resumo-dia-canais{display:flex;flex-direction:column;gap:12px}
-.resumo-dia-canal{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:16px;display:flex;align-items:center;gap:16px}
+.resumo-dia-canal{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:16px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:transform 0.2s}
+.resumo-dia-canal:active{transform:scale(0.98)}
+.resumo-dia-canal.devolucao{background:rgba(255,71,87,0.1);border-color:rgba(255,71,87,0.3)}
 .resumo-dia-canal-icon{font-size:28px}
 .resumo-dia-canal-info{flex:1}
 .resumo-dia-canal-nome{font-size:14px;font-weight:600;color:var(--txt)}
@@ -1372,7 +1376,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '4.1.1';
+const APP_VERSION = '4.2.0';
 
 // Sistema de versionamento - limpa cache mas preserva navegação
 (async function checkVersion() {
@@ -1876,8 +1880,9 @@ setTimeout(()=>{
             });
             
             // Restaurar destino de expedição se necessário
-            if(screens.includes('app-expedicao') && lastExpDestino){
+            if(telasParaRestaurar.includes('app-expedicao') && lastExpDestino){
                 currentExpDestino = lastExpDestino;
+                console.log('[NAV-DEBUG] Restaurando expedição:', lastExpDestino);
                 renderExpedicao(lastExpDestino);
             }
             // Restaurar scroll
@@ -3755,6 +3760,7 @@ function renderResumoEnviosDia(enviosDoDia = null){
     const hoje = new Date();
     const isHoje = resumoDiaDataSelecionada.toDateString() === hoje.toDateString();
     const labelTotal = isHoje ? 'Total Enviado Hoje' : 'Total Enviado';
+    const devolucoes = enviosDoDia.devolucoes || 0;
     
     // Verificar se tem detalhes disponíveis
     const temDetalhes = enviosDoDia.detalhes && Object.keys(enviosDoDia.detalhes).length > 0;
@@ -3802,6 +3808,14 @@ function renderResumoEnviosDia(enviosDoDia = null){
                 </div>
                 <div class="resumo-dia-canal-valor">${ld.toLocaleString('pt-BR')}</div>
             </div>
+            <div class="resumo-dia-canal devolucao" onclick="mostrarDetalhesCanal('devolucoes')">
+                <div class="resumo-dia-canal-icon">↩️</div>
+                <div class="resumo-dia-canal-info">
+                    <div class="resumo-dia-canal-nome">Devoluções</div>
+                    <div class="resumo-dia-canal-desc">Peças devolvidas</div>
+                </div>
+                <div class="resumo-dia-canal-valor">${devolucoes.toLocaleString('pt-BR')}</div>
+            </div>
         </div>
     `;
 }
@@ -3820,8 +3834,8 @@ function mostrarDetalhesCanal(canal) {
     }
     
     let items = [];
-    const icons = { showroom: '🏬', ecommerce: '🌐', mostruario: '👗', ld: '📋' };
-    const nomes = { showroom: 'Showroom', ecommerce: 'E-commerce', mostruario: 'Mostruário Isabella', ld: 'Leves Defeitos' };
+    const icons = { showroom: '🏬', ecommerce: '🌐', mostruario: '👗', ld: '📋', devolucoes: '↩️' };
+    const nomes = { showroom: 'Showroom', ecommerce: 'E-commerce', mostruario: 'Mostruário Isabella', ld: 'Leves Defeitos', devolucoes: 'Devoluções' };
     
     if (canal === 'todos') {
         // Combinar todos os canais
@@ -3910,8 +3924,8 @@ function fecharDetalhesEnvios() {
 
 // Ver detalhes de envios de um canal específico (chamado da tela de expedição)
 async function verDetalhesEnviosCanal(canal) {
-    const nomes = { showroom: 'Showroom', ecommerce: 'E-commerce', mostruario: 'Mostruário Isabella', ld: 'Leves Defeitos' };
-    const icons = { showroom: '🏬', ecommerce: '🌐', mostruario: '👗', ld: '📋' };
+    const nomes = { showroom: 'Showroom', ecommerce: 'E-commerce', mostruario: 'Mostruário Isabella', ld: 'Leves Defeitos', devolucoes: 'Devoluções' };
+    const icons = { showroom: '🏬', ecommerce: '🌐', mostruario: '👗', ld: '📋', devolucoes: '↩️' };
     
     // Mostrar loading
     const dataHoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -3960,7 +3974,7 @@ async function verDetalhesEnviosCanal(canal) {
             document.querySelector('#envios-detalhes-modal .envios-detalhes-list').innerHTML = `
                 <div class="resumo-dia-loading">
                     <div style="font-size:48px;margin-bottom:16px">📭</div>
-                    <div>Nenhum envio encontrado</div>
+                    <div>Nenhum registro encontrado</div>
                 </div>
             `;
             return;
@@ -4214,17 +4228,28 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         const canalAtual = canalMap[destino];
         if (canalAtual) {
             const valorCanal = enviosDoDia[canalAtual.key] || 0;
+            const valorDevolucoes = enviosDoDia.devolucoes || 0;
             
             canaisHtml = `
                 <div class="exp-canais-resumo">
-                    <div class="exp-canais-title">📦 Envios de Hoje (${dataHoje})</div>
-                    <div class="exp-canal-destaque clickable" onclick="verDetalhesEnviosCanal('${canalAtual.key}')">
-                        <span class="exp-canal-icon-lg">${canalAtual.icon}</span>
-                        <div class="exp-canal-info">
-                            <span class="exp-canal-nome-lg">${canalAtual.nome}</span>
-                            <span class="exp-canal-valor-lg">${valorCanal.toLocaleString('pt-BR')} peças</span>
+                    <div class="exp-canais-title">📦 Movimentações de Hoje (${dataHoje})</div>
+                    <div class="exp-canal-row">
+                        <div class="exp-canal-destaque clickable" onclick="verDetalhesEnviosCanal('${canalAtual.key}')">
+                            <span class="exp-canal-icon-lg">${canalAtual.icon}</span>
+                            <div class="exp-canal-info">
+                                <span class="exp-canal-nome-lg">Enviadas</span>
+                                <span class="exp-canal-valor-lg">${valorCanal.toLocaleString('pt-BR')} pç</span>
+                            </div>
+                            <span class="exp-canal-arrow">›</span>
                         </div>
-                        <span class="exp-canal-arrow">›</span>
+                        <div class="exp-canal-destaque clickable devolucao" onclick="verDetalhesEnviosCanal('devolucoes')">
+                            <span class="exp-canal-icon-lg">↩️</span>
+                            <div class="exp-canal-info">
+                                <span class="exp-canal-nome-lg">Devolvidas</span>
+                                <span class="exp-canal-valor-lg">${valorDevolucoes.toLocaleString('pt-BR')} pç</span>
+                            </div>
+                            <span class="exp-canal-arrow">›</span>
+                        </div>
                     </div>
                 </div>
             `;
