@@ -1380,7 +1380,7 @@ html, body { overscroll-behavior-y: contain; }
 // ==========================================
 
 // VERSÃO DO APP - Incrementar para forçar limpeza de cache
-const APP_VERSION = '4.2.1';
+const APP_VERSION = '4.3.0';
 
 // Sistema de versionamento - limpa cache mas preserva navegação
 (async function checkVersion() {
@@ -5526,6 +5526,11 @@ const DRIVE_API_KEY = geoApiKey;
 // Cache de fotos no localStorage
 function getPhotoCache() {
     try {
+        // Limpar cache v1 antigo
+        if (localStorage.getItem('photo-cache')) {
+            localStorage.removeItem('photo-cache');
+            console.log('[PHOTOS] Cache v1 antigo removido');
+        }
         const cache = localStorage.getItem('photo-cache-v2');
         if (cache) {
             const parsed = JSON.parse(cache);
@@ -5533,8 +5538,11 @@ function getPhotoCache() {
             if (parsed.ts && (Date.now() - parsed.ts) < 3600000) {
                 return parsed.data;
             }
+            console.log('[PHOTOS] Cache v2 expirado, será recarregado');
         }
-    } catch(e) {}
+    } catch(e) {
+        console.log('[PHOTOS] Erro ao ler cache:', e);
+    }
     return {};
 }
 
@@ -5546,37 +5554,44 @@ function setPhotoCache(data) {
 
 let photoCache = getPhotoCache();
 
-// Buscar subpastas e depois fotos de cada uma
+// Buscar fotos de todas as cápsulas
 async function loadAllPhotos() {
     if (Object.keys(photoCache).length > 0) {
         console.log('[PHOTOS] Cache válido:', Object.keys(photoCache).length, 'fotos');
         return;
     }
     try {
-        console.log('[PHOTOS] Buscando pastas de cápsulas...');
+        console.log('[PHOTOS] Buscando fotos de todas as cápsulas...');
         
-        // 1. Listar subpastas da pasta Inverno
-        const folderQuery = encodeURIComponent(`'${DRIVE_INVERNO_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`);
-        const foldersUrl = `https://www.googleapis.com/drive/v3/files?q=${folderQuery}&fields=files(id,name)&key=${DRIVE_API_KEY}`;
-        console.log('[PHOTOS] URL pastas:', foldersUrl);
-        const foldersResp = await fetch(foldersUrl);
-        if (!foldersResp.ok) {
-            const errText = await foldersResp.text();
-            console.error('[PHOTOS] Erro API pastas:', foldersResp.status, errText);
-            throw new Error('Drive API folders error: ' + foldersResp.status);
-        }
-        const foldersData = await foldersResp.json();
-        
-        console.log('[PHOTOS] Pastas encontradas:', JSON.stringify(foldersData.files?.map(f => ({name: f.name, id: f.id}))));
-        
-        if (!foldersData.files || foldersData.files.length === 0) {
-            console.warn('[PHOTOS] Nenhuma subpasta encontrada! Verificar compartilhamento.');
-            return;
+        // Abordagem 1: Buscar subpastas da pasta Inverno automaticamente
+        let folderIds = [];
+        try {
+            const folderQuery = encodeURIComponent(`'${DRIVE_INVERNO_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+            const foldersUrl = `https://www.googleapis.com/drive/v3/files?q=${folderQuery}&fields=files(id,name)&key=${DRIVE_API_KEY}`;
+            const foldersResp = await fetch(foldersUrl);
+            if (foldersResp.ok) {
+                const foldersData = await foldersResp.json();
+                folderIds = (foldersData.files || []).map(f => ({ id: f.id, name: f.name }));
+                console.log('[PHOTOS] Subpastas encontradas:', folderIds.map(f => f.name));
+            } else {
+                console.log('[PHOTOS] Erro ao listar subpastas:', foldersResp.status);
+            }
+        } catch(e) {
+            console.log('[PHOTOS] Falha ao buscar subpastas:', e.message);
         }
         
-        // 2. Para cada subpasta, buscar fotos
+        // Abordagem 2 (fallback): Se não encontrou subpastas, usar IDs conhecidos
+        if (folderIds.length === 0) {
+            console.log('[PHOTOS] Usando pastas conhecidas como fallback');
+            folderIds = [
+                { id: '1GncZpD2wlJBDe-lGpe7TC6UsTx3c2frW', name: '1ª Cápsula' },
+                { id: '1BGXAj6Li73C6rDhA7-Kk1g-TpnD7KAfr', name: '2ª Cápsula' }
+            ];
+        }
+        
+        // Buscar fotos de cada pasta
         const cache = {};
-        for (const folder of foldersData.files) {
+        for (const folder of folderIds) {
             let pageToken = '';
             let folderCount = 0;
             do {
@@ -5585,8 +5600,7 @@ async function loadAllPhotos() {
                 if (pageToken) url += `&pageToken=${pageToken}`;
                 const resp = await fetch(url);
                 if (!resp.ok) {
-                    const errText = await resp.text();
-                    console.error('[PHOTOS] Erro API fotos pasta "' + folder.name + '":', resp.status, errText);
+                    console.error('[PHOTOS] Erro pasta "' + folder.name + '":', resp.status, await resp.text());
                     break;
                 }
                 const data = await resp.json();
@@ -5600,9 +5614,13 @@ async function loadAllPhotos() {
             console.log('[PHOTOS] Pasta "' + folder.name + '": ' + folderCount + ' fotos');
         }
         
-        photoCache = cache;
-        setPhotoCache(cache);
-        console.log('[PHOTOS] Cache carregado:', Object.keys(cache).length, 'fotos no total');
+        if (Object.keys(cache).length > 0) {
+            photoCache = cache;
+            setPhotoCache(cache);
+            console.log('[PHOTOS] Cache carregado:', Object.keys(cache).length, 'fotos no total');
+        } else {
+            console.warn('[PHOTOS] Nenhuma foto encontrada! Verificar compartilhamento das pastas.');
+        }
     } catch(e) {
         console.error('[PHOTOS] Erro ao carregar fotos:', e);
     }
