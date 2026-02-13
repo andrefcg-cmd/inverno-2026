@@ -4734,6 +4734,15 @@ if('serviceWorker' in navigator){
                 }
             });
         });
+        
+        // Detectar reload manual (pull-to-refresh ou F5) e forçar atualização
+        if (performance.navigation?.type === 1 || performance.getEntriesByType?.('navigation')?.[0]?.type === 'reload') {
+            console.log('[SW] Reload detectado - forçando atualização...');
+            caches.keys().then(names => {
+                names.forEach(name => caches.delete(name));
+            });
+            reg.update();
+        }
     }).catch(function(err){
         console.log('[SW] Erro:', err);
     });
