@@ -1159,7 +1159,7 @@ html, body { overscroll-behavior-y: contain; }
 <!-- GESTÃO DE USUÁRIOS (Admin) -->
 <div class="users-screen" id="users-screen">
     <div class="users-header">
-        <button class="users-back" onclick="goHome()">←</button>
+        <button class="users-back" onclick="backFromUsers()">←</button>
         <div class="users-title">👥 Gestão de Usuários</div>
         <button class="users-add-btn" onclick="openUserForm()">+</button>
     </div>
@@ -1974,6 +1974,8 @@ async function tryInitialBiometric(){
                 }
                 
                 sessionStorage.setItem('logged-user', bioUser);
+                startHeartbeat();
+                startKickCheck();
                 getWeatherAndShowWelcome(bioUser);
                 return;
             }
@@ -2021,6 +2023,11 @@ async function doInitialLogin(){
         
         document.getElementById('initial-error').textContent = '';
         document.getElementById('initial-login').classList.remove('active');
+        
+        // Iniciar heartbeat e verificação de kick
+        currentUser = user;
+        startHeartbeat();
+        startKickCheck();
         
         // Verificar se é primeiro login (pedir apelido)
         if (result.user && result.user.firstLogin) {
@@ -2506,6 +2513,9 @@ function goToScreen(screen, addToHistory = true) {
         case 'dev-financeiro':
             document.getElementById('dev-financeiro').classList.add('active');
             break;
+        case 'users-screen':
+            document.getElementById('users-screen').classList.add('active');
+            break;
         default:
             document.getElementById('home').classList.remove('hidden');
             document.getElementById('home').classList.add('visible');
@@ -2530,6 +2540,14 @@ window.addEventListener('popstate', function(e) {
     const enviosModal = document.getElementById('envios-detalhes-modal');
     if (enviosModal) {
         fecharDetalhesEnvios(true);
+        setTimeout(function(){ _handlingPop = false; }, 100);
+        return;
+    }
+    
+    // Se o modal de formulário de usuário está aberto, fechar ele
+    const userFormModal = document.getElementById('user-form-modal');
+    if (userFormModal && userFormModal.classList.contains('active')) {
+        closeUserForm(true);
         setTimeout(function(){ _handlingPop = false; }, 100);
         return;
     }
@@ -6081,6 +6099,17 @@ function renderListaCards() {
 // =====================================================
 let usersData = [];
 
+function backFromUsers() {
+    // Voltar para a tela anterior no histórico
+    if (navHistory.length > 1) {
+        navHistory.pop();
+        const prevScreen = navHistory[navHistory.length - 1] || 'home';
+        goToScreen(prevScreen, false);
+    } else {
+        goHome();
+    }
+}
+
 async function openUsers() {
     hideAll();
     document.getElementById('users-screen').classList.add('active');
@@ -6368,10 +6397,14 @@ function openUserForm(userId = null) {
     }
     
     modal.classList.add('active');
+    history.pushState({userForm: true}, '', '');
 }
 
-function closeUserForm() {
+function closeUserForm(fromPopstate) {
     document.getElementById('user-form-modal').classList.remove('active');
+    if (!fromPopstate) {
+        history.back();
+    }
 }
 
 function editUser(userId) {
