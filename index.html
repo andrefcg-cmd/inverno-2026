@@ -143,12 +143,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .photo-modal-noimg{color:var(--txt2);font-size:16px;text-align:center}
 
 /* HOME */
-@keyframes skeletonPulse{0%{opacity:0.6}50%{opacity:0.3}100%{opacity:0.6}}
-.skeleton{background:var(--card);border-radius:12px;animation:skeletonPulse 1.5s ease-in-out infinite}
-.skeleton-card{height:140px;margin-bottom:12px;border:1px solid var(--brd)}
-.skeleton-stat{height:80px;border:1px solid var(--brd)}
+@keyframes skeletonPulse{0%{opacity:1}50%{opacity:0.4}100%{opacity:1}}
+.skeleton{background:linear-gradient(135deg,var(--card2),var(--brd));border-radius:12px;animation:skeletonPulse 1.2s ease-in-out infinite;border:1px solid var(--brd)}
+.skeleton-card{height:140px;margin-bottom:12px}
+.skeleton-stat{height:80px}
 .skeleton-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
-.skeleton-progress{height:40px;margin-bottom:16px;border:1px solid var(--brd)}
+.skeleton-progress{height:40px;margin-bottom:16px}
 .skeleton-title{height:20px;width:150px;margin-bottom:12px}
 .home{height:100vh;height:100dvh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:16px 20px;position:relative;overflow:hidden;box-sizing:border-box}
 .home::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:url('bg-home.jpg') 0% center/auto 100% no-repeat;opacity:0.38;pointer-events:none;z-index:0;animation:homePan 25s ease-in-out infinite alternate}
