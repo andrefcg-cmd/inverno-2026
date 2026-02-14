@@ -4219,7 +4219,7 @@ function openExpedicaoDestino(destino){
     // Skeleton loading: mostrar estrutura visual enquanto carrega
     document.getElementById('exp-total-stats').innerHTML = '<div class="skeleton-stats"><div class="skeleton skeleton-stat"></div><div class="skeleton skeleton-stat"></div><div class="skeleton skeleton-stat"></div><div class="skeleton skeleton-stat"></div></div>';
     document.getElementById('exp-total-progress').innerHTML = '<div class="skeleton skeleton-progress"></div>';
-    document.getElementById('exp-items-list').innerHTML = '<div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div style="text-align:center;padding:16px 0;color:#888;font-size:14px">Carregando...</div>';
+    document.getElementById('exp-items-list').innerHTML = '<div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#888;font-size:14px;z-index:10;pointer-events:none" id="skeleton-loading-text">Carregando...</div>';
     
     // Inicializar pull-to-refresh se ainda não foi
     if (!ptrInitialized) {
