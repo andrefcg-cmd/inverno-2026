@@ -3725,6 +3725,8 @@ function openExpedicaoCapsula(colecao, num) {
 
 // Prefetch: buscar dados dos destinos em background para carregar instantâneo
 let prefetchPromises = {};
+let backgroundPreloadStarted = false;
+
 function prefetchExpedicaoData(colecao, num) {
     const destinos = ['showroom', 'ecommerce', 'mostruario'];
     prefetchPromises = {};
@@ -3760,6 +3762,73 @@ function prefetchExpedicaoData(colecao, num) {
             prefetchPromises[destino] = Promise.resolve(cached);
         }
     });
+    
+    // Iniciar preload de todas as outras cápsulas em background
+    if (!backgroundPreloadStarted) {
+        backgroundPreloadStarted = true;
+        setTimeout(() => preloadAllCapsulas(colecao, num), 2000);
+    }
+}
+
+// Pré-carregar todas as cápsulas habilitadas em background (sequencial para não sobrecarregar)
+async function preloadAllCapsulas(currentColecao, currentNum) {
+    const destinos = ['showroom'];
+    const toPreload = [];
+    
+    // Coletar todas as cápsulas habilitadas exceto a atual
+    for (const [key, status] of Object.entries(capsulasStatus)) {
+        if (!status.habilitada) continue;
+        const [colecao, num] = key.split('-');
+        if (colecao === currentColecao && num === String(currentNum)) continue;
+        toPreload.push({ colecao, num });
+    }
+    
+    if (toPreload.length === 0) {
+        console.log('[Preload] Nenhuma cápsula adicional para carregar');
+        return;
+    }
+    
+    console.log('[Preload] Carregando', toPreload.length, 'cápsulas em background...');
+    
+    for (const cap of toPreload) {
+        for (const destino of destinos) {
+            const cacheKey = cap.colecao + '-' + cap.num + '-' + destino;
+            const { data: cached, isStale } = getLocalCache(cacheKey);
+            
+            if (cached && !isStale) {
+                console.log('[Preload] Cache fresh:', cap.colecao, cap.num, destino);
+                continue;
+            }
+            
+            try {
+                const endpoint = {
+                    'showroom': '/api/totvs/expedicao/showroom-liquido',
+                    'ecommerce': '/api/totvs/expedicao/ecommerce',
+                    'mostruario': '/api/totvs/expedicao/mostruario'
+                }[destino];
+                
+                const url = `${API_CONFIG.baseUrl}${endpoint}?colecao=${cap.colecao}&capsula=${cap.num}`;
+                const response = await fetch(url, {
+                    headers: { 'X-API-Key': API_CONFIG.apiKey }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.items && data.items.length > 0) {
+                        setLocalCache(cacheKey, data);
+                        console.log('[Preload] Salvo:', cap.colecao, cap.num, destino, data.items.length, 'items');
+                    }
+                }
+                
+                // Pausa entre requests para não sobrecarregar
+                await new Promise(r => setTimeout(r, 1500));
+            } catch (e) {
+                console.log('[Preload] Erro:', cap.colecao, cap.num, destino, e.message);
+            }
+        }
+    }
+    
+    console.log('[Preload] Concluído!');
 }
 
 function backToExpedicaoEstacao() {
