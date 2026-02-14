@@ -143,6 +143,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .photo-modal-noimg{color:var(--txt2);font-size:16px;text-align:center}
 
 /* HOME */
+@keyframes skeletonPulse{0%{opacity:0.6}50%{opacity:0.3}100%{opacity:0.6}}
+.skeleton{background:var(--card);border-radius:12px;animation:skeletonPulse 1.5s ease-in-out infinite}
+.skeleton-card{height:140px;margin-bottom:12px;border:1px solid var(--brd)}
+.skeleton-stat{height:80px;border:1px solid var(--brd)}
+.skeleton-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.skeleton-progress{height:40px;margin-bottom:16px;border:1px solid var(--brd)}
+.skeleton-title{height:20px;width:150px;margin-bottom:12px}
 .home{height:100vh;height:100dvh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:16px 20px;position:relative;overflow:hidden;box-sizing:border-box}
 .home::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:url('bg-home.jpg') 0% center/auto 100% no-repeat;opacity:0.38;pointer-events:none;z-index:0;animation:homePan 25s ease-in-out infinite alternate}
 .home>*{position:relative;z-index:1}
@@ -3708,9 +3715,51 @@ function openExpedicaoCapsula(colecao, num) {
         backBtn.onclick = () => goBackTo('sub-expedicao-verao');
     }
     
+    // PREFETCH: iniciar busca do showroom em background enquanto usuário vê a tela de destinos
+    prefetchExpedicaoData(colecao, num);
+    
     hideAll();
     document.getElementById('sub-expedicao-destinos').classList.add('active');
     pushState('sub-expedicao-destinos');
+}
+
+// Prefetch: buscar dados dos destinos em background para carregar instantâneo
+let prefetchPromises = {};
+function prefetchExpedicaoData(colecao, num) {
+    const destinos = ['showroom', 'ecommerce', 'mostruario'];
+    prefetchPromises = {};
+    
+    destinos.forEach(destino => {
+        const cacheKey = colecao + '-' + num + '-' + destino;
+        const { data: cached, isStale } = getLocalCache(cacheKey);
+        
+        // Se não tem cache ou está stale, buscar em background
+        if (!cached || isStale) {
+            console.log('[Prefetch] Iniciando:', destino);
+            const endpoint = {
+                'showroom': '/api/totvs/expedicao/showroom-liquido',
+                'ecommerce': '/api/totvs/expedicao/ecommerce',
+                'mostruario': '/api/totvs/expedicao/mostruario'
+            }[destino];
+            
+            const url = `${API_CONFIG.baseUrl}${endpoint}?colecao=${colecao}&capsula=${num}`;
+            prefetchPromises[destino] = fetch(url, {
+                headers: { 'X-API-Key': API_CONFIG.apiKey }
+            }).then(r => r.ok ? r.json() : null).then(data => {
+                if (data && data.items && data.items.length > 0) {
+                    setLocalCache(cacheKey, data);
+                    console.log('[Prefetch] Salvo:', destino, data.items.length, 'items');
+                }
+                return data;
+            }).catch(e => {
+                console.log('[Prefetch] Erro:', destino, e.message);
+                return null;
+            });
+        } else {
+            console.log('[Prefetch] Cache fresh:', destino);
+            prefetchPromises[destino] = Promise.resolve(cached);
+        }
+    });
 }
 
 function backToExpedicaoEstacao() {
@@ -4167,8 +4216,10 @@ function openExpedicaoDestino(destino){
         document.getElementById('ref-search-clear').classList.remove('visible');
     }
     
-    // Limpar dados anteriores imediatamente e mostrar loading
-    document.getElementById('exp-items-list').innerHTML = '<div style="text-align:center;padding:40px;color:#888;">⏳ Carregando...</div>';
+    // Skeleton loading: mostrar estrutura visual enquanto carrega
+    document.getElementById('exp-total-stats').innerHTML = '<div class="skeleton-stats"><div class="skeleton skeleton-stat"></div><div class="skeleton skeleton-stat"></div><div class="skeleton skeleton-stat"></div><div class="skeleton skeleton-stat"></div></div>';
+    document.getElementById('exp-total-progress').innerHTML = '<div class="skeleton skeleton-progress"></div>';
+    document.getElementById('exp-items-list').innerHTML = '<div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div>';
     
     // Inicializar pull-to-refresh se ainda não foi
     if (!ptrInitialized) {
@@ -4178,8 +4229,23 @@ function openExpedicaoDestino(destino){
         }, 100);
     }
     
-    // Carregar dados da API (cache local + stale-while-revalidate)
-    renderExpedicao(destino);
+    // Usar dados do prefetch se disponível, senão buscar normalmente
+    if (prefetchPromises[destino]) {
+        console.log('[Destino] Usando prefetch para:', destino);
+        prefetchPromises[destino].then(prefetchData => {
+            if (prefetchData && prefetchData.items && prefetchData.items.length > 0) {
+                const transformed = transformApiData(prefetchData);
+                if (transformed.items && transformed.items.length > 0) {
+                    renderExpedicao(destino, transformed);
+                    return;
+                }
+            }
+            // Fallback: buscar normalmente
+            renderExpedicao(destino);
+        }).catch(() => renderExpedicao(destino));
+    } else {
+        renderExpedicao(destino);
+    }
 }
 
 async function renderExpedicao(destino, dadosPreCarregados = null){
