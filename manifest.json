@@ -1,0 +1,38 @@
+{
+    "name": "Isa Paes - Sistema de Gestão",
+    "short_name": "Isa Paes",
+    "description": "Sistema de gestão Isa Paes",
+    "start_url": "/inverno-2026/",
+    "scope": "/inverno-2026/",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#000000",
+    "orientation": "portrait",
+    "id": "/inverno-2026/",
+    "icons": [
+        {
+            "src": "/inverno-2026/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/inverno-2026/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/inverno-2026/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/inverno-2026/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
