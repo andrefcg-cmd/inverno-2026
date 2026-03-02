@@ -4557,7 +4557,20 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     }
     
     // Peças recebidas = líquido (enviado - devolvido)
-    pecasRecebidas = totaisAPI?.liquido || totaisAPI?.enviado || 0;
+    // Proteção: se líquido for negativo ou enviado=0 com items, usar soma dos items
+    const liquidoAPI = totaisAPI?.liquido || 0;
+    const enviadoAPI = totaisAPI?.enviado || 0;
+    if (liquidoAPI > 0) {
+        pecasRecebidas = liquidoAPI;
+    } else if (enviadoAPI > 0) {
+        pecasRecebidas = enviadoAPI;
+    } else if (dadosFiltrados.length > 0) {
+        // Fallback: somar dos items
+        dadosFiltrados.forEach(item => {
+            const e = item.envShow || {};
+            pecasRecebidas += (e.PP||0) + (e.P||0) + (e.M||0) + (e.G||0);
+        });
+    }
     const pecasDevolvidas = totaisAPI?.devolvido || 0;
     const pecasEnviadasBruto = totaisAPI?.enviado || 0;
     const ajusteReclass = totaisAPI?.ajusteReclassificacao || 0;
