@@ -2740,6 +2740,14 @@ window.addEventListener('popstate', function(e) {
         return;
     }
     
+    // Se um modal overlay (devoluções/reclassificadas) está aberto, fechar ele
+    const modalOverlay = document.querySelector('.modal-overlay');
+    if (modalOverlay) {
+        modalOverlay.remove();
+        setTimeout(function(){ _handlingPop = false; }, 100);
+        return;
+    }
+    
     // Se o modal de envios detalhes está aberto, fechar ele
     const enviosModal = document.getElementById('envios-detalhes-modal');
     if (enviosModal) {
@@ -7026,7 +7034,7 @@ function mostrarDetalheEnvios() {
                 </div>
             </div>
             
-            <button onclick="this.closest('.modal-overlay').remove()" 
+            <button onclick="history.back()" 
                 style="width:100%;margin-top:16px;padding:12px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">
                 Fechar
             </button>
@@ -7036,7 +7044,7 @@ function mostrarDetalheEnvios() {
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
     overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.93);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-    overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+    overlay.onclick = (e) => { if (e.target === overlay) history.back(); };
     
     const modal = document.createElement('div');
     modal.style.cssText = 'background:var(--bg1);border-radius:12px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3)';
@@ -7044,6 +7052,7 @@ function mostrarDetalheEnvios() {
     
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
+    history.pushState({screen: 'modal-envios'}, '', '');
     
     // Buscar detalhes em background
     const colecao = capsulaAtual.colecao;
