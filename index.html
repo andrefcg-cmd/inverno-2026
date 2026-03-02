@@ -4577,6 +4577,7 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     const reclassificadosData = totaisAPI?.reclassificados || [];
     window.currentReclassificados = reclassificadosData;
     window.currentAjusteReclass = ajusteReclass;
+    window.currentTotaisExpedicao = { enviado: pecasEnviadasBruto, devolvido: pecasDevolvidas, liquido: pecasRecebidas };
     const pecasFaltam = Math.max(0, previsaoPecas - pecasRecebidas);
     
     // Se não tem dados de produção, usar dados de expedição como fallback
@@ -4628,7 +4629,7 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
             <div class="exp-stat exp-stat-clickable ${isRefActive ? 'active' : ''}" id="stat-referencias" onclick="toggleViewReferencias()" style="cursor:pointer"><div class="exp-stat-value">${totalReferencias}</div><div class="exp-stat-label">Total de Referências</div></div>
             <div class="exp-stat exp-stat-clickable ${window.viewModeCores ? 'active' : ''}" id="stat-variantes" onclick="toggleViewCores()" style="cursor:pointer"><div class="exp-stat-value">${totalVariantes}</div><div class="exp-stat-label">Variantes de Cor</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${previsaoPecas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Previsão de Peças a Enviar</div></div>
-            <div class="exp-stat"><div class="exp-stat-value">${pecasRecebidas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Enviadas${pecasDevolvidas > 0 ? ` <span style="font-size:11px;color:var(--txt2)">(${pecasDevolvidas} dev.)</span>` : ''}${ajusteReclass > 0 ? `<br><span onclick="mostrarReclassificados()" style="font-size:10px;color:#ffc107;cursor:pointer;text-decoration:underline">⚠️ ${ajusteReclass} pç reclassificadas</span>` : ''}</div></div>
+            <div class="exp-stat${pecasDevolvidas > 0 ? '" onclick="mostrarDetalheEnvios()" style="cursor:pointer' : ''}"><div class="exp-stat-value">${pecasRecebidas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Enviadas${pecasDevolvidas > 0 ? ` <span style="font-size:11px;color:var(--txt2)">(${pecasDevolvidas} devolvidas)</span>` : ''}${ajusteReclass > 0 ? `<br><span style="font-size:10px;color:#ffc107">⚠️ ${ajusteReclass} reclassificadas</span>` : ''}</div></div>
         `;
     }
     document.getElementById('exp-total-stats').innerHTML = statsHtml;
@@ -6994,53 +6995,40 @@ function getGrupo(ref) {
     return GRUPOS_MAP[prefixo] || 'Outros';
 }
 
-function mostrarReclassificados() {
+function mostrarDetalheEnvios() {
+    const totais = window.currentTotaisExpedicao || {};
     const dados = window.currentReclassificados || [];
     const ajuste = window.currentAjusteReclass || 0;
     
-    if (!dados.length && ajuste > 0) {
-        // Formato antigo sem detalhes
-        showAlert('Reclassificações', `${ajuste} peças foram reclassificadas de outra cápsula.\nAs devoluções dessas peças foram descontadas para alinhar com o relatório TOTVS.`);
-        return;
-    }
-    
+    // Criar modal com resumo imediato e loading para detalhes
     let html = `
-        <div style="padding:20px;max-height:70vh;overflow-y:auto">
-            <h3 style="margin:0 0 4px;font-size:16px;color:var(--txt1)">⚠️ Peças Reclassificadas</h3>
-            <p style="margin:0 0 16px;font-size:12px;color:var(--txt2)">
-                Produtos que mudaram de cápsula via PRDFM236. As devoluções da cápsula anterior (${ajuste} pç) foram descontadas.
-            </p>
-            <div style="display:flex;flex-direction:column;gap:10px">
-    `;
-    
-    for (const item of dados) {
-        html += `
-            <div style="background:var(--bg2);border-radius:8px;padding:12px;border-left:3px solid #ffc107">
-                <div style="font-weight:600;font-size:14px;color:var(--txt1)">${item.ref}</div>
-                <div style="font-size:12px;color:var(--txt2);margin-top:2px">● ${item.cor}</div>
-                <div style="display:flex;gap:12px;margin-top:8px;font-size:12px">
-                    <span style="background:rgba(255,107,107,0.15);color:#ff6b6b;padding:3px 8px;border-radius:4px">
-                        Cápsula ${item.de} →
-                    </span>
-                    <span style="background:rgba(81,207,102,0.15);color:#51cf66;padding:3px 8px;border-radius:4px">
-                        → Cápsula ${item.para}
-                    </span>
-                    <span style="margin-left:auto;font-weight:600;color:var(--txt1)">
-                        ${item.pecas} pç
-                    </span>
+        <div style="padding:20px;max-height:80vh;overflow-y:auto" id="modal-envios-content">
+            <h3 style="margin:0 0 16px;font-size:16px;color:var(--txt1)">📦 Detalhe de Envios</h3>
+            
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+                <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--bg2);border-radius:8px">
+                    <span style="color:var(--txt2);font-size:13px">Enviadas (bruto)</span>
+                    <span style="font-weight:600;color:var(--txt1);font-size:13px">${(totais.enviado || 0).toLocaleString('pt-BR')} peças</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--bg2);border-radius:8px">
+                    <span style="color:#ff6b6b;font-size:13px">Devolvidas</span>
+                    <span style="font-weight:600;color:#ff6b6b;font-size:13px">− ${(totais.devolvido || 0).toLocaleString('pt-BR')} peças</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:10px 12px;background:rgba(81,207,102,0.1);border-radius:8px;border:1px solid rgba(81,207,102,0.3)">
+                    <span style="color:#51cf66;font-size:13px;font-weight:600">Líquido</span>
+                    <span style="font-weight:700;color:#51cf66;font-size:14px">${(totais.liquido || 0).toLocaleString('pt-BR')} peças</span>
                 </div>
             </div>
-        `;
-    }
-    
-    html += `
+            
+            <div id="modal-devolucoes-detalhe" style="border-top:1px solid var(--bg2);padding-top:16px">
+                <div style="text-align:center;padding:20px;color:var(--txt2);font-size:13px">
+                    ⏳ Carregando detalhes das devoluções...
+                </div>
             </div>
-            <div style="margin-top:16px;padding:10px;background:rgba(255,193,7,0.1);border-radius:8px;font-size:12px;color:var(--txt2)">
-                <strong>Total descontado:</strong> ${ajuste} peças de devoluções herdadas da cápsula anterior
-            </div>
+            
             <button onclick="this.closest('.modal-overlay').remove()" 
                 style="width:100%;margin-top:16px;padding:12px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">
-                Entendi
+                Fechar
             </button>
         </div>
     `;
@@ -7051,11 +7039,78 @@ function mostrarReclassificados() {
     overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
     
     const modal = document.createElement('div');
-    modal.style.cssText = 'background:var(--bg1);border-radius:12px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3)';
+    modal.style.cssText = 'background:var(--bg1);border-radius:12px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3)';
     modal.innerHTML = html;
     
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
+    
+    // Buscar detalhes em background
+    const colecao = capsulaAtual.colecao;
+    const capsula = capsulaAtual.num;
+    fetch(`${API_CONFIG.baseUrl}/api/totvs/expedicao/devolucoes-detalhe?colecao=${colecao}&capsula=${capsula}`, {
+        headers: { 'X-API-Key': API_CONFIG.apiKey }
+    }).then(r => r.json()).then(data => {
+        const container = document.getElementById('modal-devolucoes-detalhe');
+        if (!container) return;
+        
+        let detHtml = '';
+        
+        // Devoluções por NF
+        if (data.devolucoes && data.devolucoes.length > 0) {
+            detHtml += `<h4 style="margin:0 0 10px;font-size:14px;color:#ff6b6b">📋 Devoluções por NF</h4>`;
+            
+            for (const nf of data.devolucoes) {
+                const dataFormatada = nf.data ? nf.data.split('-').reverse().join('/') : '';
+                const temReclass = nf.totalReclass > 0;
+                
+                detHtml += `
+                    <div style="background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:8px;border-left:3px solid ${temReclass ? '#ffc107' : '#ff6b6b'}">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                            <span style="font-size:12px;color:var(--txt2)">${dataFormatada} · NF ${nf.nf}</span>
+                            <span style="font-weight:600;font-size:12px;color:var(--txt1)">${nf.totalPecas} pç</span>
+                        </div>
+                `;
+                
+                for (const item of nf.items) {
+                    const badge = item.reclassificada 
+                        ? `<span style="font-size:9px;background:rgba(255,193,7,0.2);color:#ffc107;padding:1px 5px;border-radius:3px;margin-left:4px">reclassif.</span>` 
+                        : '';
+                    detHtml += `
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;font-size:12px">
+                            <span style="color:${item.reclassificada ? '#ffc107' : 'var(--txt2)'}">
+                                ${item.ref} <span style="opacity:0.7">● ${item.cor}</span>${badge}
+                            </span>
+                            <span style="color:var(--txt1);font-weight:500">${item.qty} pç</span>
+                        </div>
+                    `;
+                }
+                
+                detHtml += `</div>`;
+            }
+        }
+        
+        // Reclassificações
+        if (data.reclassificados && data.reclassificados.length > 0) {
+            detHtml += `
+                <div style="margin-top:12px;padding:10px;background:rgba(255,193,7,0.08);border-radius:8px;border:1px solid rgba(255,193,7,0.2)">
+                    <div style="font-size:12px;font-weight:600;color:#ffc107;margin-bottom:6px">⚠️ Produtos reclassificados</div>
+            `;
+            for (const r of data.reclassificados) {
+                detHtml += `
+                    <div style="font-size:11px;color:var(--txt2);padding:2px 0">
+                        ${r.ref} ● ${r.cor} — Cápsula ${r.de} → ${r.para}
+                    </div>
+                `;
+            }
+            detHtml += `</div>`;
+        }
+        
+        container.innerHTML = detHtml;
+    }).catch(e => {
+        const container = document.getElementById('modal-devolucoes-detalhe');
+        if (container) container.innerHTML = `<div style="text-align:center;padding:12px;color:var(--txt2);font-size:12px">Não foi possível carregar os detalhes</div>`;
+    });
 }
 
 function toggleViewReferencias() {
