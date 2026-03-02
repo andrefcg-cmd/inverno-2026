@@ -3302,6 +3302,7 @@ function initPullToRefresh() {
     document.body.style.overscrollBehavior = 'contain';
     
     container.addEventListener('touchstart', (e) => {
+        if (document.querySelector('.modal-overlay')) return;
         if (container.scrollTop === 0 && !ptrRefreshing) {
             ptrStartY = e.touches[0].clientY;
             ptrActive = true;
@@ -3309,7 +3310,7 @@ function initPullToRefresh() {
     }, { passive: true });
     
     container.addEventListener('touchmove', (e) => {
-        if (ptrRefreshing || container.scrollTop > 0 || !ptrActive) return;
+        if (ptrRefreshing || container.scrollTop > 0 || !ptrActive || document.querySelector('.modal-overlay')) return;
         
         ptrCurrentY = e.touches[0].clientY;
         const diff = ptrCurrentY - ptrStartY;
@@ -3546,6 +3547,8 @@ let globalPtrRefreshing = false;
 
 function initGlobalPullToRefresh() {
     document.body.addEventListener('touchstart', (e) => {
+        // Ignora se modal overlay está aberto
+        if (document.querySelector('.modal-overlay')) { globalPtrActive = false; return; }
         // Verifica se o toque está dentro de um container com scroll
         const target = e.target;
         const scrollableParent = target.closest('#exp-content, .modal-body, .scroll-container');
@@ -7018,8 +7021,11 @@ function mostrarDetalheEnvios() {
                     <span style="color:var(--txt2);font-size:13px">Enviadas (bruto)</span>
                     <span style="font-weight:600;color:var(--txt1);font-size:13px">${(totais.enviado || 0).toLocaleString('pt-BR')} peças</span>
                 </div>
-                <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--bg2);border-radius:8px">
-                    <span style="color:#ff6b6b;font-size:13px">Devolvidas</span>
+                <div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--bg2);border-radius:8px;align-items:flex-start">
+                    <div>
+                        <span style="color:#ff6b6b;font-size:13px">Devolvidas</span>
+                        ${ajuste > 0 ? `<div style="font-size:11px;color:var(--txt2);margin-top:2px">sendo ${ajuste} reclassificadas</div>` : ''}
+                    </div>
                     <span style="font-weight:600;color:#ff6b6b;font-size:13px">− ${(totais.devolvido || 0).toLocaleString('pt-BR')} peças</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;padding:10px 12px;background:rgba(81,207,102,0.1);border-radius:8px;border:1px solid rgba(81,207,102,0.3)">
