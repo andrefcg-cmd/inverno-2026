@@ -1836,23 +1836,20 @@ async function fetchExpedicaoFromAPI(destino, forceRefresh) {
 function transformApiData(apiData) {
     if (!apiData.items) return { items: [], producao: null, enviosDoDia: apiData.enviosDoDia || null };
     
+    const TODOS_TAMANHOS = ['PP','P','M','G','GG','36','38','40','42','44'];
     const items = apiData.items.map(function(item) {
+        const prod = {};
+        const envShow = {};
+        for (const t of TODOS_TAMANHOS) {
+            prod[t] = (item.prod && item.prod[t]) || 0;
+            envShow[t] = (item.envShow && item.envShow[t]) || 0;
+        }
         return {
             ref: item.ref,
             desc: item.desc,
             cor: item.cor,
-            prod: {
-                PP: (item.prod && item.prod.PP) || 0,
-                P: (item.prod && item.prod.P) || 0,
-                M: (item.prod && item.prod.M) || 0,
-                G: (item.prod && item.prod.G) || 0
-            },
-            envShow: {
-                PP: (item.envShow && item.envShow.PP) || 0,
-                P: (item.envShow && item.envShow.P) || 0,
-                M: (item.envShow && item.envShow.M) || 0,
-                G: (item.envShow && item.envShow.G) || 0
-            }
+            prod: prod,
+            envShow: envShow
         };
     });
     
@@ -4563,15 +4560,16 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         totalVariantes = dadosFiltrados.length;
         
         // Calcular previsão baseado em prod (fallback)
+        const _allTams = ['PP','P','M','G','GG','36','38','40','42','44'];
         dadosFiltrados.forEach(item => {
             const p = item.prod || {};
-            previsaoPecas += (p.PP||0) + (p.P||0) + (p.M||0) + (p.G||0);
+            _allTams.forEach(t => { previsaoPecas += (p[t]||0); });
         });
         
         // Calcular recebidas
         dadosFiltrados.forEach(item => {
             const e = item.envShow || {};
-            pecasRecebidas += (e.PP||0) + (e.P||0) + (e.M||0) + (e.G||0);
+            _allTams.forEach(t => { pecasRecebidas += (e[t]||0); });
         });
     }
     
@@ -4740,26 +4738,27 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     
     if (producaoData && producaoData.items && producaoData.items.length > 0) {
         // Usar dados de produção
+        const _prodTams = ['PP','P','M','G','GG','36','38','40','42','44'];
         itemsParaLista = producaoData.items.map(item => {
             // Calcular total de peças
             const corte = item.corte || {};
-            const totalProd = (corte.PP||0) + (corte.P||0) + (corte.M||0) + (corte.G||0) + (corte.GG||0);
+            let totalProd = 0;
+            for (const t of _prodTams) totalProd += (corte[t]||0);
             
             // Buscar dados de envio correspondente
             const envItem = dadosFiltrados.find(d => d.ref === item.ref && d.cor === item.cor);
-            const envShow = envItem?.envShow || { PP: 0, P: 0, M: 0, G: 0, GG: 0 };
+            const defaultEnv = {};
+            for (const t of _prodTams) defaultEnv[t] = 0;
+            const envShow = envItem?.envShow || defaultEnv;
+            
+            const prod = {};
+            for (const t of _prodTams) prod[t] = corte[t] || 0;
             
             return {
                 ref: item.ref,
                 desc: item.desc || '',
                 cor: item.cor,
-                prod: {
-                    PP: corte.PP || 0,
-                    P: corte.P || 0,
-                    M: corte.M || 0,
-                    G: corte.G || 0,
-                    GG: corte.GG || 0
-                },
+                prod: prod,
                 envShow: envShow
             };
         });
@@ -4774,22 +4773,32 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     const items = itemsParaLista.map(item => {
         const p = item.prod || {};
         const e = item.envShow || {};
-        const totalP = (p.PP||0)+(p.P||0)+(p.M||0)+(p.G||0);
-        const totalE = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
+        const _allT = ['PP','P','M','G','GG','36','38','40','42','44'];
+        const _tLetra = ['PP','P','M','G'];
+        const _tNum = ['36','38','40','42','44'];
+        const totalP = _allT.reduce((s,t) => s + (p[t]||0), 0);
+        const totalE = _allT.reduce((s,t) => s + (e[t]||0), 0);
         if(totalP === 0) return '';
+        
+        const usaNum = _tNum.some(t => p[t] > 0);
+        const tAtivos = usaNum ? _tNum : _tLetra;
         
         let metaItem, envItem;
         if(destino === 'showroom'){
-            const ecommTams = ['PP','P','M','G'].filter(t => p[t] > 0).length;
-            const isabellaQty = p.P > 0 ? 1 : 0;
+            const ecommTams = tAtivos.filter(t => p[t] > 0).length;
+            const isabellaQty = (usaNum ? (p['38'] > 0 ? 1 : 0) : (p.P > 0 ? 1 : 0));
             metaItem = totalP - ecommTams - isabellaQty;
             envItem = totalE;
         } else if(destino === 'ecommerce'){
-            metaItem = ['PP','P','M','G'].filter(t => p[t] > 0).length;
-            envItem = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
+            metaItem = tAtivos.filter(t => p[t] > 0).length;
+            envItem = totalE;
         } else if(destino === 'mostruario'){
-            metaItem = p.P > 0 ? 1 : (['PP','M','G'].find(t => p[t] > 0) ? 1 : 0);
-            envItem = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
+            if (usaNum) {
+                metaItem = p['38'] > 0 ? 1 : (_tNum.find(t => p[t] > 0) ? 1 : 0);
+            } else {
+                metaItem = p.P > 0 ? 1 : (_tLetra.filter(t=>t!=='P').find(t => p[t] > 0) ? 1 : 0);
+            }
+            envItem = totalE;
         } else if(destino === 'ld'){
             metaItem = 0;
             envItem = 0;
@@ -4799,19 +4808,20 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         const colorItem = pctItem >= 100 ? 'green' : 'blue';
         
         let tamanhos;
+        const tamMostruario = usaNum ? '38' : 'P';
         if(destino === 'showroom'){
-            tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
+            tamanhos = tAtivos.filter(t => p[t] > 0).map(t => {
                 const prod = p[t] || 0;
                 const env = e[t] || 0;
                 const descEcomm = 1;
-                const descIsabella = (t === 'P') ? 1 : 0;
+                const descIsabella = (t === tamMostruario) ? 1 : 0;
                 const meta = prod - descEcomm - descIsabella;
                 const pct = meta > 0 ? Math.min((env/meta)*100, 100) : 0;
                 const col = env >= meta ? 'green' : 'blue';
                 return '<div class="exp-tam-row"><span class="exp-tam-label">'+t+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/'+meta+'</span></div>';
             }).join('');
         } else if(destino === 'ecommerce'){
-            tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
+            tamanhos = tAtivos.filter(t => p[t] > 0).map(t => {
                 const env = e[t] || 0;
                 const meta = 1;
                 const pct = env >= meta ? 100 : 0;
@@ -4819,7 +4829,12 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
                 return '<div class="exp-tam-row"><span class="exp-tam-label">'+t+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/'+meta+'</span></div>';
             }).join('');
         } else if(destino === 'mostruario'){
-            let tamEsperado = p.P > 0 ? 'P' : ['PP','M','G'].find(t => p[t] > 0) || null;
+            let tamEsperado;
+            if (usaNum) {
+                tamEsperado = p['38'] > 0 ? '38' : _tNum.find(t => p[t] > 0) || null;
+            } else {
+                tamEsperado = p.P > 0 ? 'P' : _tLetra.filter(t=>t!=='P').find(t => p[t] > 0) || null;
+            }
             if(tamEsperado){
                 const env = e[tamEsperado] || 0;
                 const meta = 1;
@@ -4834,7 +4849,7 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         }
         
         const descEscaped = (item.desc || '').replace(/'/g, "\\'");
-        return '<div class="exp-item" onclick="openPhoto(\''+item.ref+'\',\''+descEscaped+'\')"><div class="exp-item-header"><div><div class="exp-item-ref">'+item.ref+' <span style="font-weight:400;color:var(--txt2);font-size:11px">('+totalP+' pçs)</span></div><div class="exp-item-name">'+(item.desc || '')+'</div><div class="exp-item-cor">🎨 '+item.cor+'</div></div><div class="exp-item-badge" style="color:var(--'+colorItem+')">'+pctItem+'%</div></div><div class="exp-tamanhos-grid">'+tamanhos+'</div></div>';
+        return '<div class="exp-item" onclick="openPhoto(\''+item.ref+'\',\''+descEscaped+'\')"><div class="exp-item-header"><div><div class="exp-item-ref">'+item.ref+' <span style="font-weight:400;color:var(--txt2);font-size:11px">('+metaItem+' pçs)</span></div><div class="exp-item-name">'+(item.desc || '')+'</div><div class="exp-item-cor">🎨 '+item.cor+'</div></div><div class="exp-item-badge" style="color:var(--'+colorItem+')">'+pctItem+'%</div></div><div class="exp-tamanhos-grid">'+tamanhos+'</div></div>';
     }).join('');
     
     document.getElementById('exp-items-list').innerHTML = items;
@@ -7133,33 +7148,31 @@ function renderListaCards() {
     if (window.viewModeReferencias) {
         // MODO REFERÊNCIAS: agrupar por ref
         const refsMap = new Map();
+        const _grpTams = ['PP','P','M','G','GG','36','38','40','42','44'];
         
         for (const item of itemsParaLista) {
             const p = item.prod || {};
             const e = item.envShow || {};
             
             if (!refsMap.has(item.ref)) {
+                const prodInit = {};
+                const envInit = {};
+                for (const t of _grpTams) { prodInit[t] = p[t]||0; envInit[t] = e[t]||0; }
                 refsMap.set(item.ref, {
                     ref: item.ref,
                     desc: item.desc || '',
                     cor: null,
                     coresCount: 1,
-                    prod: { PP: p.PP||0, P: p.P||0, M: p.M||0, G: p.G||0, GG: p.GG||0 },
-                    envShow: { PP: e.PP||0, P: e.P||0, M: e.M||0, G: e.G||0, GG: e.GG||0 }
+                    prod: prodInit,
+                    envShow: envInit
                 });
             } else {
                 const existing = refsMap.get(item.ref);
                 existing.coresCount++;
-                existing.prod.PP += p.PP||0;
-                existing.prod.P += p.P||0;
-                existing.prod.M += p.M||0;
-                existing.prod.G += p.G||0;
-                existing.prod.GG += p.GG||0;
-                existing.envShow.PP += e.PP||0;
-                existing.envShow.P += e.P||0;
-                existing.envShow.M += e.M||0;
-                existing.envShow.G += e.G||0;
-                existing.envShow.GG += e.GG||0;
+                for (const t of _grpTams) {
+                    existing.prod[t] += p[t]||0;
+                    existing.envShow[t] += e[t]||0;
+                }
             }
         }
         
@@ -7186,22 +7199,33 @@ function renderListaCards() {
     for (const item of itemsToRender) {
         const p = item.prod || {};
         const e = item.envShow || {};
-        const totalP = (p.PP||0)+(p.P||0)+(p.M||0)+(p.G||0);
-        const totalE = (e.PP||0)+(e.P||0)+(e.M||0)+(e.G||0);
+        const allTams = ['PP','P','M','G','GG','36','38','40','42','44'];
+        const tamsLetra = ['PP','P','M','G'];
+        const tamsNumerico = ['36','38','40','42','44'];
+        const totalP = allTams.reduce((s,t) => s + (p[t]||0), 0);
+        const totalE = allTams.reduce((s,t) => s + (e[t]||0), 0);
         
         if(totalP === 0) continue;
         
+        // Detectar se produto usa tamanhos numéricos ou letra
+        const usaTamsNumericos = tamsNumerico.some(t => p[t] > 0);
+        const tamsAtivos = usaTamsNumericos ? tamsNumerico : tamsLetra;
+        
         let metaItem = 0, envItem = 0;
         if(destino === 'showroom'){
-            const ecommTams = ['PP','P','M','G'].filter(t => p[t] > 0).length;
-            const isabellaQty = p.P > 0 ? 1 : 0;
+            const ecommTams = tamsAtivos.filter(t => p[t] > 0).length;
+            const isabellaQty = (usaTamsNumericos ? (p['38'] > 0 ? 1 : 0) : (p.P > 0 ? 1 : 0));
             metaItem = totalP - ecommTams - isabellaQty;
             envItem = totalE;
         } else if(destino === 'ecommerce'){
-            metaItem = ['PP','P','M','G'].filter(t => p[t] > 0).length;
+            metaItem = tamsAtivos.filter(t => p[t] > 0).length;
             envItem = totalE;
         } else if(destino === 'mostruario'){
-            metaItem = p.P > 0 ? 1 : (['PP','M','G'].find(t => p[t] > 0) ? 1 : 0);
+            if (usaTamsNumericos) {
+                metaItem = p['38'] > 0 ? 1 : (tamsNumerico.find(t => p[t] > 0) ? 1 : 0);
+            } else {
+                metaItem = p.P > 0 ? 1 : (tamsLetra.filter(t=>t!=='P').find(t => p[t] > 0) ? 1 : 0);
+            }
             envItem = totalE;
         }
         
@@ -7211,23 +7235,29 @@ function renderListaCards() {
         // Tamanhos
         let tamanhos = '';
         if(destino === 'showroom'){
-            tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
+            const tamMostruario = usaTamsNumericos ? '38' : 'P';
+            tamanhos = tamsAtivos.filter(t => p[t] > 0).map(t => {
                 const prod = p[t] || 0;
                 const env = e[t] || 0;
-                const meta = prod - 1 - (t === 'P' ? 1 : 0);
+                const meta = prod - 1 - (t === tamMostruario ? 1 : 0);
                 const pct = meta > 0 ? Math.min((env/meta)*100, 100) : 0;
                 const col = env >= meta ? 'green' : 'blue';
                 return '<div class="exp-tam-row"><span class="exp-tam-label">'+t+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/'+meta+'</span></div>';
             }).join('');
         } else if(destino === 'ecommerce'){
-            tamanhos = ['PP','P','M','G'].filter(t => p[t] > 0).map(t => {
+            tamanhos = tamsAtivos.filter(t => p[t] > 0).map(t => {
                 const env = e[t] || 0;
                 const pct = env >= 1 ? 100 : 0;
                 const col = env >= 1 ? 'green' : 'blue';
                 return '<div class="exp-tam-row"><span class="exp-tam-label">'+t+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/1</span></div>';
             }).join('');
         } else if(destino === 'mostruario'){
-            const tamEsperado = p.P > 0 ? 'P' : ['PP','M','G'].find(t => p[t] > 0) || null;
+            let tamEsperado;
+            if (usaTamsNumericos) {
+                tamEsperado = p['38'] > 0 ? '38' : tamsNumerico.find(t => p[t] > 0) || null;
+            } else {
+                tamEsperado = p.P > 0 ? 'P' : tamsLetra.filter(t=>t!=='P').find(t => p[t] > 0) || null;
+            }
             if(tamEsperado){
                 const env = e[tamEsperado] || 0;
                 const pct = env >= 1 ? 100 : 0;
