@@ -7246,7 +7246,7 @@ function renderListaCards() {
             corHtml = '<div class="exp-item-cor">🎨 ' + item.cor + '</div>';
         }
         
-        html += '<div class="exp-item" onclick="openPhoto(\''+item.ref+'\',\''+descEscaped+'\')"><div class="exp-item-header"><div><div class="exp-item-ref">'+item.ref+' <span style="font-weight:400;color:var(--txt2);font-size:11px">('+totalP+' pçs)</span></div><div class="exp-item-name">'+(item.desc || '')+'</div>'+corHtml+'</div><div class="exp-item-badge" style="color:var(--'+colorItem+')">'+pctItem+'%</div></div><div class="exp-tamanhos-grid">'+tamanhos+'</div></div>';
+        html += '<div class="exp-item" onclick="openPhoto(\''+item.ref+'\',\''+descEscaped+'\')"><div class="exp-item-header"><div><div class="exp-item-ref">'+item.ref+' <span style="font-weight:400;color:var(--txt2);font-size:11px">('+metaItem+' pçs)</span></div><div class="exp-item-name">'+(item.desc || '')+'</div>'+corHtml+'</div><div class="exp-item-badge" style="color:var(--'+colorItem+')">'+pctItem+'%</div></div><div class="exp-tamanhos-grid">'+tamanhos+'</div></div>';
     }
     
     document.getElementById('exp-items-list').innerHTML = html;
