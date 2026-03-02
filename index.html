@@ -4658,9 +4658,9 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
                 <div class="exp-progress-bar">
                     <div class="exp-progress-fill ${colorTotal}" style="width:${Math.min(pctTotal,100)}%"></div>
                 </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-                    <span id="exp-update-text" style="font-size:12px;color:#ffc107;font-weight:600;background:rgba(255,193,7,0.15);padding:4px 8px;border-radius:4px">🕐 ${updateText}</span>
-                    <span style="font-size:12px;font-weight:600;color:var(--${colorTotal})">${pctTotal}%${pecasFaltam > 0 ? ` · faltam ${pecasFaltam.toLocaleString('pt-BR')} peças` : ''}</span>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:6px">
+                    <span id="exp-update-text" style="font-size:11px;color:#ffc107;font-weight:600;background:rgba(255,193,7,0.15);padding:4px 8px;border-radius:4px">🕐 ${updateText}</span>
+                    <span style="font-size:11px;font-weight:600;color:var(--${colorTotal})">${pctTotal}%${pecasFaltam > 0 ? ` · faltam ${pecasFaltam.toLocaleString('pt-BR')} peças` : ''}</span>
                 </div>
             </div>
         `;
@@ -7035,7 +7035,7 @@ function mostrarDetalheEnvios() {
     
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
     overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
     
     const modal = document.createElement('div');
