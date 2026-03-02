@@ -4629,7 +4629,7 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
             <div class="exp-stat exp-stat-clickable ${isRefActive ? 'active' : ''}" id="stat-referencias" onclick="toggleViewReferencias()" style="cursor:pointer"><div class="exp-stat-value">${totalReferencias}</div><div class="exp-stat-label">Total de Referências</div></div>
             <div class="exp-stat exp-stat-clickable ${window.viewModeCores ? 'active' : ''}" id="stat-variantes" onclick="toggleViewCores()" style="cursor:pointer"><div class="exp-stat-value">${totalVariantes}</div><div class="exp-stat-label">Variantes de Cor</div></div>
             <div class="exp-stat"><div class="exp-stat-value">${previsaoPecas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Previsão de Peças a Enviar</div></div>
-            <div class="exp-stat${pecasDevolvidas > 0 ? '" onclick="mostrarDetalheEnvios()" style="cursor:pointer' : ''}"><div class="exp-stat-value">${pecasRecebidas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Enviadas${pecasDevolvidas > 0 ? ` <span style="font-size:11px;color:var(--txt2)">(${pecasDevolvidas} devolvidas)</span>` : ''}${ajusteReclass > 0 ? `<br><span style="font-size:10px;color:#ffc107">⚠️ ${ajusteReclass} reclassificadas</span>` : ''}</div></div>
+            <div class="exp-stat${pecasDevolvidas > 0 ? '" onclick="mostrarDetalheEnvios()" style="cursor:pointer' : ''}"><div class="exp-stat-value">${pecasRecebidas.toLocaleString('pt-BR')}</div><div class="exp-stat-label">Peças Enviadas${pecasDevolvidas > 0 ? ` (${pecasDevolvidas} devolvidas)` : ''}${ajusteReclass > 0 ? `<br><span style="color:#ffc107">⚠️ ${ajusteReclass} reclassificadas</span>` : ''}</div></div>
         `;
     }
     document.getElementById('exp-total-stats').innerHTML = statsHtml;
@@ -7093,7 +7093,7 @@ function mostrarDetalheEnvios() {
         // Reclassificações
         if (data.reclassificados && data.reclassificados.length > 0) {
             detHtml += `
-                <div style="margin-top:12px;padding:10px;background:rgba(255,193,7,0.08);border-radius:8px;border:1px solid rgba(255,193,7,0.2)">
+                <div style="margin-top:12px;padding:10px;background:rgba(255,193,7,0.25);border-radius:8px;border:1px solid rgba(255,193,7,0.4)">
                     <div style="font-size:12px;font-weight:600;color:#ffc107;margin-bottom:6px">⚠️ Produtos reclassificados</div>
             `;
             for (const r of data.reclassificados) {
