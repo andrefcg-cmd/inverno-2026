@@ -4557,18 +4557,9 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         previsaoPecas = producaoData.totalAReceber || 0;
     }
     
-    // Peças recebidas: recalcular a partir dos items para garantir consistência
-    // (totaisAPI.enviado pode estar desatualizado se o Worker não soma tamanhos numéricos)
-    const _allTamsCalc = ['PP','P','M','G','GG','36','38','40','42','44'];
-    if (dadosFiltrados.length > 0) {
-        pecasRecebidas = 0;
-        dadosFiltrados.forEach(item => {
-            const e = item.envShow || {};
-            _allTamsCalc.forEach(t => { pecasRecebidas += (e[t]||0); });
-        });
-    } else {
-        pecasRecebidas = totaisAPI?.enviado || 0;
-    }
+    // Peças recebidas: usar líquido (enviado - devolvido) da API
+    // Os items no envShow são valores brutos, as devoluções estão em totais.devolvido
+    pecasRecebidas = totaisAPI?.liquido || totaisAPI?.enviado || 0;
     
     // Se não tem dados de produção, usar dados de expedição como fallback
     if (totalReferencias === 0 && dadosFiltrados.length > 0) {
