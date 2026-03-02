@@ -387,6 +387,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .envio-item-tamanhos{display:flex;gap:8px;flex-wrap:wrap}
 .envio-tam{font-size:11px;background:var(--bg2);padding:3px 8px;border-radius:4px;color:var(--txt)}
 .exp-item{background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--brd);cursor:pointer}
+.exp-item.expanded{border-color:var(--accent);border-bottom-left-radius:0;border-bottom-right-radius:0;margin-bottom:0}
+.exp-sub-items{border:1px solid var(--accent);border-top:none;border-bottom-left-radius:12px;border-bottom-right-radius:12px;margin-bottom:10px;overflow:hidden}
+.exp-sub-item{background:var(--card2);padding:12px 14px;border-top:1px solid var(--brd);cursor:pointer}
+.exp-sub-item:first-child{border-top:none}
+.exp-sub-item:last-child{border-bottom-left-radius:12px;border-bottom-right-radius:12px}
+.exp-expand-icon{font-size:10px;color:var(--txt2);margin-left:6px;transition:transform .2s}
+.exp-item.expanded .exp-expand-icon{transform:rotate(180deg);color:var(--accent)}
 .exp-item-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
 .exp-item-ref{font-size:11px;color:var(--accent);font-weight:600}
 .exp-item-name{font-size:13px;margin-top:2px;line-height:1.3}
@@ -6953,6 +6960,7 @@ window.viewModeReferencias = false;
 window.viewModeCores = false;
 window.selectedCores = new Set();
 window.selectedGrupos = new Set();
+window.expandedRef = null;
 
 // Mapa de prefixo da referência → nome do grupo
 const GRUPOS_MAP = {
@@ -6990,6 +6998,7 @@ function toggleViewReferencias() {
     console.log('[Toggle] Clicou em Referências');
     window.viewModeReferencias = !window.viewModeReferencias;
     window.selectedGrupos.clear();
+    window.expandedRef = null;
     
     // Desativar modo cores se ativar referências
     if (window.viewModeReferencias) {
@@ -7132,6 +7141,15 @@ function selecionarGrupo(grupo) {
     renderListaCards();
 }
 
+function toggleExpandRef(ref) {
+    if (window.expandedRef === ref) {
+        window.expandedRef = null;
+    } else {
+        window.expandedRef = ref;
+    }
+    renderListaCards();
+}
+
 function renderListaCards() {
     const destino = window.currentDestino;
     const itemsParaLista = window.currentItemsParaLista || [];
@@ -7145,6 +7163,9 @@ function renderListaCards() {
     
     let itemsToRender = [];
     
+    // Mapa de variantes por ref (para expandir no modo referências)
+    window._refVariantesMap = new Map();
+    
     if (window.viewModeReferencias) {
         // MODO REFERÊNCIAS: agrupar por ref
         const refsMap = new Map();
@@ -7153,6 +7174,12 @@ function renderListaCards() {
         for (const item of itemsParaLista) {
             const p = item.prod || {};
             const e = item.envShow || {};
+            
+            // Guardar variante original por ref
+            if (!window._refVariantesMap.has(item.ref)) {
+                window._refVariantesMap.set(item.ref, []);
+            }
+            window._refVariantesMap.get(item.ref).push(item);
             
             if (!refsMap.has(item.ref)) {
                 const prodInit = {};
@@ -7270,13 +7297,97 @@ function renderListaCards() {
         
         // Cor ou contagem de cores
         let corHtml = '';
+        const isExpanded = window.viewModeReferencias && window.expandedRef === item.ref;
+        
         if (window.viewModeReferencias && item.coresCount) {
-            corHtml = '<div class="exp-item-cor">🎨 ' + item.coresCount + ' ' + (item.coresCount === 1 ? 'cor' : 'cores') + '</div>';
+            const expandIcon = '<span class="exp-expand-icon">' + (isExpanded ? '▲' : '▼') + '</span>';
+            corHtml = '<div class="exp-item-cor">🎨 ' + item.coresCount + ' ' + (item.coresCount === 1 ? 'cor' : 'cores') + expandIcon + '</div>';
         } else if (item.cor) {
             corHtml = '<div class="exp-item-cor">🎨 ' + item.cor + '</div>';
         }
         
-        html += '<div class="exp-item" onclick="openPhoto(\''+item.ref+'\',\''+descEscaped+'\')"><div class="exp-item-header"><div><div class="exp-item-ref">'+item.ref+' <span style="font-weight:400;color:var(--txt2);font-size:11px">('+metaItem+' pçs)</span></div><div class="exp-item-name">'+(item.desc || '')+'</div>'+corHtml+'</div><div class="exp-item-badge" style="color:var(--'+colorItem+')">'+pctItem+'%</div></div><div class="exp-tamanhos-grid">'+tamanhos+'</div></div>';
+        // No modo referências: clicar expande as cores; no modo normal: abre foto
+        if (window.viewModeReferencias && item.coresCount && item.coresCount > 0) {
+            const refEscaped = item.ref.replace(/'/g, "\\'");
+            html += '<div class="exp-item' + (isExpanded ? ' expanded' : '') + '" onclick="toggleExpandRef(\''+refEscaped+'\')"><div class="exp-item-header"><div><div class="exp-item-ref">'+item.ref+' <span style="font-weight:400;color:var(--txt2);font-size:11px">('+metaItem+' pçs)</span></div><div class="exp-item-name">'+(item.desc || '')+'</div>'+corHtml+'</div><div class="exp-item-badge" style="color:var(--'+colorItem+')">'+pctItem+'%</div></div><div class="exp-tamanhos-grid">'+tamanhos+'</div></div>';
+            
+            // Renderizar sub-cards de cor se expandido
+            if (isExpanded) {
+                const variantes = window._refVariantesMap?.get(item.ref) || [];
+                html += '<div class="exp-sub-items">';
+                for (const vi of variantes) {
+                    const vp = vi.prod || {};
+                    const ve = vi.envShow || {};
+                    const vTotalP = allTams.reduce((s,t) => s + (vp[t]||0), 0);
+                    const vTotalE = allTams.reduce((s,t) => s + (ve[t]||0), 0);
+                    if (vTotalP === 0) continue;
+                    
+                    const vUsaNum = tamsNumerico.some(t => vp[t] > 0);
+                    const vTamsAtivos = vUsaNum ? tamsNumerico : tamsLetra;
+                    
+                    let vMeta = 0, vEnv = 0;
+                    if(destino === 'showroom'){
+                        const vEcommTams = vTamsAtivos.filter(t => vp[t] > 0).length;
+                        const vIsabella = (vUsaNum ? (vp['38'] > 0 ? 1 : 0) : (vp.P > 0 ? 1 : 0));
+                        vMeta = vTotalP - vEcommTams - vIsabella;
+                        vEnv = vTotalE;
+                    } else if(destino === 'ecommerce'){
+                        vMeta = vTamsAtivos.filter(t => vp[t] > 0).length;
+                        vEnv = vTotalE;
+                    } else if(destino === 'mostruario'){
+                        if (vUsaNum) { vMeta = vp['38'] > 0 ? 1 : (tamsNumerico.find(t => vp[t] > 0) ? 1 : 0); }
+                        else { vMeta = vp.P > 0 ? 1 : (tamsLetra.filter(t=>t!=='P').find(t => vp[t] > 0) ? 1 : 0); }
+                        vEnv = vTotalE;
+                    }
+                    
+                    const vPct = vMeta > 0 ? ((vEnv / vMeta) * 100).toFixed(0) : 0;
+                    const vColor = vPct >= 100 ? 'green' : 'blue';
+                    
+                    // Barras de tamanho para sub-item
+                    let vTamanhos = '';
+                    const vTamMost = vUsaNum ? '38' : 'P';
+                    if(destino === 'showroom'){
+                        vTamanhos = vTamsAtivos.filter(t => vp[t] > 0).map(t => {
+                            const prod = vp[t] || 0;
+                            const env = ve[t] || 0;
+                            const meta = prod - 1 - (t === vTamMost ? 1 : 0);
+                            const pct = meta > 0 ? Math.min((env/meta)*100, 100) : 0;
+                            const col = env >= meta ? 'green' : 'blue';
+                            return '<div class="exp-tam-row"><span class="exp-tam-label">'+t+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/'+meta+'</span></div>';
+                        }).join('');
+                    } else if(destino === 'ecommerce'){
+                        vTamanhos = vTamsAtivos.filter(t => vp[t] > 0).map(t => {
+                            const env = ve[t] || 0;
+                            const pct = env >= 1 ? 100 : 0;
+                            const col = env >= 1 ? 'green' : 'blue';
+                            return '<div class="exp-tam-row"><span class="exp-tam-label">'+t+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/1</span></div>';
+                        }).join('');
+                    } else if(destino === 'mostruario'){
+                        let vTamEsperado;
+                        if (vUsaNum) { vTamEsperado = vp['38'] > 0 ? '38' : tamsNumerico.find(t => vp[t] > 0) || null; }
+                        else { vTamEsperado = vp.P > 0 ? 'P' : tamsLetra.filter(t=>t!=='P').find(t => vp[t] > 0) || null; }
+                        if(vTamEsperado){
+                            const env = ve[vTamEsperado] || 0;
+                            const pct = env >= 1 ? 100 : 0;
+                            const col = env >= 1 ? 'green' : 'blue';
+                            vTamanhos = '<div class="exp-tam-row"><span class="exp-tam-label">'+vTamEsperado+'</span><div class="exp-tam-bar"><div class="exp-tam-fill '+col+'" style="width:'+pct+'%"></div></div><span class="exp-tam-val">'+env+'/1</span></div>';
+                        }
+                    }
+                    
+                    const viDescEsc = (vi.desc || '').replace(/'/g, "\\'");
+                    html += '<div class="exp-sub-item" onclick="event.stopPropagation();openPhoto(\''+vi.ref+'\',\''+viDescEsc+'\')">';
+                    html += '<div class="exp-item-header"><div>';
+                    html += '<div class="exp-item-ref">'+vi.ref+' <span style="font-weight:400;color:var(--txt2);font-size:11px">('+vMeta+' pçs)</span></div>';
+                    html += '<div class="exp-item-cor">🎨 '+(vi.cor || 'SEM COR')+'</div>';
+                    html += '</div><div class="exp-item-badge" style="color:var(--'+vColor+')">'+vPct+'%</div></div>';
+                    html += '<div class="exp-tamanhos-grid">'+vTamanhos+'</div>';
+                    html += '</div>';
+                }
+                html += '</div>';
+            }
+        } else {
+            html += '<div class="exp-item" onclick="openPhoto(\''+item.ref+'\',\''+descEscaped+'\')"><div class="exp-item-header"><div><div class="exp-item-ref">'+item.ref+' <span style="font-weight:400;color:var(--txt2);font-size:11px">('+metaItem+' pçs)</span></div><div class="exp-item-name">'+(item.desc || '')+'</div>'+corHtml+'</div><div class="exp-item-badge" style="color:var(--'+colorItem+')">'+pctItem+'%</div></div><div class="exp-tamanhos-grid">'+tamanhos+'</div></div>';
+        }
     }
     
     document.getElementById('exp-items-list').innerHTML = html;
