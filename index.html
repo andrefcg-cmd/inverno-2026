@@ -4557,10 +4557,18 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         previsaoPecas = producaoData.totalAReceber || 0;
     }
     
-    // Peças recebidas: usar líquido (enviado - devolvido) da API
-    if (totaisAPI) {
-        pecasRecebidas = totaisAPI.liquido ?? totaisAPI.enviado ?? 0;
-        console.log('[PWA] totais:', JSON.stringify(totaisAPI), '→ pecasRecebidas:', pecasRecebidas);
+    // Peças recebidas: somar dos items (envShow) que são os valores processados por produto
+    // Isso é mais preciso que totais.enviado pois os items são filtrados por productCode
+    if (dadosFiltrados.length > 0) {
+        const _allTamsCalc = ['PP','P','M','G','GG','36','38','40','42','44'];
+        pecasRecebidas = 0;
+        dadosFiltrados.forEach(item => {
+            const e = item.envShow || {};
+            _allTamsCalc.forEach(t => { pecasRecebidas += (e[t]||0); });
+        });
+        console.log('[PWA] pecasRecebidas (soma items):', pecasRecebidas, 'vs totaisAPI:', JSON.stringify(totaisAPI));
+    } else if (totaisAPI) {
+        pecasRecebidas = totaisAPI.enviado ?? 0;
     }
     
     // Se não tem dados de produção, usar dados de expedição como fallback
