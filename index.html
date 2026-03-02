@@ -4286,6 +4286,12 @@ function mostrarDetalhesCanal(canal) {
     // Ordenar por referência
     const refsList = Object.values(porRef).sort((a, b) => a.ref.localeCompare(b.ref));
     
+    // Buscar reclassificados para marcar items
+    const reclassRefs = new Set();
+    if ((canal === 'devolucoes' || canal === 'todos') && window.currentReclassificados) {
+        window.currentReclassificados.forEach(r => reclassRefs.add(r.ref));
+    }
+    
     // Criar modal de detalhes
     const dataFormatada = resumoDiaDataSelecionada.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const titulo = canal === 'todos' ? `Todos os Envios - ${dataFormatada}` : `${nomes[canal]} - ${dataFormatada}`;
@@ -4309,11 +4315,12 @@ function mostrarDetalhesCanal(canal) {
             `<span class="envio-tam">${t}: ${ref.tamanhos[t]}</span>`
         ).join('');
         
+        const isReclass = (ref.canal === 'devolucoes' || canal === 'devolucoes') && reclassRefs.has(ref.ref);
         const descEsc1 = (ref.desc || '').replace(/'/g, "\\'");
         html += `
-            <div class="envio-item" onclick="openPhoto('${ref.ref}','${descEsc1}')" style="cursor:pointer">
+            <div class="envio-item" onclick="openPhoto('${ref.ref}','${descEsc1}')" style="cursor:pointer${isReclass ? ';border-left:3px solid #ffc107' : ''}">
                 <div class="envio-item-header">
-                    <div class="envio-item-ref">${ref.icon} ${ref.ref}</div>
+                    <div class="envio-item-ref">${ref.icon} ${ref.ref}${isReclass ? ' <span style="font-size:9px;background:rgba(255,193,7,0.25);color:#ffc107;padding:2px 6px;border-radius:3px;vertical-align:middle">reclassificada</span>' : ''}</div>
                     <div class="envio-item-total">${ref.total} pç</div>
                 </div>
                 <div class="envio-item-desc">${ref.desc || ''}</div>
@@ -4420,17 +4427,24 @@ async function verDetalhesEnviosCanal(canal) {
         const refsList = Object.values(porRef).sort((a, b) => a.ref.localeCompare(b.ref));
         const totalPecas = items.reduce((s, i) => s + i.qtd, 0);
         
+        // Buscar reclassificados do KV para marcar items
+        const reclassRefs = new Set();
+        if (canal === 'devolucoes' && window.currentReclassificados) {
+            window.currentReclassificados.forEach(r => reclassRefs.add(r.ref));
+        }
+        
         let listHtml = '';
         for (const ref of refsList) {
             const tamanhosHtml = ['PP', 'P', 'M', 'G', 'GG', 'UN'].filter(t => ref.tamanhos[t]).map(t => 
                 `<span class="envio-tam">${t}: ${ref.tamanhos[t]}</span>`
             ).join('');
             
+            const isReclass = reclassRefs.has(ref.ref);
             const descEsc2 = (ref.desc || '').replace(/'/g, "\\'");
             listHtml += `
-                <div class="envio-item" onclick="openPhoto('${ref.ref}','${descEsc2}')" style="cursor:pointer">
+                <div class="envio-item" onclick="openPhoto('${ref.ref}','${descEsc2}')" style="cursor:pointer${isReclass ? ';border-left:3px solid #ffc107' : ''}">
                     <div class="envio-item-header">
-                        <div class="envio-item-ref">${icons[canal]} ${ref.ref}</div>
+                        <div class="envio-item-ref">${icons[canal]} ${ref.ref}${isReclass ? ' <span style="font-size:9px;background:rgba(255,193,7,0.25);color:#ffc107;padding:2px 6px;border-radius:3px;vertical-align:middle">reclassificada</span>' : ''}</div>
                         <div class="envio-item-total">${ref.total} pç</div>
                     </div>
                     <div class="envio-item-desc">${ref.desc || ''}</div>
