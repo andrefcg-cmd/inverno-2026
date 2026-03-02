@@ -4559,17 +4559,8 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     
     // Peças recebidas: usar líquido (enviado - devolvido) da API
     if (totaisAPI) {
-        const enviado = totaisAPI.enviado || 0;
-        const devolvido = totaisAPI.devolvido || 0;
-        const liquido = totaisAPI.liquido;
-        // Se liquido existe e é diferente de enviado, usar liquido
-        // Se liquido == enviado (cache antigo sem fix), recalcular
-        if (liquido != null && liquido !== enviado) {
-            pecasRecebidas = liquido;
-        } else {
-            pecasRecebidas = enviado - devolvido;
-        }
-        console.log('[PWA] totais: enviado='+enviado+' devolvido='+devolvido+' liquido='+liquido+' → pecasRecebidas='+pecasRecebidas);
+        pecasRecebidas = totaisAPI.liquido ?? totaisAPI.enviado ?? 0;
+        console.log('[PWA] totais:', JSON.stringify(totaisAPI), '→ pecasRecebidas:', pecasRecebidas);
     }
     
     // Se não tem dados de produção, usar dados de expedição como fallback
