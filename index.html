@@ -2013,6 +2013,9 @@ setTimeout(()=>{
                 }
             }
             
+            // PRELOAD: iniciar busca dos dados imediatamente após restaurar cápsula
+            prefetchExpedicaoData(capsulaAtual.colecao, capsulaAtual.num);
+            
             let screens = [];
             try {
                 screens = lastScreens ? JSON.parse(lastScreens) : [];
@@ -4643,7 +4646,7 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
                     <span id="exp-update-text" style="font-size:12px;color:#ffc107;font-weight:600;background:rgba(255,193,7,0.15);padding:4px 8px;border-radius:4px">🕐 ${updateText}</span>
-                    <span style="font-size:12px;font-weight:600;color:var(--${colorTotal})">${pctTotal}%${pecasFaltam > 0 ? ` · faltam ${pecasFaltam.toLocaleString('pt-BR')}` : ''}</span>
+                    <span style="font-size:12px;font-weight:600;color:var(--${colorTotal})">${pctTotal}%${pecasFaltam > 0 ? ` · faltam ${pecasFaltam.toLocaleString('pt-BR')} peças` : ''}</span>
                 </div>
             </div>
         `;
