@@ -4288,8 +4288,9 @@ function mostrarDetalhesCanal(canal) {
     
     // Buscar reclassificados para marcar items
     const reclassRefs = new Set();
+    const reclassMap = {};
     if ((canal === 'devolucoes' || canal === 'todos') && window.currentReclassificados) {
-        window.currentReclassificados.forEach(r => reclassRefs.add(r.ref));
+        window.currentReclassificados.forEach(r => { reclassRefs.add(r.ref); reclassMap[r.ref] = r; });
     }
     
     // Criar modal de detalhes
@@ -4316,11 +4317,12 @@ function mostrarDetalhesCanal(canal) {
         ).join('');
         
         const isReclass = (ref.canal === 'devolucoes' || canal === 'devolucoes') && reclassRefs.has(ref.ref);
+        const reclInfo = isReclass ? reclassMap[ref.ref] : null;
         const descEsc1 = (ref.desc || '').replace(/'/g, "\\'");
         html += `
             <div class="envio-item" onclick="openPhoto('${ref.ref}','${descEsc1}')" style="cursor:pointer${isReclass ? ';border-left:3px solid #ffc107' : ''}">
                 <div class="envio-item-header">
-                    <div class="envio-item-ref">${ref.icon} ${ref.ref}${isReclass ? ' <span style="font-size:9px;background:rgba(255,193,7,0.25);color:#ffc107;padding:2px 6px;border-radius:3px;vertical-align:middle">reclassificada</span>' : ''}</div>
+                    <div class="envio-item-ref">${ref.icon} ${ref.ref}${isReclass ? ` <span style="font-size:9px;background:rgba(255,193,7,0.25);color:#ffc107;padding:2px 6px;border-radius:3px;vertical-align:middle">reclassif. C${reclInfo?.de} → C${reclInfo?.para}</span>` : ''}</div>
                     <div class="envio-item-total">${ref.total} pç</div>
                 </div>
                 <div class="envio-item-desc">${ref.desc || ''}</div>
@@ -4429,8 +4431,9 @@ async function verDetalhesEnviosCanal(canal) {
         
         // Buscar reclassificados do KV para marcar items
         const reclassRefs = new Set();
+        const reclassMap = {};
         if (canal === 'devolucoes' && window.currentReclassificados) {
-            window.currentReclassificados.forEach(r => reclassRefs.add(r.ref));
+            window.currentReclassificados.forEach(r => { reclassRefs.add(r.ref); reclassMap[r.ref] = r; });
         }
         
         let listHtml = '';
@@ -4440,11 +4443,12 @@ async function verDetalhesEnviosCanal(canal) {
             ).join('');
             
             const isReclass = reclassRefs.has(ref.ref);
+            const reclInfo = isReclass ? reclassMap[ref.ref] : null;
             const descEsc2 = (ref.desc || '').replace(/'/g, "\\'");
             listHtml += `
                 <div class="envio-item" onclick="openPhoto('${ref.ref}','${descEsc2}')" style="cursor:pointer${isReclass ? ';border-left:3px solid #ffc107' : ''}">
                     <div class="envio-item-header">
-                        <div class="envio-item-ref">${icons[canal]} ${ref.ref}${isReclass ? ' <span style="font-size:9px;background:rgba(255,193,7,0.25);color:#ffc107;padding:2px 6px;border-radius:3px;vertical-align:middle">reclassificada</span>' : ''}</div>
+                        <div class="envio-item-ref">${icons[canal]} ${ref.ref}${isReclass ? ` <span style="font-size:9px;background:rgba(255,193,7,0.25);color:#ffc107;padding:2px 6px;border-radius:3px;vertical-align:middle">reclassif. C${reclInfo?.de} → C${reclInfo?.para}</span>` : ''}</div>
                         <div class="envio-item-total">${ref.total} pç</div>
                     </div>
                     <div class="envio-item-desc">${ref.desc || ''}</div>
