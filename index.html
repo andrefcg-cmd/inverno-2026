@@ -1686,6 +1686,14 @@ function getLocalCache(chave, allowStale = false) {
             return { data: null, isStale: false };
         }
         
+        // Invalidar cache se totais.liquido=0 com totais.enviado>0 (bug de cache antigo)
+        const t = cacheData.payload?.totais;
+        if (t && t.enviado > 0 && (!t.liquido || t.liquido === 0) && (!t.devolvido || t.devolvido === 0)) {
+            console.log('[Cache Local] Invalidando cache inconsistente (enviado=' + t.enviado + ' liquido=0 devolvido=0):', chave);
+            localStorage.removeItem('exp-cache-' + chave);
+            return { data: null, isStale: false };
+        }
+        
         // Cache está "stale" (> 5min) mas ainda válido
         const isStale = idade > CACHE_STALE_MS;
         
@@ -4589,8 +4597,10 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
     const enviadoAPI = totaisAPI?.enviado || 0;
     const devolvidoAPI = totaisAPI?.devolvido || 0;
     const liquidoCalculado = enviadoAPI - devolvidoAPI;
-    if (enviadoAPI > 0) {
+    if (liquidoCalculado > 0) {
         pecasRecebidas = liquidoCalculado;
+    } else if (enviadoAPI > 0) {
+        pecasRecebidas = enviadoAPI;
     } else if (dadosFiltrados.length > 0) {
         // Fallback: somar dos items
         dadosFiltrados.forEach(item => {
