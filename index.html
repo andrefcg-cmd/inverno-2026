@@ -4585,14 +4585,12 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
         previsaoPecas = producaoData.totalAReceber || 0;
     }
     
-    // Peças recebidas = líquido (enviado - devolvido)
-    // Proteção: se líquido for negativo ou enviado=0 com items, usar soma dos items
-    const liquidoAPI = totaisAPI?.liquido || 0;
+    // Peças recebidas = enviado - devolvido (sempre calcular, nunca confiar em liquido do cache)
     const enviadoAPI = totaisAPI?.enviado || 0;
-    if (liquidoAPI > 0) {
-        pecasRecebidas = liquidoAPI;
-    } else if (enviadoAPI > 0) {
-        pecasRecebidas = enviadoAPI;
+    const devolvidoAPI = totaisAPI?.devolvido || 0;
+    const liquidoCalculado = enviadoAPI - devolvidoAPI;
+    if (enviadoAPI > 0) {
+        pecasRecebidas = liquidoCalculado;
     } else if (dadosFiltrados.length > 0) {
         // Fallback: somar dos items
         dadosFiltrados.forEach(item => {
@@ -4600,13 +4598,13 @@ async function renderExpedicao(destino, dadosPreCarregados = null){
             pecasRecebidas += (e.PP||0) + (e.P||0) + (e.M||0) + (e.G||0);
         });
     }
-    const pecasDevolvidas = totaisAPI?.devolvido || 0;
-    const pecasEnviadasBruto = totaisAPI?.enviado || 0;
+    const pecasDevolvidas = devolvidoAPI;
+    const pecasEnviadasBruto = enviadoAPI;
     const ajusteReclass = totaisAPI?.ajusteReclassificacao || 0;
     const reclassificadosData = totaisAPI?.reclassificados || [];
     window.currentReclassificados = reclassificadosData;
     window.currentAjusteReclass = ajusteReclass;
-    window.currentTotaisExpedicao = { enviado: pecasEnviadasBruto, devolvido: pecasDevolvidas, liquido: pecasRecebidas };
+    window.currentTotaisExpedicao = { enviado: pecasEnviadasBruto, devolvido: pecasDevolvidas, liquido: pecasRecebidas, liquidoCalculado: true };
     const pecasFaltam = Math.max(0, previsaoPecas - pecasRecebidas);
     
     // Se não tem dados de produção, usar dados de expedição como fallback
